@@ -26,3 +26,4 @@ Message Vault makes several design trade-offs:
 * **client library is intentionally simple** (view projections and even checkpoints are outside the scope);
 * **each stream is a sepate page blob** (they can grow to 1TB out-of-the-box, having thousands of streams isn't a good idea).
 
+> Message Vault is not an "event store", it is not designed for "event sourcing with aggregates" (you need [NEventStore](http://neventstore.org/) or [EventStore](http://geteventstore.com/))

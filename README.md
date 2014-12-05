@@ -16,12 +16,12 @@ Messages are partitioned by streams. Each stream is an immutable and ordered seq
 
 Message Vault makes several design trade-offs:
 
-* optimize for *high throughput* over _low latency_;
-* prefer *code simplicity* over _complex performance optimizations_;
-* *http protocol* instead of binary protocol;
-* *rely on Windows Azure* to do all the heavy-lifting (this simplifies code, but couples implementation to Azure);
-* *high-availability via master-slave setup* (uptime is limited by Azure uptime, no writes during failover);
-* *no channel encryption* (if needed, use SSL with Azure Load Balancer or your load balancer);
-* *no authorization schemes* (if needed, configure your load balancer or add a proxy on top);
-* *implemented in imperative C#* (runtime is heavy, but Windows Azure is optimized for it);
-* *client library is intentionally simple* (view projections and even checkpoints are outside the scope).
+* optimize for **high throughput** over _low latency_;
+* prefer **code simplicity** over _complex performance optimizations_;
+* **http protocol** instead of binary protocol;
+* **rely on Windows Azure** to do all the heavy-lifting (this simplifies code, but couples implementation to Azure);
+* **high-availability via master-slave setup** (uptime is limited by Azure uptime, no writes during failover);
+* **no channel encryption** (if needed, use SSL with Azure Load Balancer or your load balancer);
+* **no authorization schemes** (if needed, configure your load balancer or add a proxy on top);
+* **implemented in imperative C#** (.NET runtime is heavy, but Windows Azure is optimized for it);
+* **client library is intentionally simple** (view projections and even checkpoints are outside the scope).

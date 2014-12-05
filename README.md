@@ -8,11 +8,9 @@ Publish-subscribe with replay and batching for Windows Azure.
 
 
 
-Message Vault is a thin wrapper around capabilities provided by Windows Azure. Producers push messages to Message Vault which serves them to consumers.
+Message Vault is a thin wrapper around capabilities provided by Windows Azure. Producers push messages to the Vault which serves them to consumers. Consumers can replay events from any point in time or chase the tail.
 
-Messages are partitioned by streams. Each stream is an immutable and ordered sequence of messages. All messages in a stream are assigned a unique _offset_ and timestamp.
-
-
+Messages are partitioned by streams. Each stream is an immutable and ordered sequence of messages. All messages in a stream are assigned a unique _offset_ and timestamp. Order of messages in different streams is not guaranteed (within the time drift on Azure).
 
 ### Design Trade-offs
 

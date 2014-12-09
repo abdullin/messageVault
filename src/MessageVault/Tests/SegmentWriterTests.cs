@@ -3,9 +3,9 @@ using System.Text;
 using Microsoft.WindowsAzure.Storage.Blob;
 using NUnit.Framework;
 
-namespace MessageVault {
+namespace MessageVault.Tests {
 
-	public sealed class AzureSegmentTests {
+	public sealed class SegmentWriterTests {
 		CloudBlobContainer _folder;
 
 

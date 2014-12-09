@@ -60,7 +60,7 @@
     <Compile Include="PageWriter.cs" />
     <Compile Include="PositionWriter.cs" />
     <Compile Include="SegmentWriter.cs" />
-    <Compile Include="Tests\AzureSegmentTests.cs" />
+    <Compile Include="Tests\SegmentWriterTests.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
   </ItemGroup>

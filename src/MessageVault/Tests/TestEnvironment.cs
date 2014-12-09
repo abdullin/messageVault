@@ -3,7 +3,7 @@ using System.Threading;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace MessageVault {
+namespace MessageVault.Tests {
 
 	public static class TestEnvironment {
 		static TestEnvironment() {

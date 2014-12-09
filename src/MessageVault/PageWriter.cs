@@ -1,130 +1,63 @@
 using System;
-using System.Diagnostics.Contracts;
 using System.IO;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault {
-    /// <summary>
-    ///     Helps to write data to the underlying store, which accepts only
-    ///     pages with specific size
-    /// </summary>
-    sealed class PageWriter : IDisposable {
-        /// <summary>
-        ///     Delegate that writes pages to the underlying paged store.
-        /// </summary>
-        /// <param name="offset">The offset.</param>
-        /// <param name="source">The source.</param>
-        public delegate void AppendWriterDelegate(int offset, Stream source);
 
-        public delegate byte[] TailLoaderDelegate(long position, int count);
+	public sealed class PageWriter {
+		// 4MB, Azure limit
+		const long CommitSizeBytes = 1024 * 1024 * 4;
 
-        int _bytesPending;
-        bool _disposed;
-        int _fullPagesFlushed;
-        MemoryStream _pending;
-        readonly int _pageSizeInBytes;
-        readonly AppendWriterDelegate _writer;
+		// Azure limit
+		const int PageSize = 512;
+		readonly CloudPageBlob _blob;
 
-        public PageWriter(int pageSizeInBytes, AppendWriterDelegate writer) {
-            _writer = writer;
+		public PageWriter(CloudPageBlob blob) {
+			_blob = blob;
+		}
 
-            _pageSizeInBytes = pageSizeInBytes;
-            _pending = new MemoryStream();
-        }
 
-        public void Dispose() {
-            if (_disposed) {
-                return;
-            }
+		public long BlobSize { get; private set; }
 
-            Flush();
 
-            var t = _pending;
-            _pending = null;
-            _disposed = true;
+		public static long NextSize(long current) {
+			// Azure doesn't charge us for the page storage anyway
+			const long hundredMBs = 1024 * 1024 * 100;
+			return current + hundredMBs;
+		}
 
-            t.Dispose();
-        }
+		public void InitForWriting() {
+			if (!_blob.Exists()) {
+				_blob.Create(NextSize(0));
+			}
 
-        public void CacheLastPageIfNeeded(long position, TailLoaderDelegate loader) {
-            Contract.Requires(position >= 0);
-            Contract.Requires(loader != null);
+			BlobSize = _blob.Properties.Length;
+		}
+		public void Grow() {
+			_blob.Resize(NextSize(BlobSize));
+		}
 
-            if (position == 0) {
-                return;
-            }
-            var total = (int) (position/_pageSizeInBytes);
-            var remainder = (int) (position%_pageSizeInBytes);
+		public byte[] ReadPage(long offset) {
+			using (var stream = _blob.OpenRead()) {
+				var buffer = new byte[PageSize];
+				stream.Seek(offset, SeekOrigin.Begin);
+				stream.Read(buffer, 0, PageSize);
+				return buffer;
+			}
+		}
 
-            _fullPagesFlushed = total;
-            if (remainder != 0) {
-                // we need to preload data
-                _bytesPending = remainder;
-                var tip = loader(position - remainder, remainder);
-                _pending.Write(tip, 0, remainder);
-            }
-        }
+		public void Save(Stream stream, long offset) {
+			if (stream.Length % PageSize != 0) {
+				var message = "Stream length must be multiple of " + PageSize;
+				throw new ArgumentException(message);
+			}
+			if (stream.Length > CommitSizeBytes) {
+				var message = "Stream can't be longer than " + CommitSizeBytes;
+				throw new ArgumentException(message);
+			}
 
-        public void Write(byte[] buffer) {
-            CheckNotDisposed();
+			_blob.WritePages(stream,offset);
+		}
+	}
 
-            _pending.Write(buffer, 0, buffer.Length);
-            _bytesPending += buffer.Length;
-        }
-
-        public void Write(byte[] buffer, int offset, long length) {
-            CheckNotDisposed();
-
-            _pending.Write(buffer, 0, buffer.Length);
-            _bytesPending += (int) length;
-        }
-
-        public void Flush() {
-            CheckNotDisposed();
-
-            if (_bytesPending == 0) {
-                return;
-            }
-
-            var size = (int) _pending.Length;
-            var padSize = (_pageSizeInBytes - size%_pageSizeInBytes)%_pageSizeInBytes;
-
-            using (var stream = new MemoryStream(size + padSize)) {
-                stream.Write(_pending.ToArray(), 0, (int) _pending.Length);
-                if (padSize > 0) {
-                    stream.Write(new byte[padSize], 0, padSize);
-                }
-
-                stream.Position = 0;
-                _writer(_fullPagesFlushed*_pageSizeInBytes, stream);
-            }
-
-            var fullPagesFlushed = size/_pageSizeInBytes;
-
-            if (fullPagesFlushed <= 0) {
-                return;
-            }
-
-            // Copy remainder to the new stream and dispose the old stream
-            var newStream = new MemoryStream();
-            _pending.Position = fullPagesFlushed*_pageSizeInBytes;
-            _pending.CopyTo(newStream);
-            _pending.Dispose();
-            _pending = newStream;
-
-            _fullPagesFlushed += fullPagesFlushed;
-            _bytesPending = 0;
-        }
-
-        void CheckNotDisposed() {
-            if (_disposed) {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-        }
-
-        public void Reset() {
-            _pending.SetLength(0);
-            _bytesPending = 0;
-            _fullPagesFlushed = 0;
-        }
-    }
 }

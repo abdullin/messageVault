@@ -57,11 +57,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AzureSegment.cs" />
-    <Compile Include="AzureSegmentTests.cs" />
-    <Compile Include="OldAzureSegment.cs" />
-    <Compile Include="Logging.cs" />
     <Compile Include="PageWriter.cs" />
+    <Compile Include="PositionWriter.cs" />
+    <Compile Include="SegmentWriter.cs" />
+    <Compile Include="Tests\AzureSegmentTests.cs" />
+    <Compile Include="Logging.cs" />
+    <Compile Include="Tests\TestEnvironment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

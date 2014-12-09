@@ -14,18 +14,19 @@ namespace MessageVault
     /// (residing inside a <see cref="CloudPageBlob"/>). It can be opened as 
     /// mutable or as read-only.
     /// </summary>
-    public class AzureEventStoreChunk : IDisposable
+    public class OldAzureSegment : IDisposable
     {
         readonly CloudPageBlob _blob;
         readonly PageWriter _pageWriter;
         long _chunkContentSize;
         long _blobSpaceSize;
 
-        public const long ChunkSize = 1024 * 1024 * 4;
+        public const long MaxCommitSize = 1024 * 1024 * 4;
 
         
 
-        AzureEventStoreChunk(CloudPageBlob blob, long offset, long size)
+
+        OldAzureSegment(CloudPageBlob blob, long offset, long size)
         {
             _blob = blob;
             _pageWriter = new PageWriter(512, WriteProc);
@@ -50,23 +51,23 @@ namespace MessageVault
             }
         }
 
-        public static AzureEventStoreChunk OpenExistingForWriting(CloudPageBlob blob, long offset, long length)
+        public static OldAzureSegment OpenExistingForWriting(CloudPageBlob blob, long offset, long length)
         {
             Contract.Requires(length>0);
             Contract.Requires(offset>=0);
             
-            return new AzureEventStoreChunk(blob, offset, length);
+            return new OldAzureSegment(blob, offset, length);
         }
 
-        public static AzureEventStoreChunk CreateNewForWriting(CloudPageBlob blob)
+        public static OldAzureSegment CreateNewForWriting(CloudPageBlob blob)
         {
-            blob.Create(ChunkSize);
-            return new AzureEventStoreChunk(blob, 0, ChunkSize);
+            blob.Create(MaxCommitSize);
+            return new OldAzureSegment(blob, 0, MaxCommitSize);
         }
-        public static AzureEventStoreChunk OpenExistingForReading(CloudPageBlob blob, long length)
+        public static OldAzureSegment OpenExistingForReading(CloudPageBlob blob, long length)
         {
             Contract.Requires(length>0);
-            return new AzureEventStoreChunk(blob, -1, length);
+            return new OldAzureSegment(blob, -1, length);
         }
 
         public ChunkAppendResult Append(string streamId, IEnumerable<byte[]> eventData)
@@ -119,7 +120,7 @@ namespace MessageVault
             var length = source.Length;
             if (offset + length > _blobSpaceSize)
             {
-                var newSize = _blobSpaceSize + ChunkSize;
+                var newSize = _blobSpaceSize + MaxCommitSize;
                 Log.Debug("Increasing chunk size to {NewSize}", newSize);
                 _blob.Resize(newSize);
                 

@@ -7,7 +7,7 @@ namespace MessageVault {
     ///     Helps to write data to the underlying store, which accepts only
     ///     pages with specific size
     /// </summary>
-    internal sealed class PageWriter : IDisposable {
+    sealed class PageWriter : IDisposable {
         /// <summary>
         ///     Delegate that writes pages to the underlying paged store.
         /// </summary>
@@ -17,13 +17,12 @@ namespace MessageVault {
 
         public delegate byte[] TailLoaderDelegate(long position, int count);
 
-        private readonly int _pageSizeInBytes;
-        private readonly AppendWriterDelegate _writer;
-        private MemoryStream _pending;
-
-        private int _bytesPending;
-        private int _fullPagesFlushed;
-        private bool _disposed;
+        int _bytesPending;
+        bool _disposed;
+        int _fullPagesFlushed;
+        MemoryStream _pending;
+        readonly int _pageSizeInBytes;
+        readonly AppendWriterDelegate _writer;
 
         public PageWriter(int pageSizeInBytes, AppendWriterDelegate writer) {
             _writer = writer;
@@ -32,8 +31,22 @@ namespace MessageVault {
             _pending = new MemoryStream();
         }
 
+        public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+
+            Flush();
+
+            var t = _pending;
+            _pending = null;
+            _disposed = true;
+
+            t.Dispose();
+        }
+
         public void CacheLastPageIfNeeded(long position, TailLoaderDelegate loader) {
-            Contract.Requires(position>=0);
+            Contract.Requires(position >= 0);
             Contract.Requires(loader != null);
 
             if (position == 0) {
@@ -64,7 +77,6 @@ namespace MessageVault {
             _pending.Write(buffer, 0, buffer.Length);
             _bytesPending += (int) length;
         }
-
 
         public void Flush() {
             CheckNotDisposed();
@@ -103,24 +115,10 @@ namespace MessageVault {
             _bytesPending = 0;
         }
 
-        private void CheckNotDisposed() {
+        void CheckNotDisposed() {
             if (_disposed) {
                 throw new ObjectDisposedException(GetType().FullName);
             }
-        }
-
-        public void Dispose() {
-            if (_disposed) {
-                return;
-            }
-
-            Flush();
-
-            var t = _pending;
-            _pending = null;
-            _disposed = true;
-
-            t.Dispose();
         }
 
         public void Reset() {

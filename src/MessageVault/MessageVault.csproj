@@ -33,6 +33,9 @@
     <Reference Include="Microsoft.WindowsAzure.Storage">
       <HintPath>..\packages\WindowsAzure.Storage.4.3.0\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog">
       <HintPath>..\packages\Serilog.1.4.76\lib\net45\Serilog.dll</HintPath>
     </Reference>
@@ -54,7 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AzureEventStoreChunk.cs" />
+    <Compile Include="AzureSegment.cs" />
+    <Compile Include="AzureSegmentTests.cs" />
+    <Compile Include="OldAzureSegment.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="PageWriter.cs" />
   </ItemGroup>

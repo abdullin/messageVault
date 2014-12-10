@@ -99,7 +99,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App.cs" />
+    <Compile Include="ApiModule.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="StreamWriterFactory.cs" />
     <Compile Include="WorkerRole.cs" />
   </ItemGroup>
   <ItemGroup>

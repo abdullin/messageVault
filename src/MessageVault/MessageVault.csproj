@@ -63,6 +63,7 @@
     <Compile Include="Tests\SegmentWriterTests.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
+    <Compile Include="Uuid.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

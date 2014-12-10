@@ -1,71 +1,74 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure;
-using Microsoft.WindowsAzure.Diagnostics;
+using Microsoft.Owin.Hosting;
 using Microsoft.WindowsAzure.ServiceRuntime;
-using Microsoft.WindowsAzure.Storage;
+using Nancy;
+using Nancy.Owin;
+using Owin;
 
-namespace WorkerRole
-{
-    public class WorkerRole : RoleEntryPoint
-    {
-        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
+namespace WorkerRole {
 
-        public override void Run()
-        {
-            Trace.TraceInformation("WorkerRole is running");
+	public class WorkerRole : RoleEntryPoint {
 
-            try
-            {
-                this.RunAsync(this.cancellationTokenSource.Token).Wait();
-            }
-            finally
-            {
-                this.runCompleteEvent.Set();
-            }
-        }
+		public override void Run() {
+			Trace.TraceInformation("WorkerRole is running");
+			while (true) {
+				Thread.Sleep(1000);
+			}
+		}
 
-        public override bool OnStart()
-        {
-            // Set the maximum number of concurrent connections
-            ServicePointManager.DefaultConnectionLimit = 12;
 
-            // For information on handling configuration changes
-            // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
+		IDisposable _app;
 
-            bool result = base.OnStart();
+		public override bool OnStart() {
+			//Logging. configure
+			ServicePointManager.DefaultConnectionLimit = 12;
 
-            Trace.TraceInformation("WorkerRole has been started");
 
-            return result;
-        }
+			var endpoint = RoleEnvironment.CurrentRoleInstance.InstanceEndpoints["Http"];
+			var baseUri = String.Format("{0}://{1}", endpoint.Protocol, endpoint.IPEndpoint);
 
-        public override void OnStop()
-        {
-            Trace.TraceInformation("WorkerRole is stopping");
+			Trace.TraceInformation(String.Format("Starting OWIN at {0}", baseUri), "Information");
+				_app = WebApp.Start<Startup>(new StartOptions(url : baseUri));
+			
+			return base.OnStart();
+		}
 
-            this.cancellationTokenSource.Cancel();
-            this.runCompleteEvent.WaitOne();
+		public override void OnStop() {
+			_app.Dispose();
+			base.OnStop();
+		}
 
-            base.OnStop();
+	}
 
-            Trace.TraceInformation("WorkerRole has stopped");
-        }
 
-        private async Task RunAsync(CancellationToken cancellationToken)
-        {
-            // TODO: Replace the following with your own logic.
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                Trace.TraceInformation("Working");
-                await Task.Delay(1000);
-            }
-        }
-    }
+	public class Startup
+	{
+		public void Configuration(IAppBuilder app)
+		{
+			app.UseNancy(new NancyOptions { });
+		}
+	}
+
+
+	static  class Global {
+		
+	}
+
+	public class Mod : NancyModule
+	{
+		public Mod()
+		{
+			Get["/"] = x => "hi";
+
+			//Post["/streams/{id}", true] = Func;
+		}
+
+		
+	}
+
 }

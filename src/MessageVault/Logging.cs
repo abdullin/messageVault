@@ -4,11 +4,7 @@ using Serilog.Events;
 namespace MessageVault {
     public class Logging {
         public static void InitTrace() {
-            var configuration = new LoggerConfiguration();
-
-
-            
-            Log.Logger = configuration
+	        Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
 
                 .WriteTo.Trace()

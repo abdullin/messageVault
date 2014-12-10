@@ -15,6 +15,13 @@ namespace WorkerRole {
 			Get["/"] = x => "This is MessageVault speaking!";
 
 
+			Get["/streams/{id}"] = x => {
+				var id = (string) x.id;
+				var signature = _scheduler.GetReadAccessSignature(id);
+				return Response.AsJson(new {
+					signature = signature
+				});
+			};
 			Post["/streams/{id}", true] = async (x, ct) => {
 				var mem = new MemoryStream();
 				Request.Body.CopyTo(mem);

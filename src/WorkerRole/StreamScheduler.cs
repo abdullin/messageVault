@@ -13,7 +13,7 @@ namespace WorkerRole {
 
 		readonly ConcurrentDictionary<string, SegmentWriter> _writers;
 		readonly 	ConcurrentExclusiveSchedulerPair _scheduler;
-		readonly TaskFactory _factory;
+		readonly TaskFactory _exclusiveFactory;
 		readonly Task _completionTask;
 		
 		public static StreamScheduler CreateDev() {
@@ -28,7 +28,7 @@ namespace WorkerRole {
 			_writers = new ConcurrentDictionary<string, SegmentWriter>();
 			
 			_scheduler = new ConcurrentExclusiveSchedulerPair();
-			_factory = new TaskFactory(_scheduler.ExclusiveScheduler);
+			_exclusiveFactory = new TaskFactory(_scheduler.ExclusiveScheduler);
 
 			_completionTask = _scheduler.Completion.ContinueWith(task => Dispose());
 
@@ -43,11 +43,14 @@ namespace WorkerRole {
 
 
 		public Task<long> Append(string stream, IEnumerable<byte[]> data) {
-			return _factory.StartNew(() => {
+			return _exclusiveFactory.StartNew(() => {
 				var segment = Get(stream);
 				return segment.Append(data);
 			});
+		}
 
+		public string GetReadAccessSignature(string stream) {
+			return Get(stream).GetReadAccessSignature();
 		}
 
 

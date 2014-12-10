@@ -19,6 +19,7 @@ namespace MessageVault {
 		readonly PageWriter _pages;
 		readonly PositionWriter _positionWriter;
 		readonly string _streamName;
+		readonly CloudBlobContainer _container;
 
 		readonly MemoryStream _stream;
 		long _position;
@@ -30,7 +31,7 @@ namespace MessageVault {
 			var posBlob = container.GetPageBlobReference("stream.chk");
 			var pageWriter = new PageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
-			var writer = new SegmentWriter(pageWriter, posWriter, stream);
+			var writer = new SegmentWriter(pageWriter, posWriter, stream, container);
 			writer.Init();
 
 			return writer;
@@ -39,10 +40,11 @@ namespace MessageVault {
 		readonly ILogger _log;
 
 
-		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream) {
+		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream, CloudBlobContainer container) {
 			_pages = pages;
 			_positionWriter = positionWriter;
 			_streamName = stream;
+			_container = container;
 
 			_stream = new MemoryStream(_buffer, true);
 			_log = Log.ForContext<SegmentWriter>();
@@ -126,6 +128,13 @@ namespace MessageVault {
 				Array.Clear(_buffer, PageSize, _buffer.Length - PageSize);
 				_stream.Seek(tail, SeekOrigin.Begin);
 			}
+		}
+
+		public string GetReadAccessSignature() {
+			var signature = _container.GetSharedAccessSignature(new SharedAccessBlobPolicy() {
+				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
+			});
+			return _container.Uri + signature;
 		}
 
 

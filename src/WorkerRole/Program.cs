@@ -11,7 +11,7 @@ namespace WorkerRole {
 			InitLogging();
 
 
-			var app = App.Create("http://127.0.0.1:8888");
+			var app = App.Initialize("http://127.0.0.1:8888");
 
 
 

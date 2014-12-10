@@ -20,7 +20,7 @@ namespace WorkerRole {
 			ServicePointManager.DefaultConnectionLimit = 12;
 			var endpoint = RoleEnvironment.CurrentRoleInstance.InstanceEndpoints["Http"];
 			var baseUri = String.Format("{0}://{1}", endpoint.Protocol, endpoint.IPEndpoint);
-			_app = App.Create(baseUri);
+			_app = App.Initialize(baseUri);
 
 			return base.OnStart();
 		}

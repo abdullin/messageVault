@@ -129,7 +129,7 @@ namespace MessageVault {
 		}
 
 
-		public void Append(IEnumerable<byte[]> data) {
+		public long Append(IEnumerable<byte[]> data) {
 			foreach (var chunk in data) {
 				if (chunk.Length > MaxMessageSize) {
 					string message = "Each message must be smaller than " + MaxMessageSize;
@@ -145,6 +145,7 @@ namespace MessageVault {
 			}
 			FlushBuffer();
 			_positionWriter.Update(Position);
+			return Position;
 		}
 	}
 

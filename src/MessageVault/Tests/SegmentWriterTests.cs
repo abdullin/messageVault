@@ -6,26 +6,29 @@ using NUnit.Framework;
 namespace MessageVault.Tests {
 
 	public sealed class SegmentWriterTests {
-		CloudBlobContainer _folder;
+		string _folder;
 
 
-		[TestFixtureSetUp]
+		[SetUp]
 		public void Setup() {
-			_folder = TestEnvironment.GetTestContainer(this);
 
+			_folder = TestEnvironment.GetContainerName(this.GetType().Name);
 			Logging.InitTrace();
 		}
 
 		SegmentWriter CreateWriter(string name) {
-			return SegmentWriter.Create(_folder, name);
+			
+			return SegmentWriter.Create(TestEnvironment.Client,  _folder);
 		}
 
 		static readonly byte[] SmallMessage = Encoding.UTF8.GetBytes("test-me");
 
 
-		[TestFixtureTearDown]
+		[TearDown]
 		public void Teardown() {
-			_folder.Delete();
+			if (_folder != null) {
+				TestEnvironment.Client.GetContainerReference(_folder).DeleteIfExists();
+			}
 		}
 
 		[Test]

@@ -18,47 +18,59 @@ namespace MessageVault {
 		readonly byte[] _buffer = new byte[BufferSize];
 		readonly PageWriter _pages;
 		readonly PositionWriter _positionWriter;
+		readonly string _streamName;
 
 		readonly MemoryStream _stream;
 		long _position;
 
-		public static SegmentWriter Create(CloudBlobContainer container, string stream) {
-			var dataBlob = container.GetPageBlobReference(stream + ".dat");
-			var posBlob = container.GetPageBlobReference(stream + ".chk");
+		public static SegmentWriter Create(CloudBlobClient client, string stream) {
+			var container = client.GetContainerReference(stream);
+			container.CreateIfNotExists();
+			var dataBlob = container.GetPageBlobReference("stream.dat");
+			var posBlob = container.GetPageBlobReference("stream.chk");
 			var pageWriter = new PageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
-			var writer = new SegmentWriter(pageWriter, posWriter);
+			var writer = new SegmentWriter(pageWriter, posWriter, stream);
 			writer.Init();
-			return writer;
 
+			return writer;
 		}
 
+		readonly ILogger _log;
 
-		SegmentWriter(PageWriter pages, PositionWriter positionWriter) {
+
+		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream) {
 			_pages = pages;
 			_positionWriter = positionWriter;
+			_streamName = stream;
 
 			_stream = new MemoryStream(_buffer, true);
+			_log = Log.ForContext<SegmentWriter>();
 		}
 
 		public long Position {
 			get { return _position; }
 		}
+
 		public long BlobSize {
 			get { return _pages.BlobSize; }
 		}
 
 
-		
-
 		public void Init() {
 			_pages.InitForWriting();
 			_position = _positionWriter.GetOrInitPosition();
 
-			if (PartialPage(Position)) {
+			_log.Verbose("Init stream {stream}, {size} at {offset}", _streamName, _pages.BlobSize, _position);
+
+			var tail = Tail(Position);
+			if (tail != 0) {
 				// preload tail
-				byte[] page = _pages.ReadPage(Floor(Position));
-				_stream.Write(page, 0, page.Length);
+
+				var offset = Floor(Position);
+				_log.Verbose("Load tail at {offset}", offset);
+				var page = _pages.ReadPage(offset);
+				_stream.Write(page, 0, tail);
 			}
 		}
 
@@ -71,29 +83,25 @@ namespace MessageVault {
 		}
 
 		static long Floor(long value) {
-
 			return value - Tail(value);
 		}
 
-		static long Tail(long value) {
-			return value % PageSize;
+		static int Tail(long value) {
+			return (int) (value % PageSize);
 		}
 
-		static bool PartialPage(long value) {
-			return value % PageSize != 0;
-		}
 
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
 
 			Log.Verbose("Flush buffer with {size} at {position}",
-				bytesToWrite, Position);
+				bytesToWrite, Floor(Position));
 
 			var newPosition = Floor(Position) + _stream.Position;
+			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
 			while (newPosition >= _pages.BlobSize) {
 				_pages.Grow();
 			}
-
 
 			var fullBytesToWrite = (int) Ceiling(_stream.Position);
 
@@ -102,7 +110,7 @@ namespace MessageVault {
 			}
 
 			_position = newPosition;
-			_positionWriter.Update(Position);
+			
 
 			if (bytesToWrite < PageSize) {
 				return;
@@ -121,7 +129,7 @@ namespace MessageVault {
 		}
 
 
-		public void Append(IEnumerable<byte[]> data) {
+		public long Append(IEnumerable<byte[]> data) {
 			foreach (var chunk in data) {
 				if (chunk.Length > MaxMessageSize) {
 					string message = "Each message must be smaller than " + MaxMessageSize;
@@ -136,7 +144,8 @@ namespace MessageVault {
 				_stream.Write(chunk, 0, chunk.Length);
 			}
 			FlushBuffer();
-			
+			_positionWriter.Update(Position);
+			return Position;
 		}
 	}
 

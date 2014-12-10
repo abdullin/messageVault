@@ -18,6 +18,7 @@ namespace MessageVault {
 		readonly byte[] _buffer = new byte[BufferSize];
 		readonly PageWriter _pages;
 		readonly PositionWriter _positionWriter;
+		readonly string _streamName;
 
 		readonly MemoryStream _stream;
 		long _position;
@@ -27,18 +28,22 @@ namespace MessageVault {
 			var posBlob = container.GetPageBlobReference(stream + ".chk");
 			var pageWriter = new PageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
-			var writer = new SegmentWriter(pageWriter, posWriter);
+			var writer = new SegmentWriter(pageWriter, posWriter, stream);
 			writer.Init();
 			return writer;
 
 		}
 
+		readonly ILogger _log;
 
-		SegmentWriter(PageWriter pages, PositionWriter positionWriter) {
+
+		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string streamName) {
 			_pages = pages;
 			_positionWriter = positionWriter;
+			_streamName = streamName;
 
 			_stream = new MemoryStream(_buffer, true);
+			_log = Log.ForContext<SegmentWriter>();
 		}
 
 		public long Position {
@@ -55,10 +60,16 @@ namespace MessageVault {
 			_pages.InitForWriting();
 			_position = _positionWriter.GetOrInitPosition();
 
-			if (PartialPage(Position)) {
+			_log.Verbose("Init stream {stream}, {size} at {offset}", _streamName, _pages.BlobSize, _position);
+
+			var tail = Tail(Position);
+			if (tail !=0) {
 				// preload tail
-				byte[] page = _pages.ReadPage(Floor(Position));
-				_stream.Write(page, 0, page.Length);
+				
+				var offset = Floor(Position);
+				_log.Verbose("Load tail at {offset}", offset);
+				byte[] page = _pages.ReadPage(offset);
+				_stream.Write(page, 0, tail);
 			}
 		}
 
@@ -75,19 +86,18 @@ namespace MessageVault {
 			return value - Tail(value);
 		}
 
-		static long Tail(long value) {
-			return value % PageSize;
+		static int Tail(long value) {
+			return (int)(value % PageSize);
 		}
 
-		static bool PartialPage(long value) {
-			return value % PageSize != 0;
-		}
 
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
 
+			
+
 			Log.Verbose("Flush buffer with {size} at {position}",
-				bytesToWrite, Position);
+				bytesToWrite, Floor(Position));
 
 			var newPosition = Floor(Position) + _stream.Position;
 			while (newPosition >= _pages.BlobSize) {

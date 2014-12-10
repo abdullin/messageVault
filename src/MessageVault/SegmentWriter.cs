@@ -23,24 +23,26 @@ namespace MessageVault {
 		readonly MemoryStream _stream;
 		long _position;
 
-		public static SegmentWriter Create(CloudBlobContainer container, string stream) {
-			var dataBlob = container.GetPageBlobReference(stream + ".dat");
-			var posBlob = container.GetPageBlobReference(stream + ".chk");
+		public static SegmentWriter Create(CloudBlobClient client, string stream) {
+			var container = client.GetContainerReference(stream);
+			container.CreateIfNotExists();
+			var dataBlob = container.GetPageBlobReference("stream.dat");
+			var posBlob = container.GetPageBlobReference("stream.chk");
 			var pageWriter = new PageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
 			var writer = new SegmentWriter(pageWriter, posWriter, stream);
 			writer.Init();
-			return writer;
 
+			return writer;
 		}
 
 		readonly ILogger _log;
 
 
-		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string streamName) {
+		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream) {
 			_pages = pages;
 			_positionWriter = positionWriter;
-			_streamName = streamName;
+			_streamName = stream;
 
 			_stream = new MemoryStream(_buffer, true);
 			_log = Log.ForContext<SegmentWriter>();
@@ -49,12 +51,11 @@ namespace MessageVault {
 		public long Position {
 			get { return _position; }
 		}
+
 		public long BlobSize {
 			get { return _pages.BlobSize; }
 		}
 
-
-		
 
 		public void Init() {
 			_pages.InitForWriting();
@@ -63,12 +64,12 @@ namespace MessageVault {
 			_log.Verbose("Init stream {stream}, {size} at {offset}", _streamName, _pages.BlobSize, _position);
 
 			var tail = Tail(Position);
-			if (tail !=0) {
+			if (tail != 0) {
 				// preload tail
-				
+
 				var offset = Floor(Position);
 				_log.Verbose("Load tail at {offset}", offset);
-				byte[] page = _pages.ReadPage(offset);
+				var page = _pages.ReadPage(offset);
 				_stream.Write(page, 0, tail);
 			}
 		}
@@ -82,28 +83,25 @@ namespace MessageVault {
 		}
 
 		static long Floor(long value) {
-
 			return value - Tail(value);
 		}
 
 		static int Tail(long value) {
-			return (int)(value % PageSize);
+			return (int) (value % PageSize);
 		}
 
 
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
 
-			
-
 			Log.Verbose("Flush buffer with {size} at {position}",
 				bytesToWrite, Floor(Position));
 
 			var newPosition = Floor(Position) + _stream.Position;
+			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
 			while (newPosition >= _pages.BlobSize) {
 				_pages.Grow();
 			}
-
 
 			var fullBytesToWrite = (int) Ceiling(_stream.Position);
 
@@ -112,7 +110,7 @@ namespace MessageVault {
 			}
 
 			_position = newPosition;
-			_positionWriter.Update(Position);
+			
 
 			if (bytesToWrite < PageSize) {
 				return;
@@ -146,7 +144,7 @@ namespace MessageVault {
 				_stream.Write(chunk, 0, chunk.Length);
 			}
 			FlushBuffer();
-			
+			_positionWriter.Update(Position);
 		}
 	}
 

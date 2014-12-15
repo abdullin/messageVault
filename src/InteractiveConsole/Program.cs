@@ -22,7 +22,10 @@ namespace InteractiveConsole {
 
 		static async Task RunAsync() {
 			using (var client = new Client("http://127.0.0.1:8888")) {
-				var response = await client.PostMessageAsync("test", new byte[10]);
+
+				var message = new Message("test", new byte[20]);
+
+				var response = await client.PostMessagesAsync("test", new[] {message});
 
 				Console.WriteLine(response);
 

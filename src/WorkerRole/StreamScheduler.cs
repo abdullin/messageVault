@@ -45,7 +45,7 @@ namespace WorkerRole {
 		}
 
 
-		public Task<long> Append(string stream, IEnumerable<byte[]> data) {
+		public Task<long> Append(string stream, ICollection<Message> data) {
 			
 			return _exclusiveFactory.StartNew(() => {
 				var segment = Get(stream);

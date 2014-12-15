@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
@@ -22,6 +23,7 @@ namespace MessageVault {
 		readonly CloudBlobContainer _container;
 
 		readonly MemoryStream _stream;
+		readonly BinaryWriter _binary;
 		long _position;
 
 		public static SegmentWriter Create(CloudBlobClient client, string stream) {
@@ -47,6 +49,7 @@ namespace MessageVault {
 			_container = container;
 
 			_stream = new MemoryStream(_buffer, true);
+			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
 			_log = Log.ForContext<SegmentWriter>();
 		}
 
@@ -138,19 +141,26 @@ namespace MessageVault {
 		}
 
 
-		public long Append(IEnumerable<byte[]> data) {
-			foreach (var chunk in data) {
+		public long Append(ICollection<Message> messages) {
+			foreach (var item in messages) {
+				var chunk = item.Data;
 				if (chunk.Length > MaxMessageSize) {
 					string message = "Each message must be smaller than " + MaxMessageSize;
 					throw new InvalidOperationException(message);
 				}
 
-				int newBlock = 4 + chunk.Length;
-				if (newBlock + _stream.Position >= _stream.Length) {
+				
+				
+				int sizeEstimate = 4 + chunk.Length + 2 * item.Contract.Length + 1;
+				if (sizeEstimate + _stream.Position >= _stream.Length) {
 					FlushBuffer();
 				}
-				_stream.Write(BitConverter.GetBytes(chunk.Length), 0, 4);
-				_stream.Write(chunk, 0, chunk.Length);
+
+				// TODO: generate ID
+				
+				_binary.Write(item.Contract);
+				_binary.Write(chunk.Length);
+				_binary.Write(chunk);
 			}
 			FlushBuffer();
 			_positionWriter.Update(Position);

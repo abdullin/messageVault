@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MessageVault;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Serilog;
@@ -44,12 +45,15 @@ namespace WorkerRole {
 				});
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
+
+				var messages = MessageFramer.ReadMessages(Request.Body);
+
 				var mem = new MemoryStream();
 				Request.Body.CopyTo(mem);
 				var id = (string) x.id;
 
 				try {
-					var pos = await _scheduler.Append(id, new[] {mem.ToArray()});
+					var pos = await _scheduler.Append(id, messages);
 					return Response.AsJson(new {
 						position = pos
 					});

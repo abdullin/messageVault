@@ -20,7 +20,7 @@ namespace MessageVault {
 
 		
 
-		public async Task<string> PostMessagesAsync(string stream, ICollection<Message> messages) {
+		public async Task<string> PostMessagesAsync(string stream, ICollection<IncomingMessage> messages) {
 			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
 

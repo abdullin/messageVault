@@ -23,15 +23,25 @@ namespace InteractiveConsole {
 		static async Task RunAsync() {
 			using (var client = new Client("http://127.0.0.1:8888")) {
 
-				var message = new Message("test", new byte[20]);
+				
+				var reader = await client.GetMessageReaderAsync("test");
 
-				var response = await client.PostMessagesAsync("test", new[] {message});
+				var position = reader.GetPosition();
+				Console.WriteLine("Current position is " + position);
+
+				var message = new IncomingMessage("test", new byte[20]);
+
+				var response = await client.PostMessagesAsync("test", new[] { message });
 
 				Console.WriteLine(response);
 
-				var reader = await client.GetMessageReaderAsync("test");
+				var offset = reader.GetPosition();
+				foreach (var msg in reader.ReadMessages(position,  offset - position))
+				{
+					Console.WriteLine("msg:" + msg.Contract);
+				}
 
-				Console.WriteLine("Current position is " + reader.GetPosition());
+
 
 				//var r = client.GetStringAsync("/streams/test");
 			}

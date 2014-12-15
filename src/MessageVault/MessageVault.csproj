@@ -64,12 +64,11 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
-    <Compile Include="Message.cs" />
+    <Compile Include="IncomingMessage.cs" />
     <Compile Include="MessageReader.cs" />
     <Compile Include="PageReader.cs" />
     <Compile Include="PageWriter.cs" />
     <Compile Include="PositionWriter.cs" />
-    <Compile Include="SegmentReader.cs" />
     <Compile Include="SegmentWriter.cs" />
     <Compile Include="Tests\SegmentWriterTests.cs" />
     <Compile Include="Logging.cs" />

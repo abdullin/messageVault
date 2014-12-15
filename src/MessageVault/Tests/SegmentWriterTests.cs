@@ -22,7 +22,7 @@ namespace MessageVault.Tests {
 			return SegmentWriter.Create(TestEnvironment.Client,  _folder);
 		}
 
-		static readonly Message SmallMessage = new Message("test", Guid.NewGuid().ToByteArray());
+		static readonly IncomingMessage SmallMessage = new IncomingMessage("test", Guid.NewGuid().ToByteArray());
 
 
 		[TearDown]
@@ -89,7 +89,7 @@ namespace MessageVault.Tests {
 			var writer = CreateWriter("large");
 
 			long accumulated = 0;
-			var batch = new List<Message>();
+			var batch = new List<IncomingMessage>();
 			while (accumulated < SegmentWriter.BufferSize) {
 				batch.Add(SmallMessage);
 				accumulated += SmallMessage.Data.Length;

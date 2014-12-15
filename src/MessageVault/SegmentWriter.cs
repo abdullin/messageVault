@@ -146,7 +146,7 @@ namespace MessageVault {
 		}
 
 
-		public long Append(ICollection<Message> messages) {
+		public long Append(ICollection<IncomingMessage> messages) {
 			foreach (var item in messages) {
 				var chunk = item.Data;
 				if (chunk.Length > MaxMessageSize) {

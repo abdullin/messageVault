@@ -45,11 +45,8 @@ namespace WorkerRole {
 				});
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
-
+				// read messages in request thread
 				var messages = MessageFramer.ReadMessages(Request.Body);
-
-				var mem = new MemoryStream();
-				Request.Body.CopyTo(mem);
 				var id = (string) x.id;
 
 				try {

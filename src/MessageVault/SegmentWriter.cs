@@ -96,13 +96,17 @@ namespace MessageVault {
 		}
 
 
+		long VirtualPosition() {
+			return Floor(Position) + _stream.Position;
+		}
+
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
 
 			Log.Verbose("Flush buffer with {size} at {position}",
 				bytesToWrite, Floor(Position));
 
-			var newPosition = Floor(Position) + _stream.Position;
+			var newPosition = VirtualPosition();
 			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
 			while (newPosition >= _pages.BlobSize) {
 				_pages.Grow();
@@ -155,9 +159,9 @@ namespace MessageVault {
 				if (sizeEstimate + _stream.Position >= _stream.Length) {
 					FlushBuffer();
 				}
-
-				// TODO: generate ID
-				
+				var offset = VirtualPosition();
+				var id = Uuid.CreateNew(offset);
+				_binary.Write(id);
 				_binary.Write(item.Contract);
 				_binary.Write(chunk.Length);
 				_binary.Write(chunk);

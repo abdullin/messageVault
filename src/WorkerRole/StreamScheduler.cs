@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MessageVault;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
 namespace WorkerRole {
@@ -20,6 +21,8 @@ namespace WorkerRole {
 			var blob = CloudStorageAccount
 				.DevelopmentStorageAccount
 				.CreateCloudBlobClient();
+
+			blob.DefaultRequestOptions.RetryPolicy = new NoRetry();
 			return new StreamScheduler(blob);
 		}
 		
@@ -43,6 +46,7 @@ namespace WorkerRole {
 
 
 		public Task<long> Append(string stream, IEnumerable<byte[]> data) {
+			
 			return _exclusiveFactory.StartNew(() => {
 				var segment = Get(stream);
 				return segment.Append(data);

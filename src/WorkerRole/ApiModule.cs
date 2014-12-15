@@ -1,5 +1,8 @@
+using System;
 using System.IO;
+using Microsoft.WindowsAzure.Storage;
 using Nancy;
+using Serilog;
 
 namespace WorkerRole {
 
@@ -11,7 +14,25 @@ namespace WorkerRole {
 			BuildRoutes();
 		}
 
+
+		Response WrapException(Exception ex) {
+			var se = ex as StorageException;
+
+			if (se != null) {
+				return Response.AsJson(new {
+					error = se.Message,
+					type = "storage",
+				}, HttpStatusCode.InternalServerError);
+			}
+			return Response.AsJson(new {error = ex.Message,}, HttpStatusCode.InternalServerError);
+		}
+
 		void BuildRoutes() {
+
+			Before += ctx => {
+				Log.Debug("{method} {url}", ctx.Request.Method, ctx.Request.Path);
+				return null;
+			};
 			Get["/"] = x => "This is MessageVault speaking!";
 
 
@@ -27,13 +48,17 @@ namespace WorkerRole {
 				Request.Body.CopyTo(mem);
 				var id = (string) x.id;
 
-
-				var pos = await _scheduler.Append(id, new[] {mem.ToArray()});
-				return Response.AsJson(new {
-					position = pos
-				});
+				try {
+					var pos = await _scheduler.Append(id, new[] {mem.ToArray()});
+					return Response.AsJson(new {
+						position = pos
+					});
+				}
+				catch (Exception ex) {
+					return WrapException(ex);
+				}
+				
 			};
 		}
 	}
-
 }

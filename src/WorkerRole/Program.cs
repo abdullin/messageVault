@@ -10,6 +10,8 @@ namespace WorkerRole {
 		public static void Main() {
 			InitLogging();
 
+			AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+
 
 			var app = App.Initialize("http://127.0.0.1:8888");
 
@@ -25,6 +27,10 @@ namespace WorkerRole {
 			app.GetCompletionTask().Wait();
 			Log.Information("App terminated");
 			Console.ReadLine();
+		}
+
+		static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs) {
+			Log.Fatal(unhandledExceptionEventArgs.ExceptionObject.ToString());
 		}
 
 		static void InitLogging() {

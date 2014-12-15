@@ -138,8 +138,9 @@ namespace MessageVault {
 		}
 
 		public string GetReadAccessSignature() {
-			var signature = _container.GetSharedAccessSignature(new SharedAccessBlobPolicy() {
-				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
+			var signature = _container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
+				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
+				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
 			});
 			return _container.Uri + signature;
 		}

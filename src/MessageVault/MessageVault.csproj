@@ -33,6 +33,9 @@
     <Reference Include="Microsoft.WindowsAzure.Storage">
       <HintPath>..\packages\WindowsAzure.Storage.4.3.0\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\WorkerRole\bin\Debug\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -60,7 +63,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />
+    <Compile Include="Api\GetStreamResponse.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="MessageReader.cs" />
     <Compile Include="PageReader.cs" />
     <Compile Include="PageWriter.cs" />
     <Compile Include="PositionWriter.cs" />

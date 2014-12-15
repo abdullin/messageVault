@@ -29,6 +29,10 @@ namespace InteractiveConsole {
 
 				Console.WriteLine(response);
 
+				var reader = await client.GetMessageReaderAsync("test");
+
+				Console.WriteLine("Current position is " + reader.GetPosition());
+
 				//var r = client.GetStringAsync("/streams/test");
 			}
 		}

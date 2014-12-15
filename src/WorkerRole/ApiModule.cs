@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using MessageVault;
+using MessageVault.Api;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Serilog;
@@ -40,8 +41,8 @@ namespace WorkerRole {
 			Get["/streams/{id}"] = x => {
 				var id = (string) x.id;
 				var signature = _scheduler.GetReadAccessSignature(id);
-				return Response.AsJson(new {
-					signature = signature
+				return Response.AsJson(new GetStreamResponse {
+					Signature = signature
 				});
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
@@ -62,4 +63,5 @@ namespace WorkerRole {
 			};
 		}
 	}
+
 }

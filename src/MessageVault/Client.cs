@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MessageVault.Api;
+using Newtonsoft.Json;
 
 namespace MessageVault {
 
@@ -19,9 +21,7 @@ namespace MessageVault {
 		
 
 		public async Task<string> PostMessagesAsync(string stream, ICollection<Message> messages) {
-			// TODO: start using a buffer pool
-
-
+			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
 
 				MessageFramer.WriteMessages(messages, mem);
@@ -30,14 +30,24 @@ namespace MessageVault {
 				using (var sc = new StreamContent(mem)) {
 					
 					var result = await _client.PostAsync("/streams/" + stream, sc);
-					Console.WriteLine("got result");
+					
 					var content = await result.Content.ReadAsStringAsync();
-					Console.WriteLine("content");
+					
 					return content;
 				}
 			}
 		}
 
+		
+		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
+
+			var result = await _client.GetAsync("/streams/" + stream);
+			var content = await result.Content.ReadAsStringAsync();
+			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
+			// TODO: handle error
+			//Console.WriteLine(response.Signature);
+			return MessageReader.Create(response.Signature);
+		}
 
 
 		public void Dispose() {

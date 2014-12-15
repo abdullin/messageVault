@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MessageVault;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
 namespace WorkerRole {
@@ -13,13 +14,15 @@ namespace WorkerRole {
 
 		readonly ConcurrentDictionary<string, SegmentWriter> _writers;
 		readonly 	ConcurrentExclusiveSchedulerPair _scheduler;
-		readonly TaskFactory _factory;
+		readonly TaskFactory _exclusiveFactory;
 		readonly Task _completionTask;
 		
 		public static StreamScheduler CreateDev() {
 			var blob = CloudStorageAccount
 				.DevelopmentStorageAccount
 				.CreateCloudBlobClient();
+
+			blob.DefaultRequestOptions.RetryPolicy = new NoRetry();
 			return new StreamScheduler(blob);
 		}
 		
@@ -28,7 +31,7 @@ namespace WorkerRole {
 			_writers = new ConcurrentDictionary<string, SegmentWriter>();
 			
 			_scheduler = new ConcurrentExclusiveSchedulerPair();
-			_factory = new TaskFactory(_scheduler.ExclusiveScheduler);
+			_exclusiveFactory = new TaskFactory(_scheduler.ExclusiveScheduler);
 
 			_completionTask = _scheduler.Completion.ContinueWith(task => Dispose());
 
@@ -42,12 +45,16 @@ namespace WorkerRole {
 		}
 
 
-		public Task<long> Append(string stream, IEnumerable<byte[]> data) {
-			return _factory.StartNew(() => {
+		public Task<long> Append(string stream, ICollection<IncomingMessage> data) {
+			
+			return _exclusiveFactory.StartNew(() => {
 				var segment = Get(stream);
 				return segment.Append(data);
 			});
+		}
 
+		public string GetReadAccessSignature(string stream) {
+			return Get(stream).GetReadAccessSignature();
 		}
 
 

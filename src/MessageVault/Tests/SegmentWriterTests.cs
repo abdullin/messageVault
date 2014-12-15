@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -21,7 +22,7 @@ namespace MessageVault.Tests {
 			return SegmentWriter.Create(TestEnvironment.Client,  _folder);
 		}
 
-		static readonly byte[] SmallMessage = Encoding.UTF8.GetBytes("test-me");
+		static readonly IncomingMessage SmallMessage = new IncomingMessage("test", Guid.NewGuid().ToByteArray());
 
 
 		[TearDown]
@@ -41,20 +42,21 @@ namespace MessageVault.Tests {
 		[Test]
 		public void SingleWrite() {
 			var segment = CreateWriter("single-write");
-			var word = Encoding.UTF8.GetBytes("test-me");
-			segment.Append(new[] {word});
+			Assert.AreEqual(0, segment.Position);
+			var position = segment.Append(new[] {SmallMessage});
+			
 
-			Assert.AreEqual(word.Length + 4, segment.Position, "position");
+			Assert.AreNotEqual(position, segment.Position);
 		}
 
 		[Test]
 		public void BatchWrite() {
 			var segment = CreateWriter("short-batch-write");
 
-			segment.Append(new[] {SmallMessage, SmallMessage});
+			var position = segment.Append(new[] {SmallMessage, SmallMessage});
 
-			var expected = 2 * (SmallMessage.Length + 4);
-			Assert.AreEqual(expected, segment.Position, "position");
+			
+			Assert.AreEqual(position, segment.Position, "position");
 		}
 
 		[Test]
@@ -62,10 +64,10 @@ namespace MessageVault.Tests {
 			var segment = CreateWriter("check1");
 
 			segment.Append(new[] {SmallMessage});
-			segment.Append(new[] {SmallMessage});
+			var position = segment.Append(new[] {SmallMessage});
 
-			var expected = 2 * (SmallMessage.Length + 4);
-			Assert.AreEqual(expected, segment.Position);
+			
+			Assert.AreEqual(position, segment.Position);
 		}
 
 		[Test]
@@ -74,12 +76,12 @@ namespace MessageVault.Tests {
 			var writer = CreateWriter("reopen");
 
 			writer.Append(new[] { SmallMessage });
-			writer.Append(new[] { SmallMessage });
+			var position = writer.Append(new[] { SmallMessage });
 
 			var writer2 = CreateWriter("reopen");
 
-			var expected = 2 * (SmallMessage.Length + 4);
-			Assert.AreEqual(expected, writer2.Position);
+			
+			Assert.AreEqual(position, writer2.Position);
 
 		}
 		[Test]
@@ -87,10 +89,10 @@ namespace MessageVault.Tests {
 			var writer = CreateWriter("large");
 
 			long accumulated = 0;
-			var batch = new List<byte[]>();
+			var batch = new List<IncomingMessage>();
 			while (accumulated < SegmentWriter.BufferSize) {
 				batch.Add(SmallMessage);
-				accumulated += SmallMessage.Length;
+				accumulated += SmallMessage.Data.Length;
 			}
 			writer.Append(batch);
 

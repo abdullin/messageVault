@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
@@ -19,8 +20,10 @@ namespace MessageVault {
 		readonly PageWriter _pages;
 		readonly PositionWriter _positionWriter;
 		readonly string _streamName;
+		readonly CloudBlobContainer _container;
 
 		readonly MemoryStream _stream;
+		readonly BinaryWriter _binary;
 		long _position;
 
 		public static SegmentWriter Create(CloudBlobClient client, string stream) {
@@ -30,7 +33,7 @@ namespace MessageVault {
 			var posBlob = container.GetPageBlobReference("stream.chk");
 			var pageWriter = new PageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
-			var writer = new SegmentWriter(pageWriter, posWriter, stream);
+			var writer = new SegmentWriter(pageWriter, posWriter, stream, container);
 			writer.Init();
 
 			return writer;
@@ -39,12 +42,14 @@ namespace MessageVault {
 		readonly ILogger _log;
 
 
-		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream) {
+		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream, CloudBlobContainer container) {
 			_pages = pages;
 			_positionWriter = positionWriter;
 			_streamName = stream;
+			_container = container;
 
 			_stream = new MemoryStream(_buffer, true);
+			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
 			_log = Log.ForContext<SegmentWriter>();
 		}
 
@@ -91,13 +96,17 @@ namespace MessageVault {
 		}
 
 
+		long VirtualPosition() {
+			return Floor(Position) + _stream.Position;
+		}
+
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
 
 			Log.Verbose("Flush buffer with {size} at {position}",
 				bytesToWrite, Floor(Position));
 
-			var newPosition = Floor(Position) + _stream.Position;
+			var newPosition = VirtualPosition();
 			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
 			while (newPosition >= _pages.BlobSize) {
 				_pages.Grow();
@@ -128,20 +137,35 @@ namespace MessageVault {
 			}
 		}
 
+		public string GetReadAccessSignature() {
+			var signature = _container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
+				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
+				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
+			});
+			return _container.Uri + signature;
+		}
 
-		public long Append(IEnumerable<byte[]> data) {
-			foreach (var chunk in data) {
+
+		public long Append(ICollection<IncomingMessage> messages) {
+			foreach (var item in messages) {
+				var chunk = item.Data;
 				if (chunk.Length > MaxMessageSize) {
 					string message = "Each message must be smaller than " + MaxMessageSize;
 					throw new InvalidOperationException(message);
 				}
 
-				int newBlock = 4 + chunk.Length;
-				if (newBlock + _stream.Position >= _stream.Length) {
+				
+				
+				int sizeEstimate = 4 + chunk.Length + 2 * item.Contract.Length + 1;
+				if (sizeEstimate + _stream.Position >= _stream.Length) {
 					FlushBuffer();
 				}
-				_stream.Write(BitConverter.GetBytes(chunk.Length), 0, 4);
-				_stream.Write(chunk, 0, chunk.Length);
+				var offset = VirtualPosition();
+				var id = Uuid.CreateNew(offset);
+				_binary.Write(id);
+				_binary.Write(item.Contract);
+				_binary.Write(chunk.Length);
+				_binary.Write(chunk);
 			}
 			FlushBuffer();
 			_positionWriter.Update(Position);

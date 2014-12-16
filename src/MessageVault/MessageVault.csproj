@@ -65,6 +65,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
     <Compile Include="IncomingMessage.cs" />
+    <Compile Include="MessageIdTests.cs" />
     <Compile Include="MessageReader.cs" />
     <Compile Include="PageReader.cs" />
     <Compile Include="PageWriter.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="Tests\SegmentWriterTests.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
-    <Compile Include="Uuid.cs" />
+    <Compile Include="MessageId.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

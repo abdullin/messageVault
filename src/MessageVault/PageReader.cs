@@ -23,7 +23,7 @@ namespace MessageVault {
 						var contract = binary.ReadString();
 						var len = binary.ReadInt32();
 						var data = binary.ReadBytes(len);
-						var uuid = new Uuid(id);
+						var uuid = new MessageId(id);
 						yield return new StoredMessage(uuid, contract, data);
 					}
 				}

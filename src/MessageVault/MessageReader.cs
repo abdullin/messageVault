@@ -41,11 +41,11 @@ namespace MessageVault {
 
 
 	public sealed class StoredMessage {
-		public readonly Uuid Id;
+		public readonly MessageId Id;
 		public readonly string Contract;
 		public readonly byte[] Data;
 
-		public StoredMessage(Uuid id, string contract, byte[] data) {
+		public StoredMessage(MessageId id, string contract, byte[] data) {
 			Id = id;
 			Contract = contract;
 			Data = data;

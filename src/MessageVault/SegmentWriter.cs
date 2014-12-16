@@ -170,7 +170,7 @@ namespace MessageVault {
 					FlushBuffer();
 				}
 				var offset = VirtualPosition();
-				var id = Uuid.CreateNew(offset);
+				var id = MessageId.CreateNew(offset);
 				_binary.Write(id.GetBytes());
 				_binary.Write(item.Contract);
 				_binary.Write(chunk.Length);

@@ -13,6 +13,8 @@ namespace MessageVault {
 		// https://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
 		public const long MaxMessageSize = 65536;
 		public const int MaxContractLength = 256;
+
+		public const byte ReservedFormatVersion = 0x01;
 	}
 
 	public class SegmentWriter {
@@ -165,12 +167,13 @@ namespace MessageVault {
 
 				
 				
-				int sizeEstimate = 4 + chunk.Length + 2 * item.Contract.Length + 1;
+				int sizeEstimate = 4 + chunk.Length + 2 * item.Contract.Length + 5;
 				if (sizeEstimate + _stream.Position >= _stream.Length) {
 					FlushBuffer();
 				}
 				var offset = VirtualPosition();
 				var id = MessageId.CreateNew(offset);
+				_binary.Write(Constants.ReservedFormatVersion);
 				_binary.Write(id.GetBytes());
 				_binary.Write(item.Contract);
 				_binary.Write(chunk.Length);

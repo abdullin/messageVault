@@ -7,17 +7,24 @@ namespace MessageVault {
 
 	/// <summary>
 	///   <para>
-	///     Binary-sortable 16-byte MessageId with a custom scheme (big-endian)
-	///     [timestamp:8] - [stream-offset:8]. You can use this as key in FoundationDB
-	/// or as uuid in PostgreSQL with predictable effects.
+	///     Binary-sortable 16-byte MessageId with a custom scheme
+	///     [timestamp:6] - [stream-offset:6] - [rand:4].
+	///     You can use this as key in FoundationDB
+	///     or as uuid in PostgreSQL with predictable effects. It includes generation time in UTC,
+	///     message offset and a node-local incrementing number.
 	///   </para>
 	///   <para>
 	///     MessageIds generated within a single process are unique and sortable. MessageIds
-	/// generated in different processes are sortable (within time drift) and are very likely 
-	/// to be unique (since we embedd offset).
+	///     generated in different processes are sortable (within time drift) and are very likely
+	///     to be unique (since we embedd offset).
+	///   </para>
+	///   <para>
+	///     Time can run to 2044, offset can run to 255TB (a different format is needed if these are exceeded). Random part
+	///     is seeded with node-local id (taken from Guid) and incremented by 1 for each ID.
 	///   </para>
 	/// </summary>
 	/// <remarks>
+	///   Time, offset and rand are stored as Big-Endian
 	///   http://en.wikipedia.org/wiki/Endianness
 	/// </remarks>
 	public struct MessageId : IComparable<MessageId>, IComparable {

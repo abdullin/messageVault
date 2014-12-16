@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -19,6 +20,10 @@ namespace MessageVault {
 				using (var binary = new BinaryReader(stream, Encoding.UTF8, true)) {
 					while (stream.Position < (from + count)) {
 						// TODO: use buffers
+						var version = binary.ReadByte();
+						if (version != Constants.ReservedFormatVersion) {
+							throw new InvalidOperationException("Unknown storage format");
+						}
 						var id = binary.ReadBytes(16);
 						var contract = binary.ReadString();
 						var len = binary.ReadInt32();

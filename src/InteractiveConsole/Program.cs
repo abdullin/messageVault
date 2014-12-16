@@ -38,7 +38,7 @@ namespace InteractiveConsole {
 				var offset = reader.GetPosition();
 				foreach (var msg in reader.ReadMessages(position,  offset - position))
 				{
-					Console.WriteLine("msg:" + msg.Contract);
+					Console.WriteLine("msg:" + msg.Contract + " id:" + msg.Id.GetTimeUtc());
 				}
 
 

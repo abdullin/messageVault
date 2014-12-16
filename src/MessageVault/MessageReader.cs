@@ -41,17 +41,15 @@ namespace MessageVault {
 
 
 	public sealed class StoredMessage {
-		// todo - expand to time + offset
-		public readonly byte[] Id;
+		public readonly Uuid Id;
 		public readonly string Contract;
 		public readonly byte[] Data;
 
-		public StoredMessage(byte[] id, string contract, byte[] data) {
+		public StoredMessage(Uuid id, string contract, byte[] data) {
 			Id = id;
 			Contract = contract;
 			Data = data;
 		}
 	}
-
 
 }

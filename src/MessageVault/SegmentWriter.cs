@@ -7,13 +7,17 @@ using Serilog;
 
 namespace MessageVault {
 
-	public class SegmentWriter {
-		// 4MB, Azure limit
-		public const long BufferSize = 1024 * 1024 * 4;
+	public static class Constants {
 		// this would allow consumers to use fixed-size buffers.
 		// Also see Snappy framing format
 		// https://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
-		const long MaxMessageSize = 65536;
+		public const long MaxMessageSize = 65536;
+		public const int MaxContractLength = 256;
+	}
+
+	public class SegmentWriter {
+		// 4MB, Azure limit
+		public const long BufferSize = 1024 * 1024 * 4;
 		// Azure limit
 		const int PageSize = 512;
 		readonly byte[] _buffer = new byte[BufferSize];
@@ -149,8 +153,13 @@ namespace MessageVault {
 		public long Append(ICollection<IncomingMessage> messages) {
 			foreach (var item in messages) {
 				var chunk = item.Data;
-				if (chunk.Length > MaxMessageSize) {
-					string message = "Each message must be smaller than " + MaxMessageSize;
+				if (chunk.Length > Constants.MaxMessageSize) {
+					string message = "Each message must be smaller than " + Constants.MaxMessageSize;
+					throw new InvalidOperationException(message);
+				}
+
+				if (item.Contract.Length > Constants.MaxContractLength) {
+					var message = "Each contract must be shorter than " + Constants.MaxContractLength;
 					throw new InvalidOperationException(message);
 				}
 
@@ -162,7 +171,7 @@ namespace MessageVault {
 				}
 				var offset = VirtualPosition();
 				var id = Uuid.CreateNew(offset);
-				_binary.Write(id);
+				_binary.Write(id.GetBytes());
 				_binary.Write(item.Contract);
 				_binary.Write(chunk.Length);
 				_binary.Write(chunk);

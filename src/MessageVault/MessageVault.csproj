@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="IncomingMessage.cs" />
     <Compile Include="MessageIdTests.cs" />
     <Compile Include="MessageReader.cs" />

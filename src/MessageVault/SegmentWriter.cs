@@ -7,16 +7,6 @@ using Serilog;
 
 namespace MessageVault {
 
-	public static class Constants {
-		// this would allow consumers to use fixed-size buffers.
-		// Also see Snappy framing format
-		// https://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
-		public const long MaxMessageSize = 65536;
-		public const int MaxContractLength = 256;
-
-		public const byte ReservedFormatVersion = 0x01;
-	}
-
 	public class SegmentWriter {
 		// 4MB, Azure limit
 		public const long BufferSize = 1024 * 1024 * 4;
@@ -35,8 +25,8 @@ namespace MessageVault {
 		public static SegmentWriter Create(CloudBlobClient client, string stream) {
 			var container = client.GetContainerReference(stream);
 			container.CreateIfNotExists();
-			var dataBlob = container.GetPageBlobReference("stream.dat");
-			var posBlob = container.GetPageBlobReference("stream.chk");
+			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
+			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
 			var pageWriter = new PageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
 			var writer = new SegmentWriter(pageWriter, posWriter, stream, container);

@@ -4,6 +4,8 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault {
 
+
+
 	public sealed class MessageReader {
 		readonly PositionReader _position;
 		readonly PageReader _messages;
@@ -12,8 +14,8 @@ namespace MessageVault {
 			var uri = new Uri(sas);
 			var container = new CloudBlobContainer(uri);
 
-			var posBlob = container.GetPageBlobReference("stream.chk");
-			var dataBlob = container.GetPageBlobReference("stream.dat");
+			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
+			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
 			var position = new PositionReader(posBlob);
 			var messages = new PageReader(dataBlob);
 			return new MessageReader(position, messages);

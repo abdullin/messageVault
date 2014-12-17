@@ -62,7 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Election\CloudBlobMutex.cs" />
+    <Compile Include="Election\RenewableBlobLease.cs" />
     <Compile Include="Election\BlobLeaseWrapper.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />

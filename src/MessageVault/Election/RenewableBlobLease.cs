@@ -9,41 +9,46 @@ using Serilog;
 
 namespace MessageVault.Election {
 
-
-	
-	public class CloudBlobMutex {
-
-		public delegate Task LeaderMethod(CancellationToken token, CloudPageBlob blob);
+	public class RenewableBlobLease {
+		/// <summary>
+		/// Leader node runs this task, while it is still a leader.
+		/// </summary>
+		/// <param name="token">watch for this token for shutdown or lost elections</param>
+		/// <param name="blob">locked blob</param>
+		/// <returns></returns>
+		public delegate Task LeaderTask(CancellationToken token, CloudPageBlob blob);
 
 		static readonly TimeSpan RenewInterval = TimeSpan.FromSeconds(4.5);
 		static readonly TimeSpan AcquireAttemptInterval = TimeSpan.FromSeconds(6.5);
 
 		readonly CloudPageBlob _blob;
-		readonly LeaderMethod _taskToRunWhenLeaseAcquired;
-		readonly ILogger _log = Log.ForContext<CloudBlobMutex>();
+		readonly LeaderTask _leaderTask;
+		readonly ILogger _log = Log.ForContext<RenewableBlobLease>();
 
-		public static CloudBlobMutex Create(CloudStorageAccount account, LeaderMethod method) {
+		public static RenewableBlobLease Create(CloudStorageAccount account, LeaderTask task) {
 			var client = account.CreateCloudBlobClient();
 			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(1), 3);
 			var container = client.GetContainerReference(Constants.EtcContainer);
 			container.CreateIfNotExists();
 			var blob = container.GetPageBlobReference(Constants.MasterLockFileName);
-			return new CloudBlobMutex(blob, method);
+			return new RenewableBlobLease(blob, task);
 		}
-	
-		public CloudBlobMutex(CloudPageBlob blob,
-			LeaderMethod taskToRunWhenLeaseAquired) {
+
+		public RenewableBlobLease(CloudPageBlob blob, LeaderTask leaderTask) {
 			_blob = blob;
-			_taskToRunWhenLeaseAcquired = taskToRunWhenLeaseAquired;
+			_leaderTask = leaderTask;
 		}
 
 
-		public async Task RunElections(CancellationToken token) {
-			var leaseManager = new BlobLeaseWrapper(_blob);
-			await RunTaskWhenBlobLeaseAcquired(leaseManager, token);
+		public async Task RunElectionsForever(CancellationToken token) {
+			var leaseWrapper = new BlobLeaseWrapper(_blob);
+
+			while (!token.IsCancellationRequested) {
+				await GrabLeaseOrWait(leaseWrapper, token);
+			}
 		}
 
-		 async Task CancelAllWhenAnyCompletes(Task leaderTask, Task renewLeaseTask,
+		async Task CancelAllWhenAnyCompletes(Task leaderTask, Task renewLeaseTask,
 			CancellationTokenSource cts) {
 			await Task.WhenAny(leaderTask, renewLeaseTask);
 
@@ -67,36 +72,33 @@ namespace MessageVault.Election {
 			}
 		}
 
-		async Task RunTaskWhenBlobLeaseAcquired(BlobLeaseWrapper leaseWrapper, CancellationToken token) {
-			while (!token.IsCancellationRequested) {
-				// Try to acquire the blob lease, otherwise wait for some time before we can try again.
-				var leaseId = await TryAcquireLeaseOrWait(leaseWrapper, token);
+		async Task GrabLeaseOrWait(BlobLeaseWrapper leaseWrapper, CancellationToken token) {
+			// Try to acquire the blob lease, otherwise wait for some time before we can try again.
+			var leaseId = await TryAcquireLeaseOrWait(leaseWrapper, token);
 
-				if (string.IsNullOrEmpty(leaseId)) {
-					continue;
-				}
-				// Create a new linked cancellation token source, so if either the 
-				// original token is canceled or the lease cannot be renewed,
-				// then the leader task can be canceled.
-				using (var leaseCts =
-					CancellationTokenSource.CreateLinkedTokenSource(new[] {token})) {
-					// Run the leader task.
+			if (string.IsNullOrEmpty(leaseId)) {
+				return;
+			}
+			// Create a new linked cancellation token source, so if either the 
+			// original token is canceled or the lease cannot be renewed,
+			// then the leader task can be canceled.
+			using (var cts =
+				CancellationTokenSource.CreateLinkedTokenSource(new[] {token})) {
+				// Run the leader task.
+				var leaderTask = _leaderTask.Invoke(cts.Token, _blob);
 
-					var leaderTask = _taskToRunWhenLeaseAcquired.Invoke(leaseCts.Token, _blob);
+				// Keeps renewing the lease in regular intervals. 
+				// If the lease cannot be renewed, then the task completes.
+				var renew  = KeepRenewingLease(leaseWrapper, leaseId, cts.Token);
 
-					// Keeps renewing the lease in regular intervals. 
-					// If the lease cannot be renewed, then the task completes.
-					var renewLeaseTask =
-						KeepRenewingLease(leaseWrapper, leaseId, leaseCts.Token);
-
-					// When any task completes (either the leader task or when it could
-					// not renew the lease) then cancel the other task.
-					await CancelAllWhenAnyCompletes(leaderTask, renewLeaseTask, leaseCts);
-				}
+				// When any task completes (either the leader task or when it could
+				// not renew the lease) then cancel the other task.
+				await CancelAllWhenAnyCompletes(leaderTask, renew, cts);
 			}
 		}
 
-		async Task<string> TryAcquireLeaseOrWait(BlobLeaseWrapper leaseWrapper, CancellationToken token) {
+		static async Task<string> TryAcquireLeaseOrWait(BlobLeaseWrapper leaseWrapper,
+			CancellationToken token) {
 			try {
 				var leaseId = await leaseWrapper.AcquireLeaseAsync(token);
 				if (!string.IsNullOrEmpty(leaseId)) {
@@ -111,7 +113,7 @@ namespace MessageVault.Election {
 			}
 		}
 
-		async Task KeepRenewingLease(BlobLeaseWrapper leaseWrapper, string leaseId,
+		static async Task KeepRenewingLease(BlobLeaseWrapper leaseWrapper, string leaseId,
 			CancellationToken token) {
 			var renewOffset = new Stopwatch();
 

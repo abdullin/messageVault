@@ -11,7 +11,7 @@ namespace MessageVault.Election {
 
 	public sealed class LeaderPublisher {
 		readonly string _endpoint;
-		readonly CloudBlobMutex _mutex;
+		readonly RenewableBlobLease _lease;
 		bool _isLeader;
 		readonly ILogger _log = Log.ForContext<LeaderPublisher>();
 
@@ -21,12 +21,12 @@ namespace MessageVault.Election {
 
 		public LeaderPublisher(CloudStorageAccount account, string endpoint) {
 			_endpoint = endpoint;
-			_mutex = CloudBlobMutex.Create(account, LeaderMethod);
+			_lease = RenewableBlobLease.Create(account, LeaderMethod);
 		}
 
 
 		public void Run(CancellationToken token) {
-			_mutex.RunElections(token).Wait();
+			_lease.RunElectionsForever(token).Wait();
 		}
 
 		async Task LeaderMethod(CancellationToken token, CloudPageBlob blob) {
@@ -35,7 +35,10 @@ namespace MessageVault.Election {
 					_isLeader = true;
 					_log.Information("This node is a leader");
 					
+					// tell the world who is the leader
 					await WriteLeaderInfo(blob);
+					// sleep for some time or until shutdown signal 
+					// (because lease is lost or we shutdown)
 					await Task.Delay(TimeSpan.FromMinutes(10), token);
 				}
 			}

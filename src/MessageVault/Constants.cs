@@ -17,6 +17,10 @@ namespace MessageVault {
 		/// This file name is compatible with future stream splitting
 		/// </summary>
 		public const string StreamFileName = "000000000000.b6";
+
+		public const string EtcContainer = "message-vault-etc";
+		public const string MasterLockFileName = "master.lock";
+		public const string MasterDataFileName = "master.data";
 	}
 
 }

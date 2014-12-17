@@ -1,6 +1,9 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using MessageVault.Election;
 using Microsoft.Owin.Hosting;
+using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Nancy.Owin;
 using Nancy.TinyIoc;
@@ -11,6 +14,7 @@ namespace WorkerRole {
 	public sealed class App {
 		readonly IDisposable _api;
 		readonly StreamScheduler _scheduler;
+		readonly CancellationTokenSource _source = new CancellationTokenSource();
 
 
 		App(IDisposable api, StreamScheduler scheduler) {
@@ -19,17 +23,22 @@ namespace WorkerRole {
 		}
 
 		public static App Initialize(string baseUri) {
+
+			
 			var scheduler = StreamScheduler.CreateDev();
 
 			var nancyOptions = new NancyOptions {
 				Bootstrapper = new NancyBootstrapper(scheduler)
 			};
 			var api = WebApp.Start(baseUri, x => x.UseNancy(nancyOptions));
+			
 			return new App(api, scheduler);
 		}
 
 
+
 		public void RequestStop() {
+			_source.Cancel();
 			// stop accepting new requests
 			_api.Dispose();
 
@@ -38,7 +47,7 @@ namespace WorkerRole {
 		}
 
 		public Task GetCompletionTask() {
-			return _scheduler.GetCompletionTask();
+			return Task.WhenAll(_scheduler.GetCompletionTask());
 		}
 
 		/// <summary>

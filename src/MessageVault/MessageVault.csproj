@@ -62,8 +62,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Election\CloudBlobMutex.cs" />
+    <Compile Include="Election\BlobLeaseWrapper.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
+    <Compile Include="Election\LeaderPublisher.cs" />
+    <Compile Include="Node.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="IncomingMessage.cs" />
     <Compile Include="Message.cs" />

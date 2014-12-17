@@ -23,29 +23,58 @@ namespace InteractiveConsole {
 		static async Task RunAsync() {
 			using (var client = new Client("http://127.0.0.1:8888")) {
 
-				
-				var reader = await client.GetMessageReaderAsync("test");
 
-				var position = reader.GetPosition();
-				Console.WriteLine("Current position is " + position);
+				// consumer
+				var checkpoint = new MemoryCheckpoint();
+				var consumer = new ConsumerSample(checkpoint, client);
 
-				var message = new IncomingMessage("test", new byte[20]);
+				var task = Task.Run(() => consumer.Run(CancellationToken.None));
 
-				var response = await client.PostMessagesAsync("test", new[] { message });
+				for (int i = 0; i < 10; i++) {
+					var message = new IncomingMessage("test", new byte[20]);
 
-				Console.WriteLine(response);
+					var response = await client.PostMessagesAsync("test", new[] { message });
+					Console.WriteLine(response);
 
-				var offset = reader.GetPosition();
-				foreach (var msg in reader.ReadMessages(position,  offset - position))
-				{
-					Console.WriteLine("msg:" + msg.Contract + " id:" + msg.Id.GetTimeUtc());
+					await Task.Delay(1000);
+
 				}
-
-
 
 				//var r = client.GetStringAsync("/streams/test");
 			}
 		}
 	}
+
+	public sealed class ConsumerSample
+	{
+		readonly IWriteableCheckpoint _checkpoint;
+		readonly Client _client;
+
+		public ConsumerSample(IWriteableCheckpoint checkpoint, Client client)
+		{
+			_checkpoint = checkpoint;
+			_client = client;
+		}
+
+		public async void Run(CancellationToken ct)
+		{
+			var current = _checkpoint.GetOrInitPosition();
+			var reader = await _client.GetMessageReaderAsync("test");
+
+
+			while (!ct.IsCancellationRequested)
+			{
+				var messages = await reader.GetMessagesAsync(ct, current, 100);
+				foreach (var message in messages)
+				{
+					Console.WriteLine("Got message! " + message.Id);
+					current = message.Id.GetOffset();
+				}
+
+				_checkpoint.Update(current);
+			}
+		}
+	}
+
 
 }

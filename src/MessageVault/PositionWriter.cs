@@ -1,8 +1,9 @@
+using System;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault {
 
-	public sealed class PositionWriter {
+	public sealed class PositionWriter : IWriteableCheckpoint {
 		readonly CloudPageBlob _blob;
 
 		public PositionWriter(CloudPageBlob blob) {
@@ -16,15 +17,37 @@ namespace MessageVault {
 				_blob.Create(512);
 				return 0;
 			}
-			string position = _blob.Metadata["position"];
-			return long.Parse(position);
+			var position = _blob.Metadata["position"];
+			var result = long.Parse(position);
+			Ensure.ZeroOrGreater("position", result);
+			return result;
 		}
 
 		public void Update(long position) {
+			Require.ZeroOrGreater("position", position);
 			_blob.Metadata["position"] = position.ToString();
 			_blob.SetMetadata();
 		}
 	}
+
+	public interface IWriteableCheckpoint {
+		long GetOrInitPosition();
+		void Update(long position);
+	}
+
+
+	public sealed class MemoryCheckpoint : IWriteableCheckpoint {
+		long _value = 0;
+		public long GetOrInitPosition() {
+			return _value;
+		}
+
+		public void Update(long position) {
+			Require.ZeroOrGreater("position", position);
+			_value = position;
+		}
+	}
+
 
 	public sealed class PositionReader {
 		readonly CloudPageBlob _blob;

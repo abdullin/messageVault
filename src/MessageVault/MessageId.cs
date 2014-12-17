@@ -58,7 +58,9 @@ namespace MessageVault {
 
 		[Pure]
 		public long GetOffset() {
-			return ((long) _b << 16) + _c;
+			var offset = ((long) _b << 16) + _c;
+			Ensure.ZeroOrGreater("offset", offset);
+			return offset;
 		}
 
 		[Pure]
@@ -122,6 +124,8 @@ namespace MessageVault {
 		}
 
 		public static MessageId CreateNew(long offset) {
+			Require.ZeroOrGreater("offset", offset);
+
 			var counter = Interlocked.Increment(ref _counter);
 			var timestamp = GetCurrentTimestampMs();
 			// aaaaaaaabbbbbbbbccccccccdddddddd

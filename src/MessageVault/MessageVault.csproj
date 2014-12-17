@@ -71,6 +71,7 @@
     <Compile Include="PageReader.cs" />
     <Compile Include="PageWriter.cs" />
     <Compile Include="PositionWriter.cs" />
+    <Compile Include="Require.cs" />
     <Compile Include="SegmentWriter.cs" />
     <Compile Include="Tests\SegmentWriterTests.cs" />
     <Compile Include="Logging.cs" />

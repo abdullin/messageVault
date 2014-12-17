@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault {
@@ -34,12 +37,30 @@ namespace MessageVault {
 		}
 		public IEnumerable<StoredMessage> ReadMessages(long start, long offset) {
 			return _messages.Read(start, offset);
-
-
 		}
 
+		public async Task<ICollection<StoredMessage>> GetMessagesAsync(CancellationToken ct, long start, int limit) {
+			while (!ct.IsCancellationRequested) {
+				var actual = _position.Read();
+				if (actual < start) {
+					var msg = string.Format("Requested stream position {0} that is after last known position {1}", actual, start);
+					throw new InvalidOperationException(msg);
+				}
+				if (actual == start) {
+					await Task.Delay(1000, ct);
+					continue;
+				}
+				var result = await Task.Run(() => _messages.ReadMessages(start, actual, limit));
 
+				return result;
+
+			}
+			return new StoredMessage[0];
+		} 
 	}
+
+	
+	
 
 
 	public sealed class StoredMessage {

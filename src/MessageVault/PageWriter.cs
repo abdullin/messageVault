@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault {
@@ -11,6 +12,7 @@ namespace MessageVault {
 		// Azure limit
 		const int PageSize = 512;
 		readonly CloudPageBlob _blob;
+		string _etag;
 
 		public PageWriter(CloudPageBlob blob) {
 			_blob = blob;
@@ -20,24 +22,31 @@ namespace MessageVault {
 		public long BlobSize { get; private set; }
 
 
-		public static long NextSize(long current) {
+		public static long NextSize(long size) {
+			Require.ZeroOrGreater("size", size);
 			// Azure doesn't charge us for the page storage anyway
 			const long hundredMBs = 1024 * 1024 * 100;
-			return current + hundredMBs;
+			return size + hundredMBs;
 		}
 
 		public void InitForWriting() {
 			if (!_blob.Exists()) {
-				_blob.Create(NextSize(0));
+				var nextSize = NextSize(0);
+				_blob.Create(nextSize, AccessCondition.GenerateIfNoneMatchCondition("*"));
+				
 			}
 
 			BlobSize = _blob.Properties.Length;
+			_etag = _blob.Properties.ETag;
 		}
 		public void Grow() {
-			_blob.Resize(NextSize(BlobSize));
+			_blob.Resize(NextSize(BlobSize), AccessCondition.GenerateIfMatchCondition(_etag));
+			_etag = _blob.Properties.ETag;
 		}
 
 		public byte[] ReadPage(long offset) {
+			Require.ZeroOrGreater("offset", offset);
+
 			using (var stream = _blob.OpenRead()) {
 				var buffer = new byte[PageSize];
 				stream.Seek(offset, SeekOrigin.Begin);
@@ -47,6 +56,8 @@ namespace MessageVault {
 		}
 
 		public void Save(Stream stream, long offset) {
+			Require.ZeroOrGreater("offset", offset);
+
 			if (stream.Length % PageSize != 0) {
 				var message = "Stream length must be multiple of " + PageSize;
 				throw new ArgumentException(message);
@@ -56,7 +67,8 @@ namespace MessageVault {
 				throw new ArgumentException(message);
 			}
 
-			_blob.WritePages(stream,offset);
+			_blob.WritePages(stream,offset, accessCondition:AccessCondition.GenerateIfMatchCondition(_etag));
+			_etag = _blob.Properties.ETag;
 		}
 	}
 

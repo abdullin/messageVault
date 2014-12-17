@@ -39,8 +39,6 @@ namespace InteractiveConsole {
 					await Task.Delay(1000);
 
 				}
-
-				//var r = client.GetStringAsync("/streams/test");
 			}
 		}
 	}
@@ -64,14 +62,14 @@ namespace InteractiveConsole {
 
 			while (!ct.IsCancellationRequested)
 			{
-				var messages = await reader.GetMessagesAsync(ct, current, 100);
-				foreach (var message in messages)
-				{
-					Console.WriteLine("Got message! " + message.Id);
-					current = message.Id.GetOffset();
+				var result = await reader.GetMessagesAsync(ct, current, 100);
+				if (result.HasMessages()) {
+					foreach (var message in result.Messages) {
+						Console.WriteLine("Got message! " + message.Id);
+					}
+					current = result.NextOffset;
+					_checkpoint.Update(current);
 				}
-
-				_checkpoint.Update(current);
 			}
 		}
 	}

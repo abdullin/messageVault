@@ -107,6 +107,7 @@ namespace MessageVault {
 
 		public override string ToString() {
 			var builder = new StringBuilder(32 + 3);
+			
 			builder.Append(_a.ToString("x8"));
 			builder.Append(_b.ToString("x8"));
 			builder.Append(_c.ToString("x8"));

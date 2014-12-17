@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
+using System.Linq;
 
 namespace MessageVault {
 
@@ -39,7 +40,8 @@ namespace MessageVault {
 			return _messages.Read(start, offset);
 		}
 
-		public async Task<ICollection<StoredMessage>> GetMessagesAsync(CancellationToken ct, long start, int limit) {
+		public async Task<StoredMessages> GetMessagesAsync(CancellationToken ct, long start, int limit) {
+
 			while (!ct.IsCancellationRequested) {
 				var actual = _position.Read();
 				if (actual < start) {
@@ -51,12 +53,30 @@ namespace MessageVault {
 					continue;
 				}
 				var result = await Task.Run(() => _messages.ReadMessages(start, actual, limit));
-
+				
 				return result;
 
 			}
-			return new StoredMessage[0];
+			return StoredMessages.Empty(start);
 		} 
+	}
+
+	public sealed class StoredMessages {
+		public readonly ICollection<StoredMessage> Messages;
+		public readonly long NextOffset;
+		public StoredMessages(ICollection<StoredMessage> messages, long nextOffset) {
+			Messages = messages;
+			NextOffset = nextOffset;
+		}
+
+		public static StoredMessages Empty(long offset) {
+			
+			return new StoredMessages(new StoredMessage[0], offset);
+		}
+
+		public bool HasMessages() {
+			return Messages.Count > 0;
+		}
 	}
 
 	

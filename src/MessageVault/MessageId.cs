@@ -44,10 +44,10 @@ namespace MessageVault {
 			return seed >> 1;
 		}
 
-		readonly int _a;
-		readonly int _b;
-		readonly int _c;
-		readonly int _d;
+		readonly uint _a;
+		readonly uint _b;
+		readonly uint _c;
+		readonly uint _d;
 
 
 		[Pure]
@@ -58,14 +58,15 @@ namespace MessageVault {
 
 		[Pure]
 		public long GetOffset() {
-			var offset = ((long) _b << 16) + _c;
+
+			var offset = (long)_c +(((long)_b & 0xFFFF) << 32);
 			Ensure.ZeroOrGreater("offset", offset);
 			return offset;
 		}
 
 		[Pure]
 		public int GetRand() {
-			return _d;
+			return (int)_d;
 		}
 
 		[Pure]
@@ -73,21 +74,21 @@ namespace MessageVault {
 			return _a == 0 & _b == 0 & _c == 0 & _d == 0;
 		}
 
-		public MessageId(int a, int b, int c, int d) {
+		public MessageId(uint a, uint b, uint c, uint d) {
 			_a = a;
 			_b = b;
 			_c = c;
 			_d = d;
 		}
 
-		internal static int ReadIntInBigEndian(byte[] array, int position) {
-			return (array[position + 0] << 24) +
-				(array[position + 1] << 16) +
-				(array[position + 2] << 8) +
-				(array[position + 3]);
+		internal static uint ReadUintInBigEndian(byte[] array, int position) {
+			return ((uint)array[position + 0] << 24) +
+				((uint)array[position + 1] << 16) +
+				((uint)array[position + 2] << 8) +
+				((uint)array[position + 3]);
 		}
 
-		internal static void WriteIntInBigEndian(int value, byte[] array, int position) {
+		internal static void WriteIntInBigEndian(uint value, byte[] array, int position) {
 			array[position + 0] = (byte) ((value & 0xFF000000) >> 24);
 			array[position + 1] = (byte) ((value & 0xFF0000) >> 16);
 			array[position + 2] = (byte) ((value & 0xFF00) >> 8);
@@ -98,10 +99,10 @@ namespace MessageVault {
 
 
 		public MessageId(byte[] array) {
-			_a = ReadIntInBigEndian(array, 0);
-			_b = ReadIntInBigEndian(array, 4);
-			_c = ReadIntInBigEndian(array, 8);
-			_d = ReadIntInBigEndian(array, 12);
+			_a = ReadUintInBigEndian(array, 0);
+			_b = ReadUintInBigEndian(array, 4);
+			_c = ReadUintInBigEndian(array, 8);
+			_d = ReadUintInBigEndian(array, 12);
 		}
 
 		public override string ToString() {
@@ -124,25 +125,31 @@ namespace MessageVault {
 		}
 
 		public static MessageId CreateNew(long offset) {
-			Require.ZeroOrGreater("offset", offset);
-
 			var counter = Interlocked.Increment(ref _counter);
 			var timestamp = GetCurrentTimestampMs();
+			return new MessageId(timestamp, offset, counter);
+		}
+
+		public MessageId(long timestamp, long offset, int counter) {
+			Require.ZeroOrGreater("offset", offset);
+			if (offset > 0xFFFFFFFFFFFF)
+			{
+				throw new ArgumentOutOfRangeException("offset", "Offset must fit in 6 bytes");
+			}
+
+
 			// aaaaaaaabbbbbbbbccccccccdddddddd
 			// timestamp...offset......rand....
 			// AABBCCDDEEFF00112233445566778899
 			// 128 bits
 			// 16 bytes
-			if (offset > 0xFFFFFFFFFFFF) {
-				throw new ArgumentOutOfRangeException("offset", "Offset must fit in 6 bytes");
-			}
 
-			var a = timestamp >> 16;
-			var b = ((timestamp & 0xFFFF) << 16) + (offset >> 24);
-			var c = offset & 0xFFFFFF;
-			var d = counter;
-			return new MessageId((int) a, (int) b, (int) c, d);
+			_a = (uint) (timestamp >> 16);
+			_b = (uint) (((timestamp & 0xFFFF) << 16) + (offset >> 32));
+			_c = (uint) (offset & 0xFFFFFFFF);
+			_d = (uint) counter;
 		}
+
 
 		[Pure]
 		public byte[] GetBytes() {
@@ -178,7 +185,7 @@ namespace MessageVault {
 				hashCode = (hashCode * 397) ^ _a;
 				hashCode = (hashCode * 397) ^ _c;
 				hashCode = (hashCode * 397) ^ _d;
-				return hashCode;
+				return (int) hashCode;
 			}
 		}
 

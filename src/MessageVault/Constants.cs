@@ -12,11 +12,11 @@ namespace MessageVault {
 
 		public const byte ReservedFormatVersion = 0x01;
 
-		public const string PositionFileName = "position.c4";
+		public const string PositionFileName = "position.c5";
 		/// <summary>
 		/// This file name is compatible with future stream splitting
 		/// </summary>
-		public const string StreamFileName = "000000000000.b4";
+		public const string StreamFileName = "000000000000.b5";
 	}
 
 }

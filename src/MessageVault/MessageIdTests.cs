@@ -44,6 +44,56 @@ namespace MessageVault {
 			var b = MessageId.CreateNew(0);
 			Assert.IsTrue(a.GetRand()+1 == b.GetRand());
 		}
+
+		[Test]
+		public void OffsetRoundtrip() {
+			long value = 1;
+			for (int i = 0; i < 48; i++) {
+				var created = MessageId.CreateNew(value);
+
+				Assert.AreEqual(value, created.GetOffset(), "instance " + created);
+				var rehydrated = new MessageId(created.GetBytes());
+				Assert.AreEqual(value, rehydrated.GetOffset(), "roundtrip");
+
+				value = value << 1;
+			}
+		}
+
+		[Test]
+		public void TimestampRoundtrip()
+		{
+			long value = 1;
+			for (int i = 0; i < 48; i++)
+			{
+				var created = new MessageId(i,0,0);
+
+				var actual = MessageId.Epoch.AddMilliseconds(i);
+				Assert.AreEqual(actual, created.GetTimeUtc(), "instance " + created);
+				var rehydrated = new MessageId(created.GetBytes());
+				Assert.AreEqual(actual, rehydrated.GetTimeUtc(), "roundtrip");
+
+				value = value << 1;
+			}
+		}
+		[Test]
+		public void RandRoundtrip()
+		{
+			long value = 1;
+			for (int i = 0; i < 32; i++)
+			{
+				var created = new MessageId(0, 0, i);
+
+				
+				Assert.AreEqual(i, created.GetRand(), "instance " + created);
+				var rehydrated = new MessageId(created.GetBytes());
+				Assert.AreEqual(i, rehydrated.GetRand(), "roundtrip");
+
+				value = value << 1;
+			}
+		}
+
+
+
 	}
 
 }

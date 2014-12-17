@@ -13,13 +13,13 @@ namespace MessageVault {
 			_blob = blob;
 		}
 
-		public StoredMessages ReadMessages(long from, long maxOffset, int maxCount) {
+		public MessageResult ReadMessages(long from, long maxOffset, int maxCount) {
 			Require.ZeroOrGreater("from", from);
 			Require.ZeroOrGreater("maxOffset", maxOffset);
 			Require.Positive("maxCount", maxCount);
 			
 			// TODO: include a filter
-			var list = new List<StoredMessage>(maxCount);
+			var list = new List<Message>(maxCount);
 			long position = from;
 			using (var stream = _blob.OpenRead())
 			{
@@ -40,7 +40,7 @@ namespace MessageVault {
 						var len = binary.ReadInt32();
 						var data = binary.ReadBytes(len);
 						var uuid = new MessageId(id);
-						list.Add(new StoredMessage(uuid, contract, data));
+						list.Add(new Message(uuid, contract, data));
 						position = stream.Position;
 						if (list.Count >= maxCount) {
 							break;
@@ -49,11 +49,11 @@ namespace MessageVault {
 					}
 				}
 			}
-			return new StoredMessages(list, position);
+			return new MessageResult(list, position);
 
 		} 
 
-		public IEnumerable<StoredMessage> Read(long from, long count) {
+		public IEnumerable<Message> Read(long from, long count) {
 			using (var stream = _blob.OpenRead()) {
 				stream.Seek(from, SeekOrigin.Begin);
 
@@ -69,7 +69,7 @@ namespace MessageVault {
 						var len = binary.ReadInt32();
 						var data = binary.ReadBytes(len);
 						var uuid = new MessageId(id);
-						yield return new StoredMessage(uuid, contract, data);
+						yield return new Message(uuid, contract, data);
 					}
 				}
 			}

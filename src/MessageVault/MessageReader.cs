@@ -36,11 +36,11 @@ namespace MessageVault {
 			// TODO: inline readers
 			return _position.Read();
 		}
-		public IEnumerable<StoredMessage> ReadMessages(long start, long offset) {
+		public IEnumerable<Message> ReadMessages(long start, long offset) {
 			return _messages.Read(start, offset);
 		}
 
-		public async Task<StoredMessages> GetMessagesAsync(CancellationToken ct, long start, int limit) {
+		public async Task<MessageResult> GetMessagesAsync(CancellationToken ct, long start, int limit) {
 
 			while (!ct.IsCancellationRequested) {
 				var actual = _position.Read();
@@ -57,42 +57,8 @@ namespace MessageVault {
 				return result;
 
 			}
-			return StoredMessages.Empty(start);
+			return MessageResult.Empty(start);
 		} 
-	}
-
-	public sealed class StoredMessages {
-		public readonly ICollection<StoredMessage> Messages;
-		public readonly long NextOffset;
-		public StoredMessages(ICollection<StoredMessage> messages, long nextOffset) {
-			Messages = messages;
-			NextOffset = nextOffset;
-		}
-
-		public static StoredMessages Empty(long offset) {
-			
-			return new StoredMessages(new StoredMessage[0], offset);
-		}
-
-		public bool HasMessages() {
-			return Messages.Count > 0;
-		}
-	}
-
-	
-	
-
-
-	public sealed class StoredMessage {
-		public readonly MessageId Id;
-		public readonly string Contract;
-		public readonly byte[] Data;
-
-		public StoredMessage(MessageId id, string contract, byte[] data) {
-			Id = id;
-			Contract = contract;
-			Data = data;
-		}
 	}
 
 }

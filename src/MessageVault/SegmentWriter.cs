@@ -13,10 +13,10 @@ namespace MessageVault {
 		// Azure limit
 		const int PageSize = 512;
 		readonly byte[] _buffer = new byte[BufferSize];
-		readonly PageWriter _pages;
+		readonly IPageWriter _pages;
 		readonly PositionWriter _positionWriter;
 		readonly string _streamName;
-		readonly CloudBlobContainer _container;
+		
 
 		readonly MemoryStream _stream;
 		readonly BinaryWriter _binary;
@@ -29,9 +29,9 @@ namespace MessageVault {
 			container.CreateIfNotExists();
 			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
 			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
-			var pageWriter = new PageWriter(dataBlob);
+			var pageWriter = new CloudPageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
-			var writer = new SegmentWriter(pageWriter, posWriter, stream, container);
+			var writer = new SegmentWriter(pageWriter, posWriter, stream);
 			writer.Init();
 
 			return writer;
@@ -40,12 +40,10 @@ namespace MessageVault {
 		readonly ILogger _log;
 
 
-		SegmentWriter(PageWriter pages, PositionWriter positionWriter, string stream, CloudBlobContainer container) {
+		SegmentWriter(IPageWriter pages, PositionWriter positionWriter, string stream) {
 			_pages = pages;
 			_positionWriter = positionWriter;
 			_streamName = stream;
-			_container = container;
-
 			_stream = new MemoryStream(_buffer, true);
 			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
 			_log = Log.ForContext<SegmentWriter>();
@@ -61,7 +59,7 @@ namespace MessageVault {
 
 
 		public void Init() {
-			_pages.InitForWriting();
+			_pages.Init();
 			_position = _positionWriter.GetOrInitPosition();
 
 			_log.Verbose("Stream {stream} at {offset}", _streamName, _position);

@@ -5,7 +5,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault {
 
-	public sealed class PageWriter {
+	public sealed class CloudPageWriter: IPageWriter {
 		// 4MB, Azure limit
 		const long CommitSizeBytes = 1024 * 1024 * 4;
 
@@ -13,27 +13,20 @@ namespace MessageVault {
 		const int PageSize = 512;
 		readonly CloudPageBlob _blob;
 		string _etag;
-		 long _size = 0;
+		 long _size;
 
-		public PageWriter(CloudPageBlob blob) {
+		public CloudPageWriter(CloudPageBlob blob) {
 			_blob = blob;
 		}
 
-
-		public long GetSize() {
-			return _size;
-
-		}
-
-
-		public static long NextSize(long size) {
+		static long NextSize(long size) {
 			Require.OffsetMultiple("size", size, PageSize);
 			// Azure doesn't charge us for the page storage anyway
 			const long hundredMBs = 1024 * 1024 * 100;
 			return size + hundredMBs;
 		}
 
-		public void InitForWriting() {
+		public void Init() {
 			if (!_blob.Exists()) {
 				//var nextSize = NextSize(0);
 				_blob.Create(0, AccessCondition.GenerateIfNoneMatchCondition("*"));

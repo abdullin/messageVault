@@ -7,7 +7,7 @@ namespace MessageVault {
 
 	public sealed class CloudPageWriter: IPageWriter {
 		// 4MB, Azure limit
-		const long CommitSizeBytes = 1024 * 1024 * 4;
+		const int CommitSizeBytes = 1024 * 1024 * 4;
 
 		// Azure limit
 		const int PageSize = 512;
@@ -50,7 +50,6 @@ namespace MessageVault {
 			_blob.Resize(NextSize(_size), AccessCondition.GenerateIfMatchCondition(_etag));
 			_etag = _blob.Properties.ETag;
 			_size = _blob.Properties.Length;
-
 		}
 		
 
@@ -76,6 +75,10 @@ namespace MessageVault {
 
 			_blob.WritePages(stream,offset, accessCondition:AccessCondition.GenerateIfMatchCondition(_etag));
 			_etag = _blob.Properties.ETag;
+		}
+
+		public int GetMaxCommitSize() {
+			return CommitSizeBytes;
 		}
 	}
 

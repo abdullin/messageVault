@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.WindowsAzure.Storage.Blob;
+
 using NUnit.Framework;
 
 namespace MessageVault.Tests {
@@ -17,9 +16,9 @@ namespace MessageVault.Tests {
 			Logging.InitTrace();
 		}
 
-		SegmentWriter CreateWriter(string name) {
+		MessageWriter CreateWriter(string name) {
 			
-			return SegmentWriter.Create(TestEnvironment.Client,  _folder);
+			return MessageWriter.Create(TestEnvironment.Client,  _folder);
 		}
 
 		static readonly IncomingMessage SmallMessage = new IncomingMessage("test", Guid.NewGuid().ToByteArray());
@@ -90,7 +89,8 @@ namespace MessageVault.Tests {
 
 			long accumulated = 0;
 			var batch = new List<IncomingMessage>();
-			while (accumulated < SegmentWriter.BufferSize) {
+			var size = writer.GetBufferSize();
+			while (accumulated < size) {
 				batch.Add(SmallMessage);
 				accumulated += SmallMessage.Data.Length;
 			}

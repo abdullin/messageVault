@@ -14,7 +14,7 @@ namespace WorkerRole {
 	public sealed class StreamScheduler {
 		readonly CloudBlobClient _client;
 
-		readonly ConcurrentDictionary<string, SegmentWriter> _writers;
+		readonly ConcurrentDictionary<string, MessageWriter> _writers;
 		readonly 	ConcurrentExclusiveSchedulerPair _scheduler;
 		readonly TaskFactory _exclusiveFactory;
 		
@@ -30,7 +30,7 @@ namespace WorkerRole {
 		
 		StreamScheduler(CloudBlobClient client) {
 			_client = client;
-			_writers = new ConcurrentDictionary<string, SegmentWriter>();
+			_writers = new ConcurrentDictionary<string, MessageWriter>();
 			
 			_scheduler = new ConcurrentExclusiveSchedulerPair();
 			_exclusiveFactory = new TaskFactory(_scheduler.ExclusiveScheduler);
@@ -56,14 +56,14 @@ namespace WorkerRole {
 		}
 
 		public string GetReadAccessSignature(string stream) {
-			return SegmentWriter.GetReadAccessSignature(_client, stream);
+			return MessageWriter.GetReadAccessSignature(_client, stream);
 		}
 
 
-		SegmentWriter Get(string stream) {
+		MessageWriter Get(string stream) {
 			stream = stream.ToLowerInvariant();
 
-			return _writers.GetOrAdd(stream, s => SegmentWriter.Create(_client, stream));
+			return _writers.GetOrAdd(stream, s => MessageWriter.Create(_client, stream));
 		}
 
 		public void Dispose() {

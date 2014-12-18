@@ -7,12 +7,12 @@ using Serilog;
 
 namespace MessageVault {
 
-	public class SegmentWriter {
+	public class MessageWriter {
 		// 4MB, Azure limit
-		public const long BufferSize = 1024 * 1024 * 4;
+		//public const long BufferSize = 1024 * 1024 * 4;
 		// Azure limit
 		const int PageSize = 512;
-		readonly byte[] _buffer = new byte[BufferSize];
+		readonly byte[] _buffer;
 		readonly IPageWriter _pages;
 		readonly PositionWriter _positionWriter;
 		readonly string _streamName;
@@ -22,16 +22,20 @@ namespace MessageVault {
 		readonly BinaryWriter _binary;
 		long _position;
 
+		public int GetBufferSize() {
+			return _buffer.Length;
+		}
+
 		
 
-		public static SegmentWriter Create(CloudBlobClient client, string stream) {
+		public static MessageWriter Create(CloudBlobClient client, string stream) {
 			var container = client.GetContainerReference(stream);
 			container.CreateIfNotExists();
 			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
 			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
 			var pageWriter = new CloudPageWriter(dataBlob);
 			var posWriter = new PositionWriter(posBlob);
-			var writer = new SegmentWriter(pageWriter, posWriter, stream);
+			var writer = new MessageWriter(pageWriter, posWriter, stream);
 			writer.Init();
 
 			return writer;
@@ -40,13 +44,14 @@ namespace MessageVault {
 		readonly ILogger _log;
 
 
-		SegmentWriter(IPageWriter pages, PositionWriter positionWriter, string stream) {
+		MessageWriter(IPageWriter pages, PositionWriter positionWriter, string stream) {
 			_pages = pages;
 			_positionWriter = positionWriter;
 			_streamName = stream;
+			_buffer = new byte[pages.GetMaxCommitSize()];
 			_stream = new MemoryStream(_buffer, true);
 			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
-			_log = Log.ForContext<SegmentWriter>();
+			_log = Log.ForContext<MessageWriter>();
 		}
 
 		public long Position {

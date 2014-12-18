@@ -77,7 +77,7 @@
     <Compile Include="CloudPageWriter.cs" />
     <Compile Include="PositionWriter.cs" />
     <Compile Include="Require.cs" />
-    <Compile Include="SegmentWriter.cs" />
+    <Compile Include="MessageWriter.cs" />
     <Compile Include="MessageResult.cs" />
     <Compile Include="Tests\SegmentWriterTests.cs" />
     <Compile Include="Logging.cs" />

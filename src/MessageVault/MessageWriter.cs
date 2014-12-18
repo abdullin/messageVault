@@ -2,39 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using MessageVault.Cloud;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
 namespace MessageVault {
 
-	public class MessageWriter {
-		// 4MB, Azure limit
-		//public const long BufferSize = 1024 * 1024 * 4;
-		// Azure limit
+	/// <summary>
+	/// Writes messages as a stream to an underlying <see cref="IPageWriter"/>, 
+	/// using provided <see cref="ICheckpointWriter"/> to mark commits.
+	/// </summary>
+	public sealed class MessageWriter {
 		
-		readonly byte[] _buffer;
 		readonly IPageWriter _pages;
 		readonly ICheckpointWriter _positionWriter;
-		readonly string _streamName;
+
+		long _position;
 		readonly int _pageSize;
 
+		readonly byte[] _buffer;
 		readonly MemoryStream _stream;
 		readonly BinaryWriter _binary;
-		long _position;
 
-		public int GetBufferSize() {
-			return _buffer.Length;
-		}
-
-
+		readonly string _streamName;
 		readonly ILogger _log;
 
+		
+		
 
-		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter, string stream) {
+		
+
+
+		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter, string streamName) {
 			_pages = pages;
 			_positionWriter = positionWriter;
-			_streamName = stream;
+			_streamName = streamName;
 			_buffer = new byte[pages.GetMaxCommitSize()];
 			_pageSize = pages.GetPageSize();
 			_stream = new MemoryStream(_buffer, true);
@@ -42,11 +42,13 @@ namespace MessageVault {
 			_log = Log.ForContext<MessageWriter>();
 		}
 
-		public long Position {
-			get { return _position; }
+		public long GetPosition() {
+			return _position;
 		}
-
-		
+		public int GetBufferSize()
+		{
+			return _buffer.Length;
+		}
 
 
 		public void Init() {
@@ -55,11 +57,11 @@ namespace MessageVault {
 
 			_log.Verbose("Stream {stream} at {offset}", _streamName, _position);
 
-			var tail = Tail(Position);
+			var tail = Tail(_position);
 			if (tail != 0) {
 				// preload tail
 
-				var offset = Floor(Position);
+				var offset = Floor(_position);
 				_log.Verbose("Load tail at {offset}", offset);
 				var page = _pages.ReadPage(offset);
 				_stream.Write(page, 0, tail);
@@ -82,27 +84,25 @@ namespace MessageVault {
 			return (int) (value % _pageSize);
 		}
 
-
 		long VirtualPosition() {
-			return Floor(Position) + _stream.Position;
+			return Floor(_position) + _stream.Position;
 		}
 
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
 
 			Log.Verbose("Flush buffer with {size} at {position}",
-				bytesToWrite, Floor(Position));
+				bytesToWrite, Floor(_position));
 
 			var newPosition = VirtualPosition();
 			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
 
 			_pages.EnsureSize(Ceiling(newPosition));
 			
-
 			var fullBytesToWrite = (int) Ceiling(_stream.Position);
 
 			using (var copy = new MemoryStream(_buffer, 0, fullBytesToWrite)) {
-				_pages.Save(copy, Floor(Position));
+				_pages.Save(copy, Floor(_position));
 			}
 
 			_position = newPosition;
@@ -126,6 +126,9 @@ namespace MessageVault {
 
 
 		public long Append(ICollection<IncomingMessage> messages) {
+			if (messages.Count == 0) {
+				throw new ArgumentException("Must provide non-empty array", "messages");
+			}
 			foreach (var item in messages) {
 				var chunk = item.Data;
 				if (chunk.Length > Constants.MaxMessageSize) {
@@ -153,8 +156,8 @@ namespace MessageVault {
 				_binary.Write(chunk);
 			}
 			FlushBuffer();
-			_positionWriter.Update(Position);
-			return Position;
+			_positionWriter.Update(_position);
+			return _position;
 		}
 	}
 

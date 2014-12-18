@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace MessageVault.Tests {
 
-	public sealed class SegmentWriterTests {
+	public sealed class MessageWriterTests {
 		string _folder;
 
 
@@ -34,18 +34,18 @@ namespace MessageVault.Tests {
 		[Test]
 		public void EmptyInit() {
 			var segment = CreateWriter("check1");
-			Assert.AreEqual(0, segment.Position, "position");
+			Assert.AreEqual(0, segment.GetPosition(), "position");
 
 		}
 
 		[Test]
 		public void SingleWrite() {
 			var segment = CreateWriter("single-write");
-			Assert.AreEqual(0, segment.Position);
+			Assert.AreEqual(0, segment.GetPosition());
 			var position = segment.Append(new[] {SmallMessage});
-			
 
-			Assert.AreNotEqual(position, segment.Position);
+
+			Assert.AreEqual(position, segment.GetPosition());
 		}
 
 		[Test]
@@ -54,8 +54,8 @@ namespace MessageVault.Tests {
 
 			var position = segment.Append(new[] {SmallMessage, SmallMessage});
 
-			
-			Assert.AreEqual(position, segment.Position, "position");
+
+			Assert.AreEqual(position, segment.GetPosition(), "position");
 		}
 
 		[Test]
@@ -65,8 +65,8 @@ namespace MessageVault.Tests {
 			segment.Append(new[] {SmallMessage});
 			var position = segment.Append(new[] {SmallMessage});
 
-			
-			Assert.AreEqual(position, segment.Position);
+
+			Assert.AreEqual(position, segment.GetPosition());
 		}
 
 		[Test]
@@ -79,8 +79,8 @@ namespace MessageVault.Tests {
 
 			var writer2 = CreateWriter("reopen");
 
-			
-			Assert.AreEqual(position, writer2.Position);
+
+			Assert.AreEqual(position, writer2.GetPosition());
 
 		}
 		[Test]

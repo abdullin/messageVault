@@ -23,7 +23,7 @@ namespace MessageVault {
 
 
 		public static long NextSize(long size) {
-			Require.ZeroOrGreater("size", size);
+			Require.OffsetMultiple("size", size, PageSize);
 			// Azure doesn't charge us for the page storage anyway
 			const long hundredMBs = 1024 * 1024 * 100;
 			return size + hundredMBs;
@@ -31,21 +31,34 @@ namespace MessageVault {
 
 		public void InitForWriting() {
 			if (!_blob.Exists()) {
-				var nextSize = NextSize(0);
-				_blob.Create(nextSize, AccessCondition.GenerateIfNoneMatchCondition("*"));
-				
+				//var nextSize = NextSize(0);
+				_blob.Create(0, AccessCondition.GenerateIfNoneMatchCondition("*"));
 			}
 
 			BlobSize = _blob.Properties.Length;
 			_etag = _blob.Properties.ETag;
 		}
-		public void Grow() {
+
+		public void EnsureSize(long size) {
+			
+			Require.OffsetMultiple("size", size, PageSize);
+			var current = _blob.Properties.Length;
+			if (size <= current) {
+				return;
+			}
+			while (size < current) {
+				size = NextSize(size);
+			}
+
 			_blob.Resize(NextSize(BlobSize), AccessCondition.GenerateIfMatchCondition(_etag));
 			_etag = _blob.Properties.ETag;
+
 		}
+		
 
 		public byte[] ReadPage(long offset) {
-			Require.ZeroOrGreater("offset", offset);
+			Require.OffsetMultiple("offset", offset, PageSize);
+			
 
 			using (var stream = _blob.OpenRead()) {
 				var buffer = new byte[PageSize];
@@ -56,12 +69,8 @@ namespace MessageVault {
 		}
 
 		public void Save(Stream stream, long offset) {
-			Require.ZeroOrGreater("offset", offset);
-
-			if (stream.Length % PageSize != 0) {
-				var message = "Stream length must be multiple of " + PageSize;
-				throw new ArgumentException(message);
-			}
+			Require.OffsetMultiple("offset", offset, PageSize);
+			
 			if (stream.Length > CommitSizeBytes) {
 				var message = "Stream can't be longer than " + CommitSizeBytes;
 				throw new ArgumentException(message);

@@ -104,9 +104,9 @@ namespace MessageVault {
 
 			var newPosition = VirtualPosition();
 			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
-			while (newPosition >= _pages.BlobSize) {
-				_pages.Grow();
-			}
+
+			_pages.EnsureSize(Ceiling(newPosition));
+			
 
 			var fullBytesToWrite = (int) Ceiling(_stream.Position);
 

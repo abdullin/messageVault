@@ -6,6 +6,22 @@ namespace MessageVault {
 
 	public static class Require {
 		[DebuggerNonUserCode]
+		public static void OffsetMultiple(string param, long value, int multiple) {
+			Contract.Requires(value >= 0);
+			Contract.Requires(value % multiple == 0);
+
+			if (value < 0) {
+				const string message = "Offset can't be negative";
+				throw new ArgumentOutOfRangeException(param, value, message);
+			}
+			if (value % multiple != 0) {
+				var message = "Offset must be divisible by " + multiple;
+				throw new ArgumentOutOfRangeException(param, value, message);
+			}
+		}
+
+
+		[DebuggerNonUserCode]
 		public static void ZeroOrGreater(string param, long value) {
 			Contract.Requires(value >=0);
 			if (value < 0) {

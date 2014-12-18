@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using Microsoft.WindowsAzure.ServiceRuntime;
-using Nancy;
 using Serilog;
 
 namespace WorkerRole {
@@ -18,11 +17,20 @@ namespace WorkerRole {
 		public override bool OnStart() {
 			//Logging. configure
 			ServicePointManager.DefaultConnectionLimit = 12;
-			var endpoint = RoleEnvironment.CurrentRoleInstance.InstanceEndpoints["Http"];
-			var baseUri = String.Format("{0}://{1}", endpoint.Protocol, endpoint.IPEndpoint);
-			_app = App.Initialize(baseUri);
+
+			var config = new AppConfig {
+				InternalUri = GetEndpointAsUri("InternalHttp"),
+				PublicUri = GetEndpointAsUri("Http")
+			};
+			_app = App.Initialize(config);
 
 			return base.OnStart();
+		}
+
+		static string GetEndpointAsUri(string name) {
+			var http = RoleEnvironment.CurrentRoleInstance.InstanceEndpoints[name];
+			var baseUri = String.Format("{0}://{1}", http.Protocol, http.IPEndpoint);
+			return baseUri;
 		}
 
 		public override void OnStop() {
@@ -37,8 +45,5 @@ namespace WorkerRole {
 			}
 		}
 	}
-
-
-	
 
 }

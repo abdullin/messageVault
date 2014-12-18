@@ -12,8 +12,13 @@ namespace WorkerRole {
 
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
+			var config = new AppConfig {
+				InternalUri = "http://127.0.0.1:8801",
+				PublicUri = "http://127.0.0.1:8001"
+			};
 
-			var app = App.Initialize("http://127.0.0.1:8888");
+
+			var app = App.Initialize(config);
 
 
 

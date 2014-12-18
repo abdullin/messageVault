@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Election;
@@ -11,6 +12,12 @@ using Owin;
 
 namespace WorkerRole {
 
+	public sealed class AppConfig {
+		public  string PublicUri;
+		public  string InternalUri;
+
+	}
+
 	public sealed class App {
 		readonly IDisposable _api;
 		readonly StreamScheduler _scheduler;
@@ -22,15 +29,17 @@ namespace WorkerRole {
 			_scheduler = scheduler;
 		}
 
-		public static App Initialize(string baseUri) {
-
-			
-			var scheduler = StreamScheduler.CreateDev();
+		public static App Initialize(AppConfig config) {
+var scheduler = StreamScheduler.CreateDev();
 
 			var nancyOptions = new NancyOptions {
 				Bootstrapper = new NancyBootstrapper(scheduler)
 			};
-			var api = WebApp.Start(baseUri, x => x.UseNancy(nancyOptions));
+			var startOptions = new StartOptions();
+			startOptions.Urls.Add(config.InternalUri);
+			startOptions.Urls.Add(config.PublicUri);
+
+			var api = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
 			
 			return new App(api, scheduler);
 		}

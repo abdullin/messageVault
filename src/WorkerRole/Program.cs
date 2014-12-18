@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
 using Serilog;
 
 namespace WorkerRole {
@@ -14,7 +15,8 @@ namespace WorkerRole {
 
 			var config = new AppConfig {
 				InternalUri = "http://127.0.0.1:8801",
-				PublicUri = "http://127.0.0.1:8001"
+				PublicUri = "http://127.0.0.1:8001",
+				StorageAccount = CloudStorageAccount.DevelopmentStorageAccount
 			};
 
 

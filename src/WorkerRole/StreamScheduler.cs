@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MessageVault;
 using Microsoft.WindowsAzure.Storage;
@@ -15,7 +17,7 @@ namespace WorkerRole {
 		readonly ConcurrentDictionary<string, SegmentWriter> _writers;
 		readonly 	ConcurrentExclusiveSchedulerPair _scheduler;
 		readonly TaskFactory _exclusiveFactory;
-		readonly Task _completionTask;
+		
 		
 		public static StreamScheduler CreateDev() {
 			var blob = CloudStorageAccount
@@ -33,15 +35,15 @@ namespace WorkerRole {
 			_scheduler = new ConcurrentExclusiveSchedulerPair();
 			_exclusiveFactory = new TaskFactory(_scheduler.ExclusiveScheduler);
 
-			_completionTask = _scheduler.Completion.ContinueWith(task => Dispose());
-
 		}
 
-		public Task GetCompletionTask() {
-			return _completionTask;
-		}
-		public void RequestShutdown() {
+		public async Task Run(CancellationToken token) {
+			while (!token.IsCancellationRequested) {
+				await Task.Delay(TimeSpan.MaxValue, token);
+			}
 			_scheduler.Complete();
+			await _scheduler.Completion;
+			Dispose();
 		}
 
 

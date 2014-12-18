@@ -39,6 +39,8 @@ namespace InteractiveConsole {
 					await Task.Delay(1000);
 
 				}
+
+				await task;
 			}
 		}
 	}

@@ -20,7 +20,7 @@ namespace MessageVault {
 				throw new ArgumentOutOfRangeException(param, value, "Must be greater than zero");
 			}
 		}
-
+		[DebuggerNonUserCode]
 		public static void NotNull<T>(string param, T value) where T:class{
 			Contract.Requires(value != null);
 			if (value == null) {

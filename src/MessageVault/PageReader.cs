@@ -23,6 +23,7 @@ namespace MessageVault {
 			long position = from;
 			using (var stream = _blob.OpenRead())
 			{
+				
 				stream.Seek(from, SeekOrigin.Begin);
 
 				using (var binary = new BinaryReader(stream, Encoding.UTF8, true))

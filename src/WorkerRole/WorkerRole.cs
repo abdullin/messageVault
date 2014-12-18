@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using Microsoft.WindowsAzure.ServiceRuntime;
+using Microsoft.WindowsAzure.Storage;
 using Serilog;
 
 namespace WorkerRole {
@@ -20,7 +21,8 @@ namespace WorkerRole {
 
 			var config = new AppConfig {
 				InternalUri = GetEndpointAsUri("InternalHttp"),
-				PublicUri = GetEndpointAsUri("Http")
+				PublicUri = GetEndpointAsUri("Http"),
+				StorageAccount = CloudStorageAccount.DevelopmentStorageAccount
 			};
 			_app = App.Initialize(config);
 

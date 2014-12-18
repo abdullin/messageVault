@@ -13,11 +13,13 @@ namespace MessageVault.Election {
 	/// </summary>
 	public class BlobLeaseWrapper {
 		readonly CloudPageBlob _leaseBlob;
+		readonly int _size;
 		readonly ILogger _logger;
 
 
-		public BlobLeaseWrapper(CloudPageBlob leaseBlob) {
+		public BlobLeaseWrapper(CloudPageBlob leaseBlob, int size) {
 			_leaseBlob = leaseBlob;
+			_size = size;
 			_logger = Log.ForContext<BlobLeaseWrapper>();
 		}
 
@@ -34,10 +36,10 @@ namespace MessageVault.Election {
 		public async Task<string> AcquireLeaseAsync(CancellationToken token) {
 			bool blobNotFound = false;
 			try {
-				return await _leaseBlob.AcquireLeaseAsync(TimeSpan.FromSeconds(60), null, token);
+				return await _leaseBlob.AcquireLeaseAsync(Constants.AcquireLeaseFor, null, token);
 			}
 			catch (StorageException storageException) {
-				_logger.Error(storageException, storageException.Message);
+				_logger.Error(storageException, "Failed to get lease. {Error}", storageException.Message);
 
 
 				var webException = storageException.InnerException as WebException;
@@ -84,7 +86,7 @@ namespace MessageVault.Election {
 			await _leaseBlob.Container.CreateIfNotExistsAsync(token);
 			if (!await _leaseBlob.ExistsAsync(token)) {
 				try {
-					await _leaseBlob.CreateAsync(0, token);
+					await _leaseBlob.CreateAsync(_size, token);
 				}
 				catch (StorageException e) {
 					if (e.InnerException is WebException) {

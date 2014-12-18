@@ -15,22 +15,38 @@ namespace WorkerRole {
 	public sealed class AppConfig {
 		public  string PublicUri;
 		public  string InternalUri;
+		public CloudStorageAccount StorageAccount;
 
+		public void ThrowIfInvalid() {
+			if (string.IsNullOrWhiteSpace(PublicUri)) {
+				throw new InvalidOperationException("Specify public uri");
+			}
+			if (string.IsNullOrWhiteSpace(InternalUri)) {
+				throw new InvalidOperationException("Specify private uri");
+			}
+			if (StorageAccount == null) {
+				throw new InvalidOperationException("Storage account must be specified");
+			}
+		}
 	}
 
 	public sealed class App {
 		readonly IDisposable _api;
-		readonly StreamScheduler _scheduler;
 		readonly CancellationTokenSource _source = new CancellationTokenSource();
 
-
-		App(IDisposable api, StreamScheduler scheduler) {
+		App(IDisposable api, CancellationTokenSource source, IList<Task> tasks) {
 			_api = api;
-			_scheduler = scheduler;
+			_source = source;
+			_tasks = tasks;
 		}
 
+		readonly IList<Task> _tasks;
+
 		public static App Initialize(AppConfig config) {
-var scheduler = StreamScheduler.CreateDev();
+			config.ThrowIfInvalid();
+			
+
+			var scheduler = StreamScheduler.CreateDev();
 
 			var nancyOptions = new NancyOptions {
 				Bootstrapper = new NancyBootstrapper(scheduler)
@@ -39,24 +55,34 @@ var scheduler = StreamScheduler.CreateDev();
 			startOptions.Urls.Add(config.InternalUri);
 			startOptions.Urls.Add(config.PublicUri);
 
-			var api = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
+			var nodeInfo = new NodeInfo(config.InternalUri);
+			var leader = new LeaderSelector(config.StorageAccount, nodeInfo);
 			
-			return new App(api, scheduler);
+
+			
+			var cts = new CancellationTokenSource();
+			// fire up leader and scheduler first
+			var tasks = new List<Task> {
+				leader.Run(cts.Token), 
+				scheduler.Run(cts.Token)
+			};
+			// bind the API
+			var api = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
+			return new App(api, cts, tasks);
 		}
 
 
 
 		public void RequestStop() {
+			// signal stopping for all
 			_source.Cancel();
-			// stop accepting new requests
+			// kill api and stop accepting new requests
 			_api.Dispose();
 
-			
-			_scheduler.RequestShutdown();
 		}
 
 		public Task GetCompletionTask() {
-			return Task.WhenAll(_scheduler.GetCompletionTask());
+			return Task.WhenAll(_tasks);
 		}
 
 		/// <summary>

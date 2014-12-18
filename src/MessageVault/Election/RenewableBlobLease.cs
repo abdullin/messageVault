@@ -26,10 +26,12 @@ namespace MessageVault.Election {
 		readonly ILogger _log = Log.ForContext<RenewableBlobLease>();
 
 		public static RenewableBlobLease Create(CloudStorageAccount account, LeaderTask task) {
+			Require.NotNull("account", account);
+			Require.NotNull("task", task);
+
 			var client = account.CreateCloudBlobClient();
 			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(1), 3);
-			var container = client.GetContainerReference(Constants.EtcContainer);
-			container.CreateIfNotExists();
+			var container = client.GetContainerReference(Constants.LockContainer);
 			var blob = container.GetPageBlobReference(Constants.MasterLockFileName);
 			return new RenewableBlobLease(blob, task);
 		}
@@ -41,7 +43,7 @@ namespace MessageVault.Election {
 
 
 		public async Task RunElectionsForever(CancellationToken token) {
-			var leaseWrapper = new BlobLeaseWrapper(_blob);
+			var leaseWrapper = new BlobLeaseWrapper(_blob, 512);
 
 			while (!token.IsCancellationRequested) {
 				await GrabLeaseOrWait(leaseWrapper, token);

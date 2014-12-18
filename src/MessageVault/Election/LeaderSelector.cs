@@ -9,24 +9,28 @@ using Serilog;
 
 namespace MessageVault.Election {
 
-	public sealed class LeaderPublisher {
-		readonly string _endpoint;
+	public sealed class LeaderSelector {
+		readonly CloudStorageAccount _account;
+		readonly NodeInfo _info;
 		readonly RenewableBlobLease _lease;
 		bool _isLeader;
-		readonly ILogger _log = Log.ForContext<LeaderPublisher>();
+		readonly ILogger _log = Log.ForContext<LeaderSelector>();
 
 		public bool IsLeader() {
 			return _isLeader;
 		}
 
-		public LeaderPublisher(CloudStorageAccount account, string endpoint) {
-			_endpoint = endpoint;
+		public LeaderSelector(CloudStorageAccount account, NodeInfo info) {
+			Require.NotNull("account", account);
+			Require.NotNull("info", info);
+			_account = account;
+			_info = info;
 			_lease = RenewableBlobLease.Create(account, LeaderMethod);
 		}
 
 
-		public void Run(CancellationToken token) {
-			_lease.RunElectionsForever(token).Wait();
+		public Task Run(CancellationToken token) {
+			return _lease.RunElectionsForever(token);
 		}
 
 		async Task LeaderMethod(CancellationToken token, CloudPageBlob blob) {
@@ -36,7 +40,7 @@ namespace MessageVault.Election {
 					_log.Information("This node is a leader");
 					
 					// tell the world who is the leader
-					await WriteLeaderInfo(blob);
+					await _info.WriteToBlob(_account);
 					// sleep for some time or until shutdown signal 
 					// (because lease is lost or we shutdown)
 					await Task.Delay(TimeSpan.FromMinutes(10), token);
@@ -53,13 +57,36 @@ namespace MessageVault.Election {
 			}
 		}
 
-		async Task WriteLeaderInfo(CloudPageBlob blob) {
-			using (var mem = new MemoryStream(512)) {
-				using (var bin = new BinaryWriter(mem, Encoding.UTF8, true)) {
-					bin.Write(_endpoint);
+
+	}
+
+	public sealed class NodeInfo {
+
+		readonly string _internalEndpoint;
+		
+
+		public NodeInfo(string internalEndpoint) {
+			_internalEndpoint = internalEndpoint;
+		}
+
+		public async Task WriteToBlob(CloudStorageAccount storage) {
+
+			var container = storage.CreateCloudBlobClient().GetContainerReference(Constants.LockContainer);
+
+			var blob = container.GetPageBlobReference(Constants.MasterDataFileName);
+			if (!blob.Exists()) {
+				blob.Create(512);
+			}
+			var buffer = new byte[512];
+			using (var mem = new MemoryStream(buffer))
+			{
+				using (var bin = new BinaryWriter(mem, Encoding.UTF8, true))
+				{
+					bin.Write(_internalEndpoint);
 				}
 
 				mem.Seek(0, SeekOrigin.Begin);
+				
 				await blob.WritePagesAsync(mem, 0, null);
 			}
 		}

@@ -85,6 +85,7 @@
     <Compile Include="MessageResult.cs" />
     <Compile Include="Tests\MessageWriterTests.cs" />
     <Compile Include="Logging.cs" />
+    <Compile Include="Tests\IsolatedMessageWriterTests.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
     <Compile Include="MessageId.cs" />
   </ItemGroup>

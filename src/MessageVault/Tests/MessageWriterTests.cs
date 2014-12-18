@@ -44,7 +44,6 @@ namespace MessageVault.Tests {
 			Assert.AreEqual(0, segment.GetPosition());
 			var position = segment.Append(new[] {SmallMessage});
 
-
 			Assert.AreEqual(position, segment.GetPosition());
 		}
 

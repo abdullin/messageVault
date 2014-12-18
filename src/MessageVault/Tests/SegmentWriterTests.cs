@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+using MessageVault.Cloud;
 using NUnit.Framework;
 
 namespace MessageVault.Tests {
@@ -18,7 +18,7 @@ namespace MessageVault.Tests {
 
 		MessageWriter CreateWriter(string name) {
 			
-			return MessageWriter.Create(TestEnvironment.Client,  _folder);
+			return CloudSetup.CreateAndInit(TestEnvironment.Client,  _folder);
 		}
 
 		static readonly IncomingMessage SmallMessage = new IncomingMessage("test", Guid.NewGuid().ToByteArray());

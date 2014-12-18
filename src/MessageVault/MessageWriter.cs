@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using MessageVault.Cloud;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
@@ -14,7 +15,7 @@ namespace MessageVault {
 		
 		readonly byte[] _buffer;
 		readonly IPageWriter _pages;
-		readonly PositionWriter _positionWriter;
+		readonly ICheckpointWriter _positionWriter;
 		readonly string _streamName;
 		readonly int _pageSize;
 
@@ -26,25 +27,11 @@ namespace MessageVault {
 			return _buffer.Length;
 		}
 
-		
-
-		public static MessageWriter Create(CloudBlobClient client, string stream) {
-			var container = client.GetContainerReference(stream);
-			container.CreateIfNotExists();
-			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
-			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
-			var pageWriter = new CloudPageWriter(dataBlob);
-			var posWriter = new PositionWriter(posBlob);
-			var writer = new MessageWriter(pageWriter, posWriter, stream);
-			writer.Init();
-
-			return writer;
-		}
 
 		readonly ILogger _log;
 
 
-		MessageWriter(IPageWriter pages, PositionWriter positionWriter, string stream) {
+		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter, string stream) {
 			_pages = pages;
 			_positionWriter = positionWriter;
 			_streamName = stream;
@@ -59,9 +46,7 @@ namespace MessageVault {
 			get { return _position; }
 		}
 
-		//public long BlobSize {
-		//	get { return _pages.BlobSize; }
-		//}
+		
 
 
 		public void Init() {
@@ -137,15 +122,6 @@ namespace MessageVault {
 				Array.Clear(_buffer, _pageSize, _buffer.Length - _pageSize);
 				_stream.Seek(tail, SeekOrigin.Begin);
 			}
-		}
-
-		public static string GetReadAccessSignature(CloudBlobClient client, string stream) {
-			var container = client.GetContainerReference(stream);
-			var signature = container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
-				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
-				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
-			});
-			return container.Uri + signature;
 		}
 
 

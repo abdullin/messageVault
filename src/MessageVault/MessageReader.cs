@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MessageVault.Cloud;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Linq;
 
@@ -11,7 +12,7 @@ namespace MessageVault {
 
 
 	public sealed class MessageReader {
-		readonly PositionReader _position;
+		readonly CloudCheckpointReader _position;
 		readonly PageReader _messages;
 
 		public static MessageReader Create(string sas) {
@@ -20,13 +21,13 @@ namespace MessageVault {
 
 			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
 			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
-			var position = new PositionReader(posBlob);
+			var position = new CloudCheckpointReader(posBlob);
 			var messages = new PageReader(dataBlob);
 			return new MessageReader(position, messages);
 
 		}
 
-		public MessageReader(PositionReader position, PageReader messages) {
+		public MessageReader(CloudCheckpointReader position, PageReader messages) {
 			_position = position;
 			_messages = messages;
 		}

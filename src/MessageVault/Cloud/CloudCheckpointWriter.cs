@@ -1,14 +1,13 @@
-using System;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace MessageVault {
+namespace MessageVault.Cloud {
 
-	public sealed class PositionWriter : IWriteableCheckpoint {
+	public sealed class CloudCheckpointWriter : ICheckpointWriter {
 		readonly CloudPageBlob _blob;
 		string _etag;
 
-		public PositionWriter(CloudPageBlob blob) {
+		public CloudCheckpointWriter(CloudPageBlob blob) {
 			_blob = blob;
 		}
 
@@ -32,39 +31,6 @@ namespace MessageVault {
 			_blob.Metadata["position"] = position.ToString();
 			_blob.SetMetadata(AccessCondition.GenerateIfMatchCondition(_etag));
 			_etag = _blob.Properties.ETag;
-		}
-	}
-
-	public interface IWriteableCheckpoint {
-		long GetOrInitPosition();
-		void Update(long position);
-	}
-
-
-	public sealed class MemoryCheckpoint : IWriteableCheckpoint {
-		long _value = 0;
-		public long GetOrInitPosition() {
-			return _value;
-		}
-
-		public void Update(long position) {
-			Require.ZeroOrGreater("position", position);
-			_value = position;
-		}
-	}
-
-
-	public sealed class PositionReader {
-		readonly CloudPageBlob _blob;
-
-		public PositionReader(CloudPageBlob blob) {
-			_blob = blob;
-		}
-
-		public long Read() {
-			// TODO: use etag and handle non-existent case
-			_blob.FetchAttributes();
-			return long.Parse(_blob.Metadata["position"]);
 		}
 	}
 

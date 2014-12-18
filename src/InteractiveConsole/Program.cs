@@ -47,10 +47,10 @@ namespace InteractiveConsole {
 
 	public sealed class ConsumerSample
 	{
-		readonly IWriteableCheckpoint _checkpoint;
+		readonly ICheckpointWriter _checkpoint;
 		readonly Client _client;
 
-		public ConsumerSample(IWriteableCheckpoint checkpoint, Client client)
+		public ConsumerSample(ICheckpointWriter checkpoint, Client client)
 		{
 			_checkpoint = checkpoint;
 			_client = client;

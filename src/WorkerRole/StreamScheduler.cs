@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault;
+using MessageVault.Cloud;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
@@ -56,14 +57,14 @@ namespace WorkerRole {
 		}
 
 		public string GetReadAccessSignature(string stream) {
-			return MessageWriter.GetReadAccessSignature(_client, stream);
+			return CloudSetup.GetReadAccessSignature(_client, stream);
 		}
 
 
 		MessageWriter Get(string stream) {
 			stream = stream.ToLowerInvariant();
 
-			return _writers.GetOrAdd(stream, s => MessageWriter.Create(_client, stream));
+			return _writers.GetOrAdd(stream, s => CloudSetup.CreateAndInit(_client, stream));
 		}
 
 		public void Dispose() {

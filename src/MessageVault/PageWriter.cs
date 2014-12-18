@@ -13,13 +13,17 @@ namespace MessageVault {
 		const int PageSize = 512;
 		readonly CloudPageBlob _blob;
 		string _etag;
+		 long _size = 0;
 
 		public PageWriter(CloudPageBlob blob) {
 			_blob = blob;
 		}
 
 
-		public long BlobSize { get; private set; }
+		public long GetSize() {
+			return _size;
+
+		}
 
 
 		public static long NextSize(long size) {
@@ -35,14 +39,14 @@ namespace MessageVault {
 				_blob.Create(0, AccessCondition.GenerateIfNoneMatchCondition("*"));
 			}
 
-			BlobSize = _blob.Properties.Length;
+			_size = _blob.Properties.Length;
 			_etag = _blob.Properties.ETag;
 		}
 
 		public void EnsureSize(long size) {
 			
 			Require.OffsetMultiple("size", size, PageSize);
-			var current = _blob.Properties.Length;
+			var current = _size;
 			if (size <= current) {
 				return;
 			}
@@ -50,8 +54,9 @@ namespace MessageVault {
 				size = NextSize(size);
 			}
 
-			_blob.Resize(NextSize(BlobSize), AccessCondition.GenerateIfMatchCondition(_etag));
+			_blob.Resize(NextSize(_size), AccessCondition.GenerateIfMatchCondition(_etag));
 			_etag = _blob.Properties.ETag;
+			_size = _blob.Properties.Length;
 
 		}
 		

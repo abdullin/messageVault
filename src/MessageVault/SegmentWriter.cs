@@ -22,6 +22,8 @@ namespace MessageVault {
 		readonly BinaryWriter _binary;
 		long _position;
 
+		
+
 		public static SegmentWriter Create(CloudBlobClient client, string stream) {
 			var container = client.GetContainerReference(stream);
 			container.CreateIfNotExists();
@@ -53,16 +55,16 @@ namespace MessageVault {
 			get { return _position; }
 		}
 
-		public long BlobSize {
-			get { return _pages.BlobSize; }
-		}
+		//public long BlobSize {
+		//	get { return _pages.BlobSize; }
+		//}
 
 
 		public void Init() {
 			_pages.InitForWriting();
 			_position = _positionWriter.GetOrInitPosition();
 
-			_log.Verbose("Init stream {stream}, {size} at {offset}", _streamName, _pages.BlobSize, _position);
+			_log.Verbose("Stream {stream} at {offset}", _streamName, _position);
 
 			var tail = Tail(Position);
 			if (tail != 0) {
@@ -133,12 +135,13 @@ namespace MessageVault {
 			}
 		}
 
-		public string GetReadAccessSignature() {
-			var signature = _container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
+		public static string GetReadAccessSignature(CloudBlobClient client, string stream) {
+			var container = client.GetContainerReference(stream);
+			var signature = container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
 				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
 				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
 			});
-			return _container.Uri + signature;
+			return container.Uri + signature;
 		}
 
 

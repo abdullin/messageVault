@@ -56,12 +56,13 @@ namespace WorkerRole {
 		}
 
 		public string GetReadAccessSignature(string stream) {
-			return Get(stream).GetReadAccessSignature();
+			return SegmentWriter.GetReadAccessSignature(_client, stream);
 		}
 
 
 		SegmentWriter Get(string stream) {
 			stream = stream.ToLowerInvariant();
+
 			return _writers.GetOrAdd(stream, s => SegmentWriter.Create(_client, stream));
 		}
 

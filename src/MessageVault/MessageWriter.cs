@@ -11,12 +11,12 @@ namespace MessageVault {
 		// 4MB, Azure limit
 		//public const long BufferSize = 1024 * 1024 * 4;
 		// Azure limit
-		const int PageSize = 512;
+		
 		readonly byte[] _buffer;
 		readonly IPageWriter _pages;
 		readonly PositionWriter _positionWriter;
 		readonly string _streamName;
-		
+		readonly int _pageSize;
 
 		readonly MemoryStream _stream;
 		readonly BinaryWriter _binary;
@@ -49,6 +49,7 @@ namespace MessageVault {
 			_positionWriter = positionWriter;
 			_streamName = stream;
 			_buffer = new byte[pages.GetMaxCommitSize()];
+			_pageSize = pages.GetPageSize();
 			_stream = new MemoryStream(_buffer, true);
 			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
 			_log = Log.ForContext<MessageWriter>();
@@ -80,20 +81,20 @@ namespace MessageVault {
 			}
 		}
 
-		static long Ceiling(long value) {
+		 long Ceiling(long value) {
 			var tail = Tail(value);
 			if (tail == 0) {
 				return value;
 			}
-			return value - tail + PageSize;
+			return value - tail + _pageSize;
 		}
 
-		static long Floor(long value) {
+		 long Floor(long value) {
 			return value - Tail(value);
 		}
 
-		static int Tail(long value) {
-			return (int) (value % PageSize);
+		 int Tail(long value) {
+			return (int) (value % _pageSize);
 		}
 
 
@@ -122,7 +123,7 @@ namespace MessageVault {
 			_position = newPosition;
 			
 
-			if (bytesToWrite < PageSize) {
+			if (bytesToWrite < _pageSize) {
 				return;
 			}
 
@@ -132,8 +133,8 @@ namespace MessageVault {
 				Array.Clear(_buffer, 0, _buffer.Length);
 				_stream.Seek(0, SeekOrigin.Begin);
 			} else {
-				Array.Copy(_buffer, Floor(bytesToWrite), _buffer, 0, PageSize);
-				Array.Clear(_buffer, PageSize, _buffer.Length - PageSize);
+				Array.Copy(_buffer, Floor(bytesToWrite), _buffer, 0, _pageSize);
+				Array.Clear(_buffer, _pageSize, _buffer.Length - _pageSize);
 				_stream.Seek(tail, SeekOrigin.Begin);
 			}
 		}

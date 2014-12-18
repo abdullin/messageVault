@@ -80,6 +80,10 @@ namespace MessageVault {
 		public int GetMaxCommitSize() {
 			return CommitSizeBytes;
 		}
+
+		public int GetPageSize() {
+			return PageSize;
+		}
 	}
 
 }

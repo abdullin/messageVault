@@ -14,6 +14,7 @@ namespace MessageVault {
 		void Save(Stream stream, long offset);
 
 		int GetMaxCommitSize();
+		int GetPageSize();
 	}
 
 }

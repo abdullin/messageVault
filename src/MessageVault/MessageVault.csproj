@@ -48,18 +48,9 @@
     <Reference Include="StatsdClient">
       <HintPath>..\packages\StatsdClient.1.0.0.16\lib\net35\StatsdClient.dll</HintPath>
     </Reference>
-    <Reference Include="StatsdClient.Configuration">
-      <HintPath>..\packages\StatsdClient.1.0.0.16\lib\net35\StatsdClient.Configuration.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cloud\CloudPageReader.cs" />
@@ -79,7 +70,7 @@
     <Compile Include="IPageWriter.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
     <Compile Include="Message.cs" />
-    <Compile Include="MessageIdTests.cs" />
+    <Compile Include="Tests\MessageIdTests.cs" />
     <Compile Include="MessageReader.cs" />
     <Compile Include="Cloud\CloudPageWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointWriter.cs" />

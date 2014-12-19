@@ -23,7 +23,6 @@ namespace MessageVault {
 		public const string MasterDataFileName = "master.data";
 
 
-
 		/// <summary>
 		/// Azure allows leases for 15, 30, 45, 60 or infinite.
 		/// http://blogs.msdn.com/b/windowsazurestorage/archive/2012/06/12/new-blob-lease-features-infinite-leases-smaller-lease-times-and-more.aspx

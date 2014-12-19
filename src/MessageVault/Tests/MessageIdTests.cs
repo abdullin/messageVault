@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace MessageVault {
+namespace MessageVault.Tests {
 
 	[TestFixture]
 	public sealed class MessageIdTests {

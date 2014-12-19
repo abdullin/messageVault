@@ -47,7 +47,7 @@ namespace WorkerRole {
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
 				// read messages in request thread
-				var messages = MessageFramer.ReadMessages(Request.Body);
+				var messages = ApiMessageFramer.ReadMessages(Request.Body);
 				var id = (string) x.id;
 
 				try {

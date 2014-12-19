@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault;
+using MessageVault.Api;
 using MessageVault.Memory;
 
 
@@ -26,7 +27,7 @@ namespace InteractiveConsole {
 
 
 				// consumer
-				var checkpoint = new MemoryCheckpoint();
+				var checkpoint = new MemoryCheckpointReaderWriter();
 				var consumer = new ConsumerSample(checkpoint, client);
 
 				var task = Task.Run(() => consumer.Run(CancellationToken.None));

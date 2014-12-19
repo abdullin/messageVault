@@ -91,7 +91,7 @@ namespace MessageVault.Tests {
 			var size = writer.GetBufferSize();
 			while (accumulated < size) {
 				batch.Add(SmallMessageToWrite);
-				accumulated += SmallMessageToWrite.Data.Length;
+				accumulated += SmallMessageToWrite.Value.Length;
 			}
 			writer.Append(batch);
 

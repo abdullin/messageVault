@@ -45,7 +45,7 @@ namespace MessageVault {
 				{
 					while (prs.Position < prs.Length)
 					{
-						var message = Message.Read(bin);
+						var message = MessageFormat.Read(bin);
 						list.Add(message);
 						position = prs.Position;
 						if (list.Count >= maxCount)

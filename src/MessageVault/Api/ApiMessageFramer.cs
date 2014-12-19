@@ -2,18 +2,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace MessageVault {
+namespace MessageVault.Api {
 
-	public static class MessageFramer {
+	public static class ApiMessageFramer {
 		public static void WriteMessages(ICollection<MessageToWrite> messages, Stream stream) {
 			using (var bin = new BinaryWriter(stream, Encoding.UTF8, true)) {
 				// int
 				bin.Write(messages.Count);
 
 				foreach (var message in messages) {
-					bin.Write(message.Contract);
-					bin.Write(message.Data.Length); //int32
-					bin.Write(message.Data);
+					bin.Write(message.Key);
+					bin.Write(message.Value.Length); //int32
+					bin.Write(message.Value);
 				}
 			}
 		}

@@ -3,7 +3,7 @@ using System.Threading;
 namespace MessageVault.Memory {
 
 	
-	public sealed class MemoryCheckpoint : ICheckpointWriter, ICheckpointReader {
+	public sealed class MemoryCheckpointReaderWriter : ICheckpointWriter, ICheckpointReader {
 		long _value;
 		public long GetOrInitPosition() {
 			return Thread.VolatileRead(ref _value);

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using MessageVault.Api;
 using MessageVault.Cloud;
 using Newtonsoft.Json;
 
-namespace MessageVault {
+namespace MessageVault.Api {
 
 	public sealed class Client : IDisposable {
 		readonly HttpClient _client;
@@ -25,7 +24,7 @@ namespace MessageVault {
 			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
 
-				MessageFramer.WriteMessages(messages, mem);
+				ApiMessageFramer.WriteMessages(messages, mem);
 				mem.Seek(0, SeekOrigin.Begin);
 
 				using (var sc = new StreamContent(mem)) {

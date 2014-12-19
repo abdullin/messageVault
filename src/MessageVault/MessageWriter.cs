@@ -88,15 +88,30 @@ namespace MessageVault {
 			return Floor(_position) + _stream.Position;
 		}
 
+		long BufferStarts() {
+			return Floor(_position);
+		}
+		long DataStarts() {
+			return _position;
+		}
+		long DataEnds() {
+			return BufferStarts() + _stream.Position;
+		}
+		long BufferEnds() {
+			return BufferStarts() + Ceiling(_stream.Position);
+		}
+
 		void FlushBuffer() {
 			var bytesToWrite = _stream.Position;
+			
 
-			Log.Verbose("Flush buffer with {size} at {position}",
-				bytesToWrite, Floor(_position));
-
+			//Log.Verbose("Flush Buffer {3}-[{0} ({2}) {1}]-{4}", 
+			//	DataStarts(), 
+			//	DataEnds(), 
+			//	DataEnds() - DataStarts(),
+			//	BufferStarts(),
+			//	BufferEnds());
 			var newPosition = VirtualPosition();
-			Log.Verbose("Pusition change {old} => {new}", _position, newPosition);
-
 			_pages.EnsureSize(Ceiling(newPosition));
 			
 			var fullBytesToWrite = (int) Ceiling(_stream.Position);
@@ -130,35 +145,30 @@ namespace MessageVault {
 				throw new ArgumentException("Must provide non-empty array", "messages");
 			}
 			foreach (var item in messages) {
-				var chunk = item.Data;
-				if (chunk.Length > Constants.MaxMessageSize) {
+				if (item.Value.Length > Constants.MaxMessageSize) {
 					string message = "Each message must be smaller than " + Constants.MaxMessageSize;
 					throw new InvalidOperationException(message);
 				}
 
-				if (item.Contract.Length > Constants.MaxContractLength) {
+				if (item.Key.Length > Constants.MaxContractLength) {
 					var message = "Each contract must be shorter than " + Constants.MaxContractLength;
 					throw new InvalidOperationException(message);
 				}
 
-				
-				
-				int sizeEstimate = 4 + chunk.Length + 2 * item.Contract.Length + 5;
-				if (sizeEstimate + _stream.Position >= _stream.Length) {
+				var sizeEstimate = MessageFormat.EstimateSize(item);
+
+				var availableInBuffer = _stream.Length - _stream.Position;
+				if (sizeEstimate > availableInBuffer) {
 					FlushBuffer();
 				}
+
 				var offset = VirtualPosition();
 				var id = MessageId.CreateNew(offset);
-				_binary.Write(Constants.ReservedFormatVersion);
-				_binary.Write(id.GetBytes());
-				_binary.Write(item.Contract);
-				_binary.Write(chunk.Length);
-				_binary.Write(chunk);
+				MessageFormat.Write(_binary, id, item);
 			}
 			FlushBuffer();
 			_positionWriter.Update(_position);
 			return _position;
 		}
 	}
-
 }

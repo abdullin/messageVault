@@ -12,8 +12,6 @@ namespace MessageVault {
 		/// </summary>
 		public const int MaxContractLength = 256;
 
-		public const byte ReservedFormatVersion = 0x01;
-
 		public const string PositionFileName = "position.c6";
 		/// <summary>
 		/// This file name is compatible with future stream splitting

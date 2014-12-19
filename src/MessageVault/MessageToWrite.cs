@@ -1,12 +1,12 @@
 namespace MessageVault {
 
 	public sealed class MessageToWrite {
-		public readonly string Contract;
-		public readonly byte[] Data;
+		public readonly string Key;
+		public readonly byte[] Value;
 
-		public MessageToWrite(string contract, byte[] data) {
-			Contract = contract;
-			Data = data;
+		public MessageToWrite(string key, byte[] value) {
+			Key = key;
+			Value = value;
 		}
 	}
 

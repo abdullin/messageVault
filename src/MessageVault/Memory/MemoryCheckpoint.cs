@@ -1,15 +1,21 @@
+using System.Threading;
+
 namespace MessageVault.Memory {
 
 	
-	public sealed class MemoryCheckpoint : ICheckpointWriter {
-		long _value = 0;
+	public sealed class MemoryCheckpoint : ICheckpointWriter, ICheckpointReader {
+		long _value;
 		public long GetOrInitPosition() {
-			return _value;
+			return Thread.VolatileRead(ref _value);
 		}
 
 		public void Update(long position) {
 			Require.ZeroOrGreater("position", position);
-			_value = position;
+			Thread.VolatileWrite(ref _value, position);
+		}
+
+		public long Read() {
+			return Thread.VolatileRead(ref _value);
 		}
 	}
 

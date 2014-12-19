@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using MessageVault.Memory;
 using NUnit.Framework;
 // ReSharper disable InconsistentNaming
 namespace MessageVault.Tests {
@@ -38,20 +39,11 @@ namespace MessageVault.Tests {
 			var result = _writer.Append(new[] {new MessageToWrite("test", new byte[10])});
 			Assert.AreNotEqual(0, result);
 			Assert.AreEqual(result, _writer.GetPosition());
-			Assert.AreEqual(result, _checkpoint.Position);
+			Assert.AreEqual(result, _checkpoint.Read());
 			Assert.AreNotEqual(0, _pages.GetLength());
 		}
 
-		sealed class MemoryCheckpoint : ICheckpointWriter {
-			public long Position;
-			public long GetOrInitPosition() {
-				return Position;
-			}
-
-			public void Update(long position) {
-				Position = position;
-			}
-		}
+		
 
 		sealed class MemoryPages : IPageWriter {
 			MemoryStream _stream;

@@ -16,5 +16,4 @@ namespace MessageVault {
 		int GetMaxCommitSize();
 		int GetPageSize();
 	}
-
 }

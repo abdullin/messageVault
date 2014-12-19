@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using MessageVault.Api;
+using MessageVault.Cloud;
 using Newtonsoft.Json;
 
 namespace MessageVault {
@@ -20,7 +21,7 @@ namespace MessageVault {
 
 		
 
-		public async Task<string> PostMessagesAsync(string stream, ICollection<IncomingMessage> messages) {
+		public async Task<string> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
 			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
 
@@ -46,7 +47,7 @@ namespace MessageVault {
 			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
 			// TODO: handle error
 			//Console.WriteLine(response.Signature);
-			return MessageReader.Create(response.Signature);
+			return CloudSetup.GetReader(response.Signature);
 		}
 
 

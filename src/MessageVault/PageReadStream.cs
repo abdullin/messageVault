@@ -3,22 +3,19 @@ using System.IO;
 
 namespace MessageVault {
 
+	/// <summary>
+	/// Non-seekable read-only stream which pre-fetches data from undelying page storage
+	/// </summary>
 	public sealed class PageReadStream : Stream {
-
-		public delegate void PageDownloader(Stream stream, long pageOffset, long length);
-
-		readonly PageDownloader _downloader;
-		
+		readonly IPageReader _reader;
 		readonly long _max;
 		readonly byte[] _buffer;
-
-
 		long _position;
 		
 		readonly MemoryStream _mem;
 
-		public PageReadStream(PageDownloader downloader, long start, long max, byte[] buffer) {
-			_downloader = downloader;
+		public PageReadStream(IPageReader reader, long start, long max, byte[] buffer) {
+			_reader = reader;
 			
 			_max = max;
 			_buffer = buffer;
@@ -28,15 +25,15 @@ namespace MessageVault {
 		}
 
 		public override void Flush() {
-			
+			throw new NotSupportedException();
 		}
 
 		public override long Seek(long offset, SeekOrigin origin) {
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		public override void SetLength(long value) {
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		
@@ -76,13 +73,13 @@ namespace MessageVault {
 					_buffer.Length);
 				throw new InvalidOperationException(message);
 			}
-			_downloader(_mem, downloadFrom, download);
+			_reader.DownloadRangeToStream(_mem, downloadFrom, (int) download);
 			_mem.Seek(0, SeekOrigin.Begin);
 			
 		}
 
 		public override void Write(byte[] buffer, int offset, int count) {
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		public override bool CanRead {

@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace MessageVault {
+namespace MessageVault.Cloud {
 
 	public sealed class CloudPageWriter: IPageWriter {
 		// 4MB, Azure limit
@@ -37,8 +37,8 @@ namespace MessageVault {
 		}
 
 		public void EnsureSize(long size) {
-			
 			Require.OffsetMultiple("size", size, PageSize);
+
 			var current = _size;
 			if (size <= current) {
 				return;

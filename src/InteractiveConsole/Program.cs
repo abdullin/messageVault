@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault;
+using MessageVault.Memory;
 
 
 namespace InteractiveConsole {
@@ -31,7 +32,7 @@ namespace InteractiveConsole {
 				var task = Task.Run(() => consumer.Run(CancellationToken.None));
 
 				for (int i = 0; i < 10; i++) {
-					var message = new IncomingMessage("test", new byte[20]);
+					var message = new MessageToWrite("test", new byte[20]);
 
 					var response = await client.PostMessagesAsync("test", new[] { message });
 					Console.WriteLine(response);

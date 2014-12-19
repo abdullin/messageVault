@@ -18,10 +18,10 @@ namespace MessageVault.Tests {
 
 		MessageWriter CreateWriter(string name) {
 			
-			return CloudSetup.CreateAndInit(TestEnvironment.Client,  _folder);
+			return CloudSetup.CreateAndInitWriter(TestEnvironment.Client,  _folder);
 		}
 
-		static readonly IncomingMessage SmallMessage = new IncomingMessage("test", Guid.NewGuid().ToByteArray());
+		static readonly MessageToWrite SmallMessageToWrite = new MessageToWrite("test", Guid.NewGuid().ToByteArray());
 
 
 		[TearDown]
@@ -42,7 +42,7 @@ namespace MessageVault.Tests {
 		public void SingleWrite() {
 			var segment = CreateWriter("single-write");
 			Assert.AreEqual(0, segment.GetPosition());
-			var position = segment.Append(new[] {SmallMessage});
+			var position = segment.Append(new[] {SmallMessageToWrite});
 
 			Assert.AreEqual(position, segment.GetPosition());
 		}
@@ -51,7 +51,7 @@ namespace MessageVault.Tests {
 		public void BatchWrite() {
 			var segment = CreateWriter("short-batch-write");
 
-			var position = segment.Append(new[] {SmallMessage, SmallMessage});
+			var position = segment.Append(new[] {SmallMessageToWrite, SmallMessageToWrite});
 
 
 			Assert.AreEqual(position, segment.GetPosition(), "position");
@@ -61,8 +61,8 @@ namespace MessageVault.Tests {
 		public void SequentialWrite() {
 			var segment = CreateWriter("check1");
 
-			segment.Append(new[] {SmallMessage});
-			var position = segment.Append(new[] {SmallMessage});
+			segment.Append(new[] {SmallMessageToWrite});
+			var position = segment.Append(new[] {SmallMessageToWrite});
 
 
 			Assert.AreEqual(position, segment.GetPosition());
@@ -73,8 +73,8 @@ namespace MessageVault.Tests {
 
 			var writer = CreateWriter("reopen");
 
-			writer.Append(new[] { SmallMessage });
-			var position = writer.Append(new[] { SmallMessage });
+			writer.Append(new[] { SmallMessageToWrite });
+			var position = writer.Append(new[] { SmallMessageToWrite });
 
 			var writer2 = CreateWriter("reopen");
 
@@ -87,11 +87,11 @@ namespace MessageVault.Tests {
 			var writer = CreateWriter("large");
 
 			long accumulated = 0;
-			var batch = new List<IncomingMessage>();
+			var batch = new List<MessageToWrite>();
 			var size = writer.GetBufferSize();
 			while (accumulated < size) {
-				batch.Add(SmallMessage);
-				accumulated += SmallMessage.Data.Length;
+				batch.Add(SmallMessageToWrite);
+				accumulated += SmallMessageToWrite.Data.Length;
 			}
 			writer.Append(batch);
 

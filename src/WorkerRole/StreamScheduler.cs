@@ -48,7 +48,7 @@ namespace WorkerRole {
 		}
 
 
-		public Task<long> Append(string stream, ICollection<IncomingMessage> data) {
+		public Task<long> Append(string stream, ICollection<MessageToWrite> data) {
 			
 			return _exclusiveFactory.StartNew(() => {
 				var segment = Get(stream);
@@ -64,7 +64,7 @@ namespace WorkerRole {
 		MessageWriter Get(string stream) {
 			stream = stream.ToLowerInvariant();
 
-			return _writers.GetOrAdd(stream, s => CloudSetup.CreateAndInit(_client, stream));
+			return _writers.GetOrAdd(stream, s => CloudSetup.CreateAndInitWriter(_client, stream));
 		}
 
 		public void Dispose() {

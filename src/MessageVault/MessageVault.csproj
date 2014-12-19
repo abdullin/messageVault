@@ -62,7 +62,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
+    <Compile Include="ICheckpointReader.cs" />
     <Compile Include="Election\RenewableBlobLease.cs" />
     <Compile Include="Election\BlobLeaseWrapper.cs" />
     <Compile Include="Client.cs" />
@@ -70,13 +72,14 @@
     <Compile Include="Election\LeaderSelector.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="ICheckpointWriter.cs" />
-    <Compile Include="IncomingMessage.cs" />
+    <Compile Include="MessageFramer.cs" />
+    <Compile Include="MessageToWrite.cs" />
+    <Compile Include="IPageReader.cs" />
     <Compile Include="IPageWriter.cs" />
-    <Compile Include="MemoryCheckpoint.cs" />
+    <Compile Include="Memory\MemoryCheckpoint.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MessageIdTests.cs" />
     <Compile Include="MessageReader.cs" />
-    <Compile Include="PageReader.cs" />
     <Compile Include="Cloud\CloudPageWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointReader.cs" />

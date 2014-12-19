@@ -1,5 +1,6 @@
-namespace MessageVault {
+namespace MessageVault.Memory {
 
+	
 	public sealed class MemoryCheckpoint : ICheckpointWriter {
 		long _value = 0;
 		public long GetOrInitPosition() {

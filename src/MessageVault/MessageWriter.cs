@@ -125,7 +125,7 @@ namespace MessageVault {
 		}
 
 
-		public long Append(ICollection<IncomingMessage> messages) {
+		public long Append(ICollection<MessageToWrite> messages) {
 			if (messages.Count == 0) {
 				throw new ArgumentException("Must provide non-empty array", "messages");
 			}

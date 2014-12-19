@@ -29,13 +29,13 @@ namespace MessageVault.Tests {
 
 		[Test, ExpectedException(typeof(ArgumentException))]
 		public void append_throws_on_empty_collection() {
-			_writer.Append(new IncomingMessage[0]);
+			_writer.Append(new MessageToWrite[0]);
 		}
 
 
 		[Test]
 		public void appending_single_message_advances_position() {
-			var result = _writer.Append(new[] {new IncomingMessage("test", new byte[10])});
+			var result = _writer.Append(new[] {new MessageToWrite("test", new byte[10])});
 			Assert.AreNotEqual(0, result);
 			Assert.AreEqual(result, _writer.GetPosition());
 			Assert.AreEqual(result, _checkpoint.Position);

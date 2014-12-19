@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using MessageVault;
 using MessageVault.Api;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
@@ -21,16 +19,15 @@ namespace WorkerRole {
 			var se = ex as StorageException;
 
 			if (se != null) {
-				return Response.AsJson(new {
-					error = se.Message,
-					type = "storage",
+				return Response.AsJson(new ErrorResponse {
+					Error = se.Message,
+					Type = "storage",
 				}, HttpStatusCode.InternalServerError);
 			}
 			return Response.AsJson(new {error = ex.Message,}, HttpStatusCode.InternalServerError);
 		}
 
 		void BuildRoutes() {
-
 			Before += ctx => {
 				Log.Debug("{method} {url}", ctx.Request.Method, ctx.Request.Path);
 				return null;
@@ -52,14 +49,13 @@ namespace WorkerRole {
 
 				try {
 					var pos = await _scheduler.Append(id, messages);
-					return Response.AsJson(new {
-						position = pos
+					return Response.AsJson(new PostMessagesResponse {
+						Position = pos
 					});
 				}
 				catch (Exception ex) {
 					return WrapException(ex);
 				}
-				
 			};
 		}
 	}

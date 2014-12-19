@@ -3,78 +3,55 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.Core;
 
 namespace MessageVault {
 
 	public sealed class PageReader {
 		readonly CloudPageBlob _blob;
-
+		
 		public PageReader(CloudPageBlob blob) {
 			_blob = blob;
 		}
 
-		public MessageResult ReadMessages(long from, long maxOffset, int maxCount) {
-			Require.ZeroOrGreater("from", from);
-			Require.ZeroOrGreater("maxOffset", maxOffset);
-			Require.Positive("maxCount", maxCount);
-			
-			// TODO: include a filter
-			var list = new List<Message>(maxCount);
-			long position = from;
-			using (var stream = _blob.OpenRead())
-			{
-				
-				stream.Seek(from, SeekOrigin.Begin);
+		
+		const int Limit = 1024 * 1024 * 4;
+		readonly byte[] _buffer = new byte[Limit];
 
-				using (var binary = new BinaryReader(stream, Encoding.UTF8, true))
-				{
-					while (stream.Position < maxOffset)
+		public MessageResult ReadMessages(long from, long till, int maxCount) {
+			Require.ZeroOrGreater("from", from);
+			Require.ZeroOrGreater("maxOffset", till);
+			Require.Positive("maxCount", maxCount);
+
+			var list = new List<Message>(maxCount);
+			var position = from;
+
+			using (var prs = new PageReadStream(Downloader, from, till, _buffer)) {
+				using (var bin = new BinaryReader(prs)) {
+					while (prs.Position < prs.Length)
 					{
-						// TODO: use buffers
-						var version = binary.ReadByte();
-						if (version != Constants.ReservedFormatVersion)
+						var message = Message.Read(bin);
+						list.Add(message);
+						position = prs.Position;
+						if (list.Count >= maxCount)
 						{
-							throw new InvalidOperationException("Unknown storage format");
-						}
-						var id = binary.ReadBytes(16);
-						var contract = binary.ReadString();
-						var len = binary.ReadInt32();
-						var data = binary.ReadBytes(len);
-						var uuid = new MessageId(id);
-						list.Add(new Message(uuid, contract, data));
-						position = stream.Position;
-						if (list.Count >= maxCount) {
 							break;
 						}
-						
-					}
+					}		
 				}
+				
 			}
+			
+			
 			return new MessageResult(list, position);
 
-		} 
-
-		public IEnumerable<Message> Read(long from, long count) {
-			using (var stream = _blob.OpenRead()) {
-				stream.Seek(from, SeekOrigin.Begin);
-
-				using (var binary = new BinaryReader(stream, Encoding.UTF8, true)) {
-					while (stream.Position < (from + count)) {
-						// TODO: use buffers
-						var version = binary.ReadByte();
-						if (version != Constants.ReservedFormatVersion) {
-							throw new InvalidOperationException("Unknown storage format");
-						}
-						var id = binary.ReadBytes(16);
-						var contract = binary.ReadString();
-						var len = binary.ReadInt32();
-						var data = binary.ReadBytes(len);
-						var uuid = new MessageId(id);
-						yield return new Message(uuid, contract, data);
-					}
-				}
-			}
 		}
+
+		void Downloader(Stream stream, long pageOffset, long length) {
+			_blob.DownloadRangeToStream(stream, pageOffset, length);
+
+		}
+
 
 	}
 

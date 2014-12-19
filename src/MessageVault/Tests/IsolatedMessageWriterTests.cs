@@ -19,6 +19,8 @@ namespace MessageVault.Tests {
 			_writer.Init();
 		}
 
+			
+
 
 		[Test]
 		public void empty_writer_has_zero_position() {

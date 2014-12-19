@@ -80,12 +80,14 @@
     <Compile Include="Cloud\CloudPageWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointReader.cs" />
+    <Compile Include="PageReadStream.cs" />
     <Compile Include="Require.cs" />
     <Compile Include="MessageWriter.cs" />
     <Compile Include="MessageResult.cs" />
     <Compile Include="Tests\MessageWriterTests.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="Tests\IsolatedMessageWriterTests.cs" />
+    <Compile Include="Tests\PageReadStreamTests.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
     <Compile Include="MessageId.cs" />
   </ItemGroup>

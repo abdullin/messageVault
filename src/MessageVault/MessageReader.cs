@@ -15,6 +15,7 @@ namespace MessageVault {
 		readonly CloudCheckpointReader _position;
 		readonly PageReader _messages;
 
+
 		public static MessageReader Create(string sas) {
 			var uri = new Uri(sas);
 			var container = new CloudBlobContainer(uri);
@@ -37,16 +38,13 @@ namespace MessageVault {
 			// TODO: inline readers
 			return _position.Read();
 		}
-		public IEnumerable<Message> ReadMessages(long start, long offset) {
-			return _messages.Read(start, offset);
-		}
-
+		
 		public async Task<MessageResult> GetMessagesAsync(CancellationToken ct, long start, int limit) {
 
 			while (!ct.IsCancellationRequested) {
 				var actual = _position.Read();
 				if (actual < start) {
-					var msg = string.Format("Requested stream position {0} that is after last known position {1}", actual, start);
+					var msg = string.Format("Actual stream length is {0}, but requested {1}", actual, start);
 					throw new InvalidOperationException(msg);
 				}
 				if (actual == start) {

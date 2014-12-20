@@ -9,16 +9,19 @@ using Serilog;
 
 namespace MessageVault.Election {
 
-	public sealed class LeaderSelector {
+	/// <summary>
+	/// Acquires a unique blob lease and runs <see cref="LeaderMethod"/>, while it is a leader.
+	/// </summary>
+	public sealed class LeaderLock {
 		readonly CloudStorageAccount _account;
 		readonly NodeInfo _info;
 		readonly ApiImplementation _api;
 		readonly RenewableBlobLease _lease;
 		
-		readonly ILogger _log = Log.ForContext<LeaderSelector>();
+		readonly ILogger _log = Log.ForContext<LeaderLock>();
 
 		
-		public LeaderSelector(CloudStorageAccount account, NodeInfo info, ApiImplementation api) {
+		public LeaderLock(CloudStorageAccount account, NodeInfo info, ApiImplementation api) {
 			Require.NotNull("account", account);
 			Require.NotNull("info", info);
 			_account = account;
@@ -28,7 +31,7 @@ namespace MessageVault.Election {
 		}
 
 
-		public Task Run(CancellationToken token) {
+		public Task KeepTryingToAcquireLock(CancellationToken token) {
 			return _lease.RunElectionsForever(token);
 		}
 

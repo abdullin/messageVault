@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Api;
@@ -12,13 +11,15 @@ namespace MessageVault.Election {
 	public sealed class ApiImplementation {
 		MessageWriteScheduler _scheduler;
 		readonly CloudBlobClient _client;
+		readonly LeaderInfoPoller _poller;
 
-		public static ApiImplementation Create(CloudStorageAccount account) {
-			return new ApiImplementation(account.CreateCloudBlobClient());
+		public static ApiImplementation Create(CloudStorageAccount account, LeaderInfoPoller poller) {
+			return new ApiImplementation(account.CreateCloudBlobClient(), poller);
 		}
 
-		ApiImplementation(CloudBlobClient	 client) {
+		ApiImplementation(CloudBlobClient client, LeaderInfoPoller poller) {
 			_client = client;
+			_poller = poller;
 		}
 
 		public void EnableDirectWrites(MessageWriteScheduler scheduler) {
@@ -45,11 +46,14 @@ namespace MessageVault.Election {
 			var writer = _scheduler;
 			if (null != writer) {
 				var result = await writer.Append(id, writes);
-				return new PostMessagesResponse() {
+				return new PostMessagesResponse {
 					Position = result
 				};
+			} else {
+				var endpoint = await _poller.GetLeaderClientAsync();
+				var result = await endpoint.PostMessagesAsync(id, writes);
+				return result;
 			}
-			throw new NotImplementedException();
 		}
 	}
 

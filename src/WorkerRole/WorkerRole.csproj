@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="ApiModule.cs" />
+    <Compile Include="AppConfig.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="WorkerRole.cs" />
   </ItemGroup>

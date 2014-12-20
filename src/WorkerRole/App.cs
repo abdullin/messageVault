@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Election;
 using Microsoft.Owin.Hosting;
-using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Nancy.Owin;
 using Nancy.TinyIoc;
@@ -12,24 +11,6 @@ using Owin;
 using Serilog;
 
 namespace WorkerRole {
-
-	public sealed class AppConfig {
-		public  string PublicUri;
-		public  string InternalUri;
-		public CloudStorageAccount StorageAccount;
-
-		public void ThrowIfInvalid() {
-			if (string.IsNullOrWhiteSpace(PublicUri)) {
-				throw new InvalidOperationException("Specify public uri");
-			}
-			if (string.IsNullOrWhiteSpace(InternalUri)) {
-				throw new InvalidOperationException("Specify private uri");
-			}
-			if (StorageAccount == null) {
-				throw new InvalidOperationException("Storage account must be specified");
-			}
-		}
-	}
 
 	public sealed class App {
 		readonly IDisposable _api;
@@ -46,10 +27,10 @@ namespace WorkerRole {
 
 		public static App Initialize(AppConfig config) {
 			config.ThrowIfInvalid();
-
-			var impl = ApiImplementation.Create(config.StorageAccount);
+			var poller = new LeaderInfoPoller();
+			var api = ApiImplementation.Create(config.StorageAccount, poller);
 			var nancyOptions = new NancyOptions {
-				Bootstrapper = new NancyBootstrapper(impl)
+				Bootstrapper = new NancyBootstrapper(api)
 			};
 			var startOptions = new StartOptions();
 			startOptions.Urls.Add(config.InternalUri);
@@ -57,19 +38,19 @@ namespace WorkerRole {
 
 			var nodeInfo = new NodeInfo(config.InternalUri);
 			
-			var leader = new LeaderSelector(config.StorageAccount, nodeInfo, impl);
-			
+			var selector = new LeaderLock(config.StorageAccount, nodeInfo, api);
 
+			
 			
 			var cts = new CancellationTokenSource();
 			// fire up leader and scheduler first
 			var tasks = new List<Task> {
-				leader.Run(cts.Token), 
-				
+				selector.KeepTryingToAcquireLock(cts.Token), 
+				poller.KeepPollingForLeaderInfo(cts.Token),
 			};
 			// bind the API
-			var api = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
-			return new App(api, cts, tasks);
+			var webApp = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
+			return new App(webApp, cts, tasks);
 		}
 
 

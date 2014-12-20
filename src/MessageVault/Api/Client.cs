@@ -40,12 +40,10 @@ namespace MessageVault.Api {
 
 		
 		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
-
 			var result = await _client.GetAsync("/streams/" + stream);
 			var content = await result.Content.ReadAsStringAsync();
 			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
 			// TODO: handle error
-			//Console.WriteLine(response.Signature);
 			return CloudSetup.GetReader(response.Signature);
 		}
 

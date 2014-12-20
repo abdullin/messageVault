@@ -56,13 +56,14 @@
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
     <Compile Include="Election\ApiImplementation.cs" />
+    <Compile Include="Election\LeaderInfoPoller.cs" />
     <Compile Include="Election\MessageWriteScheduler.cs" />
     <Compile Include="ICheckpointReader.cs" />
     <Compile Include="Election\RenewableBlobLease.cs" />
     <Compile Include="Election\BlobLeaseWrapper.cs" />
     <Compile Include="Api\Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
-    <Compile Include="Election\LeaderSelector.cs" />
+    <Compile Include="Election\LeaderLock.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="ICheckpointWriter.cs" />
     <Compile Include="Api\ApiMessageFramer.cs" />

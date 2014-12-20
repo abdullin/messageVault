@@ -40,7 +40,7 @@ namespace WorkerRole {
 
 		public async Task Run(CancellationToken token) {
 			while (!token.IsCancellationRequested) {
-				await Task.Delay(TimeSpan.MaxValue, token);
+				await Task.Delay(-1, token);
 			}
 			_scheduler.Complete();
 			await _scheduler.Completion;

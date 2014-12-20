@@ -9,6 +9,7 @@ using Nancy;
 using Nancy.Owin;
 using Nancy.TinyIoc;
 using Owin;
+using Serilog;
 
 namespace WorkerRole {
 
@@ -32,6 +33,7 @@ namespace WorkerRole {
 
 	public sealed class App {
 		readonly IDisposable _api;
+		readonly ILogger _log = Log.ForContext<App>();
 		readonly CancellationTokenSource _source = new CancellationTokenSource();
 
 		App(IDisposable api, CancellationTokenSource source, IList<Task> tasks) {
@@ -81,8 +83,26 @@ namespace WorkerRole {
 
 		}
 
-		public Task GetCompletionTask() {
-			return Task.WhenAll(_tasks);
+		public async Task GetCompletionTask() {
+			var allTasks = Task.WhenAll(_tasks);
+			try {
+				await allTasks;
+			}
+			catch (Exception)
+			{
+				if (allTasks.Exception != null)
+				{
+					allTasks.Exception.Handle(ex =>
+					{
+						if (!(ex is OperationCanceledException))
+						{
+							_log.Error(ex, "Failure on cancel");
+						}
+
+						return true;
+					});
+				}
+			}
 		}
 
 		/// <summary>

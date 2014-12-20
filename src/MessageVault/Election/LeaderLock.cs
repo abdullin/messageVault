@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
@@ -14,14 +12,14 @@ namespace MessageVault.Election {
 	/// </summary>
 	public sealed class LeaderLock {
 		readonly CloudStorageAccount _account;
-		readonly NodeInfo _info;
+		readonly LeaderInfo _info;
 		readonly ApiImplementation _api;
 		readonly RenewableBlobLease _lease;
 		
 		readonly ILogger _log = Log.ForContext<LeaderLock>();
 
 		
-		public LeaderLock(CloudStorageAccount account, NodeInfo info, ApiImplementation api) {
+		public LeaderLock(CloudStorageAccount account, LeaderInfo info, ApiImplementation api) {
 			Require.NotNull("account", account);
 			Require.NotNull("info", info);
 			_account = account;
@@ -70,38 +68,6 @@ namespace MessageVault.Election {
 		}
 
 
-	}
-
-	public sealed class NodeInfo {
-
-		readonly string _internalEndpoint;
-		
-
-		public NodeInfo(string internalEndpoint) {
-			_internalEndpoint = internalEndpoint;
-		}
-
-		public async Task WriteToBlob(CloudStorageAccount storage) {
-
-			var container = storage.CreateCloudBlobClient().GetContainerReference(Constants.LockContainer);
-
-			var blob = container.GetPageBlobReference(Constants.MasterDataFileName);
-			if (!blob.Exists()) {
-				blob.Create(512);
-			}
-			var buffer = new byte[512];
-			using (var mem = new MemoryStream(buffer))
-			{
-				using (var bin = new BinaryWriter(mem, Encoding.UTF8, true))
-				{
-					bin.Write(_internalEndpoint);
-				}
-
-				mem.Seek(0, SeekOrigin.Begin);
-				
-				await blob.WritePagesAsync(mem, 0, null);
-			}
-		}
 	}
 
 }

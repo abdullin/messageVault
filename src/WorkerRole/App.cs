@@ -27,7 +27,7 @@ namespace WorkerRole {
 
 		public static App Initialize(AppConfig config) {
 			config.ThrowIfInvalid();
-			var poller = new LeaderInfoPoller();
+			var poller = LeaderInfoPoller.Create(config.StorageAccount);
 			var api = ApiImplementation.Create(config.StorageAccount, poller);
 			var nancyOptions = new NancyOptions {
 				Bootstrapper = new NancyBootstrapper(api)
@@ -36,7 +36,7 @@ namespace WorkerRole {
 			startOptions.Urls.Add(config.InternalUri);
 			startOptions.Urls.Add(config.PublicUri);
 
-			var nodeInfo = new NodeInfo(config.InternalUri);
+			var nodeInfo = new LeaderInfo(config.InternalUri);
 			
 			var selector = new LeaderLock(config.StorageAccount, nodeInfo, api);
 

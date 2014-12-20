@@ -20,7 +20,7 @@ namespace MessageVault {
 
 		public const string LockContainer = "lock";
 		public const string MasterLockFileName = "master.lock";
-		public const string MasterDataFileName = "master.data";
+		public const string MasterDataFileName = "master.info";
 
 
 		/// <summary>

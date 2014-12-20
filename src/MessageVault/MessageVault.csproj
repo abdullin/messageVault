@@ -56,6 +56,7 @@
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
     <Compile Include="Election\ApiImplementation.cs" />
+    <Compile Include="Election\LeaderInfo.cs" />
     <Compile Include="Election\LeaderInfoPoller.cs" />
     <Compile Include="Election\MessageWriteScheduler.cs" />
     <Compile Include="ICheckpointReader.cs" />

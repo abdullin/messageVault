@@ -49,16 +49,16 @@ namespace WorkerRole {
 
 
 			//var scheduler = StreamScheduler.Create(CloudStorageAccount.DevelopmentStorageAccount);
-
+			var impl = new ApiImplementation();
 			var nancyOptions = new NancyOptions {
-				Bootstrapper = new NancyBootstrapper(null)
+				Bootstrapper = new NancyBootstrapper(impl)
 			};
 			var startOptions = new StartOptions();
 			startOptions.Urls.Add(config.InternalUri);
 			startOptions.Urls.Add(config.PublicUri);
 
 			var nodeInfo = new NodeInfo(config.InternalUri);
-			var impl = new ApiImplementation();
+			
 			var leader = new LeaderSelector(config.StorageAccount, nodeInfo, impl);
 			
 
@@ -110,9 +110,9 @@ namespace WorkerRole {
 		///   Passes our dependencies to Nancy modules
 		/// </summary>
 		sealed class NancyBootstrapper : DefaultNancyBootstrapper {
-			readonly MessageWriteScheduler _scheduler;
+			readonly ApiImplementation _scheduler;
 
-			public NancyBootstrapper(MessageWriteScheduler scheduler) {
+			public NancyBootstrapper(ApiImplementation scheduler) {
 				_scheduler = scheduler;
 			}
 

@@ -9,23 +9,6 @@ using Serilog;
 
 namespace MessageVault.Election {
 
-	public sealed class ApiImplementation {
-		MessageWriteScheduler _scheduler;
-
-		public void EnableDirectWrites(MessageWriteScheduler scheduler) {
-			_scheduler = scheduler;
-			Log.Verbose("API will handle writes on this node");
-		}
-
-		public void DisableDirectWrites() {
-			if (_scheduler != null) {
-				_scheduler = null;
-				Log.Verbose("API will forward writes to leader");
-			}
-			
-		}
-	}
-
 	public sealed class LeaderSelector {
 		readonly CloudStorageAccount _account;
 		readonly NodeInfo _info;

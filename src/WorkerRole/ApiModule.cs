@@ -8,9 +8,9 @@ using Serilog;
 namespace WorkerRole {
 
 	public sealed class ApiModule : NancyModule {
-		readonly MessageWriteScheduler _scheduler;
+		readonly ApiImplementation _scheduler;
 
-		public ApiModule(MessageWriteScheduler scheduler) {
+		public ApiModule(ApiImplementation scheduler) {
 			_scheduler = scheduler;
 			BuildRoutes();
 		}
@@ -38,10 +38,9 @@ namespace WorkerRole {
 
 			Get["/streams/{id}"] = x => {
 				var id = (string) x.id;
-				var signature = _scheduler.GetReadAccessSignature(id);
-				return Response.AsJson(new GetStreamResponse {
-					Signature = signature
-				});
+				var response = _scheduler.GetReadAccess(id);
+				return Response.AsJson(response);
+
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
 				// read messages in request thread
@@ -49,10 +48,9 @@ namespace WorkerRole {
 				var id = (string) x.id;
 
 				try {
-					var pos = await _scheduler.Append(id, messages);
-					return Response.AsJson(new PostMessagesResponse {
-						Position = pos
-					});
+					var response = await _scheduler.Append(id, messages);
+
+					return Response.AsJson(response);
 				}
 				catch (Exception ex) {
 					return WrapException(ex);

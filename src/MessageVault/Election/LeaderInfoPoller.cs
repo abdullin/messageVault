@@ -21,11 +21,11 @@ namespace MessageVault.Election {
 			_storage = storage;
 		}
 
-		CloudBlobClient _storage;
+		readonly CloudBlobClient _storage;
 		Client _client;
 		string _endpoint;
 		public async Task KeepPollingForLeaderInfo(CancellationToken token) {
-			// TODO: try catch
+			
 			while (!token.IsCancellationRequested) {
 				try {
 					var info = await LeaderInfo.Get(_storage);
@@ -34,8 +34,10 @@ namespace MessageVault.Election {
 						await Task.Delay(500, token);
 						continue;
 					}
-					if (_endpoint != info.GetEndpoint()) {
-						_endpoint = info.GetEndpoint();
+					var newEndpoint = info.GetEndpoint();
+					if (_endpoint != newEndpoint) {
+						Log.Information("Detected new leader {endpoint}", newEndpoint);
+						_endpoint = newEndpoint;
 						_client = new Client(_endpoint);
 					}
 

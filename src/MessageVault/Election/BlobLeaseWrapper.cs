@@ -39,9 +39,6 @@ namespace MessageVault.Election {
 				return await _leaseBlob.AcquireLeaseAsync(Constants.AcquireLeaseFor, null, token);
 			}
 			catch (StorageException storageException) {
-				_logger.Error(storageException, "Failed to get lease. {Error}", storageException.Message);
-
-
 				var webException = storageException.InnerException as WebException;
 
 				if (webException != null) {

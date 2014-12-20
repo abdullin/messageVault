@@ -1,25 +1,29 @@
 using System;
-using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.WindowsAzure.Storage;
 using Serilog;
 
 namespace WorkerRole {
 
 	public static class Program {
-
-		
-		public static void Main() {
+		public static void Main(params string[] args) {
 			InitLogging();
 
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
+			var range = args.FirstOrDefault() ?? "8";
 
-			var app = App.Initialize("http://127.0.0.1:8888");
+			var config = new AppConfig {
+				InternalUri = "http://127.0.0.1:" + range + "801",
+				PublicUri = "http://127.0.0.1:" + range + "001",
+				StorageAccount = CloudStorageAccount.DevelopmentStorageAccount
+			};
 
 
+			var app = App.Initialize(config);
 
 
 			Log.Information("Console app started");
-
 
 
 			Console.ReadLine();
@@ -29,7 +33,8 @@ namespace WorkerRole {
 			Console.ReadLine();
 		}
 
-		static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs) {
+		static void CurrentDomainOnUnhandledException(object sender,
+			UnhandledExceptionEventArgs unhandledExceptionEventArgs) {
 			Log.Fatal(unhandledExceptionEventArgs.ExceptionObject.ToString());
 		}
 

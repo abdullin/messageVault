@@ -1,57 +1,84 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using MessageVault.Cloud;
 using Microsoft.WindowsAzure.Storage.Blob;
+using System.Linq;
 
 namespace MessageVault {
 
+
+
 	public sealed class MessageReader {
-		readonly PositionReader _position;
-		readonly PageReader _messages;
+		readonly ICheckpointReader _position;
+		readonly IPageReader _messages;		
 
-		public static MessageReader Create(string sas) {
-			var uri = new Uri(sas);
-			var container = new CloudBlobContainer(uri);
+		readonly byte[] _buffer;
+		const int Limit = 1024 * 1024 * 4;
 
-			var posBlob = container.GetPageBlobReference("stream.chk");
-			var dataBlob = container.GetPageBlobReference("stream.dat");
-			var position = new PositionReader(posBlob);
-			var messages = new PageReader(dataBlob);
-			return new MessageReader(position, messages);
-
-		}
-
-		public MessageReader(PositionReader position, PageReader messages) {
+		public MessageReader(ICheckpointReader position, IPageReader messages) {
 			_position = position;
 			_messages = messages;
+			_buffer = new byte[Limit];
 		}
 
 
 		public long GetPosition() {
-			// TODO: inline readers
 			return _position.Read();
 		}
-		public IEnumerable<StoredMessage> ReadMessages(long start, long offset) {
-			return _messages.Read(start, offset);
 
+		public MessageResult ReadMessages(long from, long till, int maxCount)
+		{
+			Require.ZeroOrGreater("from", from);
+			Require.ZeroOrGreater("maxOffset", till);
+			Require.Positive("maxCount", maxCount);
 
+			var list = new List<Message>(maxCount);
+			var position = from;
+
+			using (var prs = new PageReadStream(_messages, from, till, _buffer))
+			{
+				using (var bin = new BinaryReader(prs))
+				{
+					while (prs.Position < prs.Length)
+					{
+						var message = MessageFormat.Read(bin);
+						list.Add(message);
+						position = prs.Position;
+						if (list.Count >= maxCount)
+						{
+							break;
+						}
+					}
+				}
+
+			}
+			return new MessageResult(list, position);
 		}
 
+		
+		public async Task<MessageResult> GetMessagesAsync(CancellationToken ct, long start, int limit) {
 
+			while (!ct.IsCancellationRequested) {
+				var actual = _position.Read();
+				if (actual < start) {
+					var msg = string.Format("Actual stream length is {0}, but requested {1}", actual, start);
+					throw new InvalidOperationException(msg);
+				}
+				if (actual == start) {
+					await Task.Delay(1000, ct);
+					continue;
+				}
+				var result = await Task.Run(() => ReadMessages(start, actual, limit));
+				
+				return result;
+
+			}
+			return MessageResult.Empty(start);
+		} 
 	}
-
-
-	public sealed class StoredMessage {
-		// todo - expand to time + offset
-		public readonly byte[] Id;
-		public readonly string Contract;
-		public readonly byte[] Data;
-
-		public StoredMessage(byte[] id, string contract, byte[] data) {
-			Id = id;
-			Contract = contract;
-			Data = data;
-		}
-	}
-
 
 }

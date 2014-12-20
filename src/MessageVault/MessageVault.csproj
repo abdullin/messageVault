@@ -48,32 +48,48 @@
     <Reference Include="StatsdClient">
       <HintPath>..\packages\StatsdClient.1.0.0.16\lib\net35\StatsdClient.dll</HintPath>
     </Reference>
-    <Reference Include="StatsdClient.Configuration">
-      <HintPath>..\packages\StatsdClient.1.0.0.16\lib\net35\StatsdClient.Configuration.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
+    <Compile Include="Cloud\CloudPageReader.cs" />
+    <Compile Include="Cloud\CloudSetup.cs" />
+    <Compile Include="Election\ApiImplementation.cs" />
+    <Compile Include="Election\LeaderInfo.cs" />
+    <Compile Include="Election\LeaderInfoPoller.cs" />
+    <Compile Include="Election\MessageWriteScheduler.cs" />
+    <Compile Include="ICheckpointReader.cs" />
+    <Compile Include="Election\RenewableBlobLease.cs" />
+    <Compile Include="Election\BlobLeaseWrapper.cs" />
+    <Compile Include="Api\Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
-    <Compile Include="IncomingMessage.cs" />
+    <Compile Include="Election\LeaderLock.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="ICheckpointWriter.cs" />
+    <Compile Include="Api\ApiMessageFramer.cs" />
+    <Compile Include="MessageFormat.cs" />
+    <Compile Include="MessageToWrite.cs" />
+    <Compile Include="IPageReader.cs" />
+    <Compile Include="IPageWriter.cs" />
+    <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="Tests\MessageIdTests.cs" />
     <Compile Include="MessageReader.cs" />
-    <Compile Include="PageReader.cs" />
-    <Compile Include="PageWriter.cs" />
-    <Compile Include="PositionWriter.cs" />
-    <Compile Include="SegmentWriter.cs" />
-    <Compile Include="Tests\SegmentWriterTests.cs" />
+    <Compile Include="Cloud\CloudPageWriter.cs" />
+    <Compile Include="Cloud\CloudCheckpointWriter.cs" />
+    <Compile Include="Cloud\CloudCheckpointReader.cs" />
+    <Compile Include="PageReadStream.cs" />
+    <Compile Include="Require.cs" />
+    <Compile Include="MessageWriter.cs" />
+    <Compile Include="MessageResult.cs" />
+    <Compile Include="Memory\MemoryPageReaderWriter.cs" />
+    <Compile Include="Tests\MessageWriterTests.cs" />
     <Compile Include="Logging.cs" />
+    <Compile Include="Tests\SyntheticMemoryTests.cs" />
+    <Compile Include="Tests\PageReadStreamTests.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
-    <Compile Include="Uuid.cs" />
+    <Compile Include="MessageId.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

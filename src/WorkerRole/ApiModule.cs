@@ -1,7 +1,6 @@
 using System;
-using System.IO;
-using MessageVault;
 using MessageVault.Api;
+using MessageVault.Election;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Serilog;
@@ -9,9 +8,9 @@ using Serilog;
 namespace WorkerRole {
 
 	public sealed class ApiModule : NancyModule {
-		readonly StreamScheduler _scheduler;
+		readonly ApiImplementation _scheduler;
 
-		public ApiModule(StreamScheduler scheduler) {
+		public ApiModule(ApiImplementation scheduler) {
 			_scheduler = scheduler;
 			BuildRoutes();
 		}
@@ -21,16 +20,15 @@ namespace WorkerRole {
 			var se = ex as StorageException;
 
 			if (se != null) {
-				return Response.AsJson(new {
-					error = se.Message,
-					type = "storage",
+				return Response.AsJson(new ErrorResponse {
+					Error = se.Message,
+					Type = "storage",
 				}, HttpStatusCode.InternalServerError);
 			}
 			return Response.AsJson(new {error = ex.Message,}, HttpStatusCode.InternalServerError);
 		}
 
 		void BuildRoutes() {
-
 			Before += ctx => {
 				Log.Debug("{method} {url}", ctx.Request.Method, ctx.Request.Path);
 				return null;
@@ -40,26 +38,23 @@ namespace WorkerRole {
 
 			Get["/streams/{id}"] = x => {
 				var id = (string) x.id;
-				var signature = _scheduler.GetReadAccessSignature(id);
-				return Response.AsJson(new GetStreamResponse {
-					Signature = signature
-				});
+				var response = _scheduler.GetReadAccess(id);
+				return Response.AsJson(response);
+
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
 				// read messages in request thread
-				var messages = MessageFramer.ReadMessages(Request.Body);
+				var messages = ApiMessageFramer.ReadMessages(Request.Body);
 				var id = (string) x.id;
 
 				try {
-					var pos = await _scheduler.Append(id, messages);
-					return Response.AsJson(new {
-						position = pos
-					});
+					var response = await _scheduler.Append(id, messages);
+
+					return Response.AsJson(response);
 				}
 				catch (Exception ex) {
 					return WrapException(ex);
 				}
-				
 			};
 		}
 	}

@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault;
+using MessageVault.Api;
+using MessageVault.Memory;
 
 
 namespace InteractiveConsole {
@@ -21,31 +23,60 @@ namespace InteractiveConsole {
 
 
 		static async Task RunAsync() {
-			using (var client = new Client("http://127.0.0.1:8888")) {
+			using (var client = new Client("http://127.0.0.1:8001")) {
 
-				
-				var reader = await client.GetMessageReaderAsync("test");
 
-				var position = reader.GetPosition();
-				Console.WriteLine("Current position is " + position);
+				// consumer
+				var checkpoint = new MemoryCheckpointReaderWriter();
+				var consumer = new ConsumerSample(checkpoint, client);
 
-				var message = new IncomingMessage("test", new byte[20]);
+				var task = Task.Run(() => consumer.Run(CancellationToken.None));
 
-				var response = await client.PostMessagesAsync("test", new[] { message });
+				for (int i = 0; i < 10; i++) {
+					var message = new MessageToWrite("test", new byte[20]);
 
-				Console.WriteLine(response);
+					var response = await client.PostMessagesAsync("test", new[] { message });
+					Console.WriteLine(response.Position);
 
-				var offset = reader.GetPosition();
-				foreach (var msg in reader.ReadMessages(position,  offset - position))
-				{
-					Console.WriteLine("msg:" + msg.Contract);
+					await Task.Delay(1000);
+
 				}
 
-
-
-				//var r = client.GetStringAsync("/streams/test");
+				await task;
 			}
 		}
 	}
+
+	public sealed class ConsumerSample
+	{
+		readonly ICheckpointWriter _checkpoint;
+		readonly Client _client;
+
+		public ConsumerSample(ICheckpointWriter checkpoint, Client client)
+		{
+			_checkpoint = checkpoint;
+			_client = client;
+		}
+
+		public async void Run(CancellationToken ct)
+		{
+			var current = _checkpoint.GetOrInitPosition();
+			var reader = await _client.GetMessageReaderAsync("test");
+
+
+			while (!ct.IsCancellationRequested)
+			{
+				var result = await reader.GetMessagesAsync(ct, current, 100);
+				if (result.HasMessages()) {
+					foreach (var message in result.Messages) {
+						Console.WriteLine("Got message! " + message.Id);
+					}
+					current = result.NextOffset;
+					_checkpoint.Update(current);
+				}
+			}
+		}
+	}
+
 
 }

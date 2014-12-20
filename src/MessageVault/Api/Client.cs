@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using MessageVault.Api;
+using MessageVault.Cloud;
 using Newtonsoft.Json;
 
-namespace MessageVault {
+namespace MessageVault.Api {
 
 	public sealed class Client : IDisposable {
 		readonly HttpClient _client;
@@ -20,11 +20,11 @@ namespace MessageVault {
 
 		
 
-		public async Task<string> PostMessagesAsync(string stream, ICollection<IncomingMessage> messages) {
+		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
 			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
 
-				MessageFramer.WriteMessages(messages, mem);
+				ApiMessageFramer.WriteMessages(messages, mem);
 				mem.Seek(0, SeekOrigin.Begin);
 
 				using (var sc = new StreamContent(mem)) {
@@ -32,21 +32,19 @@ namespace MessageVault {
 					var result = await _client.PostAsync("/streams/" + stream, sc);
 					
 					var content = await result.Content.ReadAsStringAsync();
-					
-					return content;
+
+					return JsonConvert.DeserializeObject<PostMessagesResponse>(content);
 				}
 			}
 		}
 
 		
 		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
-
 			var result = await _client.GetAsync("/streams/" + stream);
 			var content = await result.Content.ReadAsStringAsync();
 			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
 			// TODO: handle error
-			//Console.WriteLine(response.Signature);
-			return MessageReader.Create(response.Signature);
+			return CloudSetup.GetReader(response.Signature);
 		}
 
 

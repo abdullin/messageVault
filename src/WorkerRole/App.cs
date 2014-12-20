@@ -58,7 +58,8 @@ namespace WorkerRole {
 			startOptions.Urls.Add(config.PublicUri);
 
 			var nodeInfo = new NodeInfo(config.InternalUri);
-			var leader = new LeaderSelector(config.StorageAccount, nodeInfo);
+			var impl = new ApiImplementation();
+			var leader = new LeaderSelector(config.StorageAccount, nodeInfo, impl);
 			
 
 			

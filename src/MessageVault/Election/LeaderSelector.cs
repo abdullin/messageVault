@@ -34,26 +34,35 @@ namespace MessageVault.Election {
 		}
 
 		async Task LeaderMethod(CancellationToken token, CloudPageBlob blob) {
-			try {
-				while (!token.IsCancellationRequested) {
+			_log.Information("This node is a leader");
+			using (var scheduler = MessageWriteScheduler.Create(_account)) {
+				try {
+					_log.Information("Message write scheduler created");
 					_isLeader = true;
-					_log.Information("This node is a leader");
-					
 					// tell the world who is the leader
 					await _info.WriteToBlob(_account);
-					// sleep for some time or until shutdown signal 
-					// (because lease is lost or we shutdown)
-					await Task.Delay(TimeSpan.FromMinutes(10), token);
+					// sleep till cancelled
+					await Task.Delay(-1, token);
 				}
-			}
-			catch (OperationCanceledException) {
-				// expect this exception to be thrown in normal circumstances or check the cancellation token, because
-				// if the lease can't be renewed, the token will signal a cancellation request.
-				_log.Information("Aborting work, as lease been lost");
-			}
-			finally {
-				_isLeader = false;
-				_log.Information("This node is no longer a leader");
+				catch (OperationCanceledException) {
+					// expect this exception to be thrown in normal circumstances or check the cancellation token, because
+					// if the lease can't be renewed, the token will signal a cancellation request.
+					_log.Information("Leadership lost. Shutting down the scheduler");
+					// shutdown the scheduler
+					_isLeader = false;
+
+
+					var shutdown = scheduler.Shutdown();
+					if (shutdown.Wait(5000)) {
+						_log.Information("Scheduler is down");
+					} else {
+						_log.Error("Scheduler failed to shutdown in time");
+					}
+				}
+				finally {
+					_isLeader = false;
+					_log.Information("This node is no longer a leader");
+				}
 			}
 		}
 

@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
+    <Compile Include="Election\MessageWriteScheduler.cs" />
     <Compile Include="ICheckpointReader.cs" />
     <Compile Include="Election\RenewableBlobLease.cs" />
     <Compile Include="Election\BlobLeaseWrapper.cs" />

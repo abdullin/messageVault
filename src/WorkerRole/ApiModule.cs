@@ -1,5 +1,6 @@
 using System;
 using MessageVault.Api;
+using MessageVault.Election;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Serilog;
@@ -7,9 +8,9 @@ using Serilog;
 namespace WorkerRole {
 
 	public sealed class ApiModule : NancyModule {
-		readonly StreamScheduler _scheduler;
+		readonly MessageWriteScheduler _scheduler;
 
-		public ApiModule(StreamScheduler scheduler) {
+		public ApiModule(MessageWriteScheduler scheduler) {
 			_scheduler = scheduler;
 			BuildRoutes();
 		}

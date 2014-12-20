@@ -46,12 +46,12 @@ namespace WorkerRole {
 
 		public static App Initialize(AppConfig config) {
 			config.ThrowIfInvalid();
-			
 
-			var scheduler = StreamScheduler.CreateDev();
+
+			//var scheduler = StreamScheduler.Create(CloudStorageAccount.DevelopmentStorageAccount);
 
 			var nancyOptions = new NancyOptions {
-				Bootstrapper = new NancyBootstrapper(scheduler)
+				Bootstrapper = new NancyBootstrapper(null)
 			};
 			var startOptions = new StartOptions();
 			startOptions.Urls.Add(config.InternalUri);
@@ -66,7 +66,7 @@ namespace WorkerRole {
 			// fire up leader and scheduler first
 			var tasks = new List<Task> {
 				leader.Run(cts.Token), 
-				scheduler.Run(cts.Token)
+				
 			};
 			// bind the API
 			var api = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
@@ -109,9 +109,9 @@ namespace WorkerRole {
 		///   Passes our dependencies to Nancy modules
 		/// </summary>
 		sealed class NancyBootstrapper : DefaultNancyBootstrapper {
-			readonly StreamScheduler _scheduler;
+			readonly MessageWriteScheduler _scheduler;
 
-			public NancyBootstrapper(StreamScheduler scheduler) {
+			public NancyBootstrapper(MessageWriteScheduler scheduler) {
 				_scheduler = scheduler;
 			}
 

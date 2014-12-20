@@ -73,7 +73,6 @@
     <Compile Include="App.cs" />
     <Compile Include="ApiModule.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="StreamScheduler.cs" />
     <Compile Include="WorkerRole.cs" />
   </ItemGroup>
   <ItemGroup>

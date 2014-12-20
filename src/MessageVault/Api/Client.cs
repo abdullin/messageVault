@@ -20,7 +20,7 @@ namespace MessageVault.Api {
 
 		
 
-		public async Task<string> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
+		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
 			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
 
@@ -32,8 +32,8 @@ namespace MessageVault.Api {
 					var result = await _client.PostAsync("/streams/" + stream, sc);
 					
 					var content = await result.Content.ReadAsStringAsync();
-					
-					return content;
+
+					return JsonConvert.DeserializeObject<PostMessagesResponse>(content);
 				}
 			}
 		}

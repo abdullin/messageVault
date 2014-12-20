@@ -47,9 +47,7 @@ namespace WorkerRole {
 		public static App Initialize(AppConfig config) {
 			config.ThrowIfInvalid();
 
-
-			//var scheduler = StreamScheduler.Create(CloudStorageAccount.DevelopmentStorageAccount);
-			var impl = new ApiImplementation();
+			var impl = ApiImplementation.Create(config.StorageAccount);
 			var nancyOptions = new NancyOptions {
 				Bootstrapper = new NancyBootstrapper(impl)
 			};
@@ -117,8 +115,8 @@ namespace WorkerRole {
 			}
 
 			protected override void ConfigureApplicationContainer(TinyIoCContainer container) {
-				container.Register(_scheduler);
 				base.ConfigureApplicationContainer(container);
+				container.Register(_scheduler);
 			}
 		}
 	}

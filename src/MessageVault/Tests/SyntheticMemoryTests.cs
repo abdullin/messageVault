@@ -16,6 +16,10 @@ namespace MessageVault.Tests {
 		MemoryCheckpointReaderWriter _checkpoint;
 		MessageReader _reader;
 
+		public SyntheticMemoryTests() {
+			Logging.InitTrace();
+		}
+
 		[SetUp]
 		public void Setup() {
 			_pages = new MemoryPageReaderWriter();
@@ -28,6 +32,7 @@ namespace MessageVault.Tests {
 
 		[Test]
 		public void given_empty_when_check_position() {
+			Log.Information("Test");
 			Assert.AreEqual(0, _writer.GetPosition());
 			Assert.AreEqual(0, _reader.GetPosition());
 		}
@@ -82,10 +87,7 @@ namespace MessageVault.Tests {
 
 		[Test]
 		public void quasi_random_test() {
-			Logging.InitTrace();
 			var maxCommitSize = _pages.GetMaxCommitSize();
-
-
 			var written = new List<MessageToWrite>();
 			for (int i = 0; i < 100; i++) {
 				var batchSize = (i % 10) + 1;
@@ -98,8 +100,6 @@ namespace MessageVault.Tests {
 				_writer.Append(list);
 				written.AddRange(list);
 			}
-
-
 		}
 
 

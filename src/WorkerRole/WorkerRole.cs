@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.Net;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Storage;
@@ -19,10 +20,13 @@ namespace WorkerRole {
 			//Logging. configure
 			ServicePointManager.DefaultConnectionLimit = 12;
 
+			var storage = RoleEnvironment.GetConfigurationSettingValue("Storage");
+			var account = CloudStorageAccount.Parse(storage);
+
 			var config = new AppConfig {
 				InternalUri = GetEndpointAsUri("InternalHttp"),
 				PublicUri = GetEndpointAsUri("Http"),
-				StorageAccount = CloudStorageAccount.DevelopmentStorageAccount
+				StorageAccount = account
 			};
 			_app = App.Initialize(config);
 

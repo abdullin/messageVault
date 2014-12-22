@@ -8,7 +8,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
-namespace MessageVault.Election {
+namespace MessageVault.Server.Election {
 
 	/// <summary>
 	/// Ensures that all writes to a single stream are sequential

@@ -1,10 +1,8 @@
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace MessageVault.Election {
+namespace MessageVault.Server.Election {
 
 	public sealed class LeaderInfo {
 

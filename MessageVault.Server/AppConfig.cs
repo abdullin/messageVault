@@ -1,7 +1,7 @@
 using System;
 using Microsoft.WindowsAzure.Storage;
 
-namespace WorkerRole {
+namespace MessageVault.Server {
 
 	public sealed class AppConfig {
 		public  string PublicUri;

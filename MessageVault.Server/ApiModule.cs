@@ -1,11 +1,11 @@
 using System;
 using MessageVault.Api;
-using MessageVault.Election;
+using MessageVault.Server.Election;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Serilog;
 
-namespace WorkerRole {
+namespace MessageVault.Server {
 
 	public sealed class ApiModule : NancyModule {
 		readonly ApiImplementation _scheduler;

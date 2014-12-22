@@ -95,7 +95,7 @@
             be converted to scalars, which are generally stored as strings.</param>
             <returns>A token that must be disposed, in order, to pop properties back off the stack.</returns>
         </member>
-        <member name="M:Serilog.Context.LogContext.PushProperties(Serilog.Core.Enrichers.PropertyEnricher[])">
+        <member name="M:Serilog.Context.LogContext.PushProperties(Serilog.Core.ILogEventEnricher[])">
             <summary>
             Push multiple properties onto the context, returning an <see cref="T:System.IDisposable"/>
             that can later be used to remove the properties. The properties must
@@ -242,12 +242,13 @@
             Write log events to a disk file.
             </summary>
         </member>
-        <member name="M:Serilog.Sinks.IOFile.FileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64})">
+        <member name="M:Serilog.Sinks.IOFile.FileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64},System.Text.Encoding)">
             <summary>Construct a <see cref="T:Serilog.Sinks.IOFile.FileSink"/>.</summary>
             <param name="path">Path to the file.</param>
             <param name="textFormatter">Formatter used to convert log events to text.</param>
             <param name="fileSizeLimitBytes">The maximum size, in bytes, to which a log file will be allowed to grow.
             For unrestricted growth, pass null. The default is 1 GB.</param>
+            <param name="encoding">Character encoding used to write the text file. The default is UTF-8.</param>
             <returns>Configuration object allowing method chaining.</returns>
             <remarks>The file will be written using the UTF-8 character set.</remarks>
             <exception cref="T:System.IO.IOException"></exception>
@@ -364,7 +365,7 @@
             currently supported.
             </summary>
         </member>
-        <member name="M:Serilog.Sinks.RollingFile.RollingFileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64},System.Nullable{System.Int32})">
+        <member name="M:Serilog.Sinks.RollingFile.RollingFileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64},System.Nullable{System.Int32},System.Text.Encoding)">
             <summary>Construct a <see cref="T:Serilog.Sinks.RollingFile.RollingFileSink"/>.</summary>
             <param name="pathFormat">String describing the location of the log files,
             with {Date} in the place of the file date. E.g. "Logs\myapp-{Date}.log" will result in log
@@ -374,6 +375,7 @@
             For unrestricted growth, pass null. The default is 1 GB.</param>
             <param name="retainedFileCountLimit">The maximum number of log files that will be retained,
             including the current log file. For unlimited retention, pass null. The default is 31.</param>
+            <param name="encoding">Character encoding used to write the text file. The default is UTF-8.</param>
             <returns>Configuration object allowing method chaining.</returns>
             <remarks>The file will be written using the UTF-8 character set.</remarks>
         </member>

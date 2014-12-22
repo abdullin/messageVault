@@ -1,6 +1,7 @@
 using System;
 using System.Configuration;
 using System.Net;
+using MessageVault.Server;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.Storage;
 using Serilog;

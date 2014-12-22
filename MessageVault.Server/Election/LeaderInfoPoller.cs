@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
-namespace MessageVault.Election {
+namespace MessageVault.Server.Election {
 
 	public sealed class LeaderInfoPoller {
 

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using MessageVault.Server;
 using Microsoft.WindowsAzure.Storage;
 using Serilog;
 

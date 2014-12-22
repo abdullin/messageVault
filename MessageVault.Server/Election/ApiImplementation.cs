@@ -6,7 +6,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
-namespace MessageVault.Election {
+namespace MessageVault.Server.Election {
 
 	public sealed class ApiImplementation {
 		MessageWriteScheduler _scheduler;

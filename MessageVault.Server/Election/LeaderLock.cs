@@ -5,7 +5,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
-namespace MessageVault.Election {
+namespace MessageVault.Server.Election {
 
 	/// <summary>
 	/// Acquires a unique blob lease and runs <see cref="LeaderMethod"/>, while it is a leader.

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MessageVault.Election;
+using MessageVault.Server.Election;
 using Microsoft.Owin.Hosting;
 using Nancy;
 using Nancy.Owin;
@@ -10,7 +10,7 @@ using Nancy.TinyIoc;
 using Owin;
 using Serilog;
 
-namespace WorkerRole {
+namespace MessageVault.Server {
 
 	public sealed class App {
 		readonly IDisposable _api;

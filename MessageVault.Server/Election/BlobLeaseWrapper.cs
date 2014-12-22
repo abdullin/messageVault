@@ -1,4 +1,3 @@
-using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,7 +5,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
-namespace MessageVault.Election {
+namespace MessageVault.Server.Election {
 
 	/// <summary>
 	///   Wrapper around a Windows Azure Blob Lease

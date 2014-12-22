@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<ServiceDefinition name="AzureCloudService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2014-06.2.4">
-  <WorkerRole name="WorkerRole" vmsize="Small">
-    <Endpoints>
-      <InputEndpoint name="Http" protocol="http" port="10100" />
-      <InternalEndpoint name="InternalHttp" protocol="http" />
-    </Endpoints>
-  </WorkerRole>
-</ServiceDefinition>

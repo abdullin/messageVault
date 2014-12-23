@@ -1,11 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
     <metadata>
-        <id>MyPackage</id>
+        <id>MessageVault.Server</id>
         <version>1.0.0</version>
-        <authors>Rinat.Abdullin</authors>
+        <authors>Rinat Abdullin</authors>
+        <owners>AgileHarbor</owners>
+        <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/agileharbor/messageVault</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>My package description.</description>
+        <description>Server-side logic for hosting MessageVault in your Windows Azure Cloud Service. To get started - include this package and add a WorkerRole instance.</description>
+        <copyright>AgileHarbor</copyright>
+        <dependencies>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Serilog" version="1.4.102" />
+                <dependency id="WindowsAzure.Storage" version="4.3.0" />
+                <dependency id="Nancy" version="0.23.2" />
+                <dependency id="Nancy.Owin" version="0.23.2" />
+                <dependency id="Microsoft.Owin.Hosting" version="3.0.0" />
+                <dependency id="Microsoft.Owin" version="3.0.0" />
+                <dependency id="Owin" version="1.0.0" />
+                <dependency id="StatsdClient" version="1.0.0.16" />
+            </group>
+        </dependencies>
+        <references>
+            <group targetFramework=".NETFramework4.5" />
+        </references>
     </metadata>
-    <files />
+    <files>
+        <file src="bin\server\MessageVault.dll" target="lib\MessageVault.dll" />
+        <file src="bin\server\MessageVault.pdb" target="lib\MessageVault.pdb" />
+        <file src="bin\server\MessageVault.Server.dll" target="lib\MessageVault.Server.dll" />
+        <file src="bin\server\MessageVault.Server.pdb" target="lib\MessageVault.Server.pdb" />
+    </files>
 </package>

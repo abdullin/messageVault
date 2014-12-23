@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "AzureCloudService", "AzureCloudService\AzureCloudService.ccproj", "{BE00716F-13A9-4627-A6D4-27AC94568BEB}"
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "AzureCloudService", "src\AzureCloudService\AzureCloudService.ccproj", "{BE00716F-13A9-4627-A6D4-27AC94568BEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerRole", "WorkerRole\WorkerRole.csproj", "{2BACA8A6-6024-4EC4-A879-E0B36A50959B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerRole", "src\WorkerRole\WorkerRole.csproj", "{2BACA8A6-6024-4EC4-A879-E0B36A50959B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault", "MessageVault\MessageVault.csproj", "{FA9FED71-1545-4CB9-AE0E-489B00288313}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault", "src\MessageVault\MessageVault.csproj", "{FA9FED71-1545-4CB9-AE0E-489B00288313}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveConsole", "InteractiveConsole\InteractiveConsole.csproj", "{8D575A00-C8D8-4751-B58B-42E30FE455B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveConsole", "src\InteractiveConsole\InteractiveConsole.csproj", "{8D575A00-C8D8-4751-B58B-42E30FE455B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault.Server", "MessageVault.Server\MessageVault.Server.csproj", "{D48DBD24-16F4-4698-9197-6EFE5BA92498}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault.Server", "src\MessageVault.Server\MessageVault.Server.csproj", "{D48DBD24-16F4-4698-9197-6EFE5BA92498}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UsageSample", "UsageSample", "{68D2ECEC-91A4-4E0C-BE08-80546A222B3F}"
 EndProject

@@ -38,7 +38,8 @@ namespace MessageVault.Server.Election {
 					if (_endpoint != newEndpoint) {
 						Log.Information("Detected new leader {endpoint}", newEndpoint);
 						_endpoint = newEndpoint;
-						_client = new Client(_endpoint);
+						var password = _storage.Credentials.ExportBase64EncodedKey();
+						_client = new Client(_endpoint, Constants.ClusterNodeUser, password);
 					}
 
 					await Task.Delay(3500, token);

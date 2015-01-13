@@ -31,7 +31,7 @@ namespace MessageVault.Server.Election {
 
 			var client = account.CreateCloudBlobClient();
 			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(1), 3);
-			var container = client.GetContainerReference(Constants.LockContainer);
+			var container = client.GetContainerReference(Constants.SysContainer);
 			var blob = container.GetPageBlobReference(Constants.MasterLockFileName);
 			return new RenewableBlobLease(blob, task);
 		}

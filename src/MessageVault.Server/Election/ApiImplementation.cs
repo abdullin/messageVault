@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Api;
 using MessageVault.Cloud;
+using MessageVault.Server.Auth;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
@@ -14,7 +15,7 @@ namespace MessageVault.Server.Election {
 		readonly CloudBlobClient _client;
 		readonly LeaderInfoPoller _poller;
 
-		public static ApiImplementation Create(CloudStorageAccount account, LeaderInfoPoller poller) {
+		public static ApiImplementation Create(CloudStorageAccount account, LeaderInfoPoller poller, AuthData auth) {
 			return new ApiImplementation(account.CreateCloudBlobClient(), poller);
 		}
 

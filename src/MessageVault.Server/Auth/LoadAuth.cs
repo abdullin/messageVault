@@ -13,9 +13,9 @@ namespace MessageVault.Server.Auth {
 			var log = Log.ForContext<AuthData>();
 			
 			log.Warning(
-				"Auth {blob} doesn't exist in {container}. Using default login/password", 
-				Constants.SysContainer, 
-				Constants.AuthFileName
+				"Auth JSON file {blob} doesn't exist in container {container}. Using default login/password", 
+				Constants.AuthFileName,
+				Constants.SysContainer
 				);
 			
 			return AuthData.Default();

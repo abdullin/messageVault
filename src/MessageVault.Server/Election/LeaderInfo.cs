@@ -38,7 +38,7 @@ namespace MessageVault.Server.Election {
 		}
 
 		static CloudPageBlob GetBlob(CloudBlobClient cloudBlobClient) {
-			var container = cloudBlobClient.GetContainerReference(Constants.LockContainer);
+			var container = cloudBlobClient.GetContainerReference(Constants.SysContainer);
 
 			var blob = container.GetPageBlobReference(Constants.MasterDataFileName);
 			return blob;

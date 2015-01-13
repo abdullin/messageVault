@@ -15,16 +15,18 @@ namespace WorkerRole {
 			var range = args.FirstOrDefault() ?? "8";
 
 			var config = new AppConfig {
-				InternalUri = "http://127.0.0.1:" + range + "801",
 				PublicUri = "http://127.0.0.1:" + range + "001",
+				InternalUri = "http://127.0.0.1:" + range + "002",
+				
 				StorageAccount = CloudStorageAccount.DevelopmentStorageAccount
 			};
 
-
 			var app = App.Initialize(config);
-
-
-			Log.Information("Console app started");
+			Log.Information(
+				"Console app started on {public} and {private}", 
+				config.PublicUri, 
+				config.InternalUri
+				);
 
 
 			Console.ReadLine();

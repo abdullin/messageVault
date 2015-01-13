@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault;
 using MessageVault.Api;
 using MessageVault.Memory;
+using MessageVault.Server.Auth;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 
 namespace InteractiveConsole {
@@ -12,6 +17,16 @@ namespace InteractiveConsole {
 	// and restSharp doesn't support streaming binary content without multipart encoding
 	class Program {
 		static void Main(string[] args) {
+
+			//var auth = new AuthData();
+			//auth.Users.Add("tester", new UserInfo() {
+			//	Password = "pass",
+			//	Claims = new[]{"test:write"}
+			//});
+			//Console.WriteLine(auth.Serialize());
+			//Console.ReadLine();
+
+
 			Console.WriteLine("Starting");
 			Thread.Sleep(1000);
 			
@@ -23,9 +38,10 @@ namespace InteractiveConsole {
 
 
 		static async Task RunAsync() {
-			using (var client = new Client("http://127.0.0.1:8001")) {
+			
 
-
+			using (var client = new Client("http://127.0.0.1:8001", "admin", "ChangeThisPassword")) {
+				
 				// consumer
 				var checkpoint = new MemoryCheckpointReaderWriter();
 				var consumer = new ConsumerSample(checkpoint, client);

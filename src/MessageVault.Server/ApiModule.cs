@@ -3,7 +3,7 @@ using MessageVault.Api;
 using MessageVault.Server.Election;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
-using Serilog;
+using Nancy.Security;
 
 namespace MessageVault.Server {
 
@@ -29,24 +29,24 @@ namespace MessageVault.Server {
 		}
 
 		void BuildRoutes() {
-			Before += ctx => {
-				Log.Debug("{method} {url}", ctx.Request.Method, ctx.Request.Path);
-				return null;
-			};
 			Get["/"] = x => "This is MessageVault speaking!";
 
 
 			Get["/streams/{id}"] = x => {
+				this.RequiresAuthentication();
 				var id = (string) x.id;
+				RequiresReadAccess(id);
+
+
 				var response = _scheduler.GetReadAccess(id);
 				return Response.AsJson(response);
-
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
+				this.RequiresAuthentication();
+				var id = (string) x.id;
+				RequiresWriteAccess(id);
 				// read messages in request thread
 				var messages = ApiMessageFramer.ReadMessages(Request.Body);
-				var id = (string) x.id;
-
 				try {
 					var response = await _scheduler.Append(id, messages);
 
@@ -56,6 +56,14 @@ namespace MessageVault.Server {
 					return WrapException(ex);
 				}
 			};
+		}
+
+		void RequiresReadAccess(string id) {
+			this.RequiresAnyClaim(new[] {"all:read", "all:write", id + ":read", id + ":write"});
+		}
+
+		void RequiresWriteAccess(string id) {
+			this.RequiresAnyClaim(new[] {"all:write", id + ":write"});
 		}
 	}
 

@@ -23,12 +23,6 @@ namespace MessageVault {
 		readonly BinaryWriter _binary;
 
 		readonly string _streamName;
-		readonly ILogger _log;
-
-		
-		
-
-		
 
 
 		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter, string streamName) {
@@ -39,7 +33,7 @@ namespace MessageVault {
 			_pageSize = pages.GetPageSize();
 			_stream = new MemoryStream(_buffer, true);
 			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
-			_log = Log.ForContext<MessageWriter>();
+			
 		}
 
 		public long GetPosition() {
@@ -55,14 +49,14 @@ namespace MessageVault {
 			_pages.Init();
 			_position = _positionWriter.GetOrInitPosition();
 
-			_log.Verbose("Stream {stream} at {offset}", _streamName, _position);
+			//_log.Verbose("Stream {stream} at {offset}", _streamName, _position);
 
 			var tail = Tail(_position);
 			if (tail != 0) {
 				// preload tail
 
 				var offset = Floor(_position);
-				_log.Verbose("Load tail at {offset}", offset);
+				//_log.Verbose("Load tail at {offset}", offset);
 				var page = _pages.ReadPage(offset);
 				_stream.Write(page, 0, tail);
 			}

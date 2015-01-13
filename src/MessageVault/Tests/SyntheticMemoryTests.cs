@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MessageVault.Memory;
 using NUnit.Framework;
 using System.Linq;
-using Serilog;
+
 
 // ReSharper disable InconsistentNaming
 namespace MessageVault.Tests {
@@ -16,9 +16,6 @@ namespace MessageVault.Tests {
 		MemoryCheckpointReaderWriter _checkpoint;
 		MessageReader _reader;
 
-		public SyntheticMemoryTests() {
-			Logging.InitTrace();
-		}
 
 		[SetUp]
 		public void Setup() {
@@ -32,7 +29,7 @@ namespace MessageVault.Tests {
 
 		[Test]
 		public void given_empty_when_check_position() {
-			Log.Information("Test");
+			
 			Assert.AreEqual(0, _writer.GetPosition());
 			Assert.AreEqual(0, _reader.GetPosition());
 		}

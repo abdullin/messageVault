@@ -41,10 +41,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Serilog.1.4.102\lib\net45\Serilog.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
@@ -75,7 +71,6 @@
     <Compile Include="MessageResult.cs" />
     <Compile Include="Memory\MemoryPageReaderWriter.cs" />
     <Compile Include="Tests\MessageWriterTests.cs" />
-    <Compile Include="Logging.cs" />
     <Compile Include="Tests\SyntheticMemoryTests.cs" />
     <Compile Include="Tests\PageReadStreamTests.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />

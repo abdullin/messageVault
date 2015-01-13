@@ -13,7 +13,6 @@ namespace MessageVault.Tests {
 		public void Setup() {
 
 			_folder = TestEnvironment.GetContainerName(this.GetType().Name);
-			Logging.InitTrace();
 		}
 
 		MessageWriter CreateWriter(string name) {

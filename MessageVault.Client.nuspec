@@ -1,24 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
-        <id>MessageVault.Server</id>
+        <id>MessageVault.Client</id>
         <version>1.0.3</version>
         <authors>Rinat Abdullin</authors>
         <owners>AgileHarbor</owners>
         <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/agileharbor/messageVault</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Server-side logic for hosting MessageVault in your Windows Azure Cloud Service. To get started - include this package and add a WorkerRole instance.</description>
+        <description>Client-side logic for accessing MessageVault.</description>
         <copyright>AgileHarbor</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="Serilog" version="1.4.102" />
-                <dependency id="WindowsAzure.Storage" version="4.3.0" />    
+                <dependency id="Newtonsoft.Json" version="5.0.8" />
+                <dependency id="WindowsAzure.Storage" version="4.3.0" />                
             </group>
         </dependencies>
     </metadata>
     <files>
         <file src="bin\server\MessageVault.dll" target="lib\MessageVault.dll" />
         <file src="bin\server\MessageVault.pdb" target="lib\MessageVault.pdb" />
+        <file src="bin\server\MessageVault.Server.dll" target="lib\MessageVault.Server.dll" />
+        <file src="bin\server\MessageVault.Server.pdb" target="lib\MessageVault.Server.pdb" />
     </files>
 </package>

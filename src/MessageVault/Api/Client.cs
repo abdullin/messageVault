@@ -61,5 +61,4 @@ namespace MessageVault.Api {
 			_client.Dispose();
 		}
 	}
-
 }

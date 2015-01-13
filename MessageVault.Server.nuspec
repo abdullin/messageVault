@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MessageVault.Server</id>
-        <version>1.0.2</version>
+        <version>1.0.3</version>
         <authors>Rinat Abdullin</authors>
         <owners>AgileHarbor</owners>
         <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>
@@ -21,6 +21,7 @@
                 <dependency id="Owin" version="1.0.0" />
                 <dependency id="StatsdClient" version="1.0.0.16" />
                 <dependency id="Microsoft.Owin.Host.HttpListener" version="3.0.0" />
+                <dependency id="Nancy.Authentication.Basic" version="0.23.2" />
             </group>
         </dependencies>
     </metadata>

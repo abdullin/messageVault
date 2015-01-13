@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nancy.Authentication.Basic</name>
+    </assembly>
+    <members>
+        <member name="T:Nancy.Authentication.Basic.BasicAuthentication">
+            <summary>
+            Nancy basic authentication implementation
+            </summary>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.BasicAuthentication.Enable(Nancy.Bootstrapper.IPipelines,Nancy.Authentication.Basic.BasicAuthenticationConfiguration)">
+            <summary>
+            Enables basic authentication for the application
+            </summary>
+            <param name="pipelines">Pipelines to add handlers to (usually "this")</param>
+            <param name="configuration">Forms authentication configuration</param>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.BasicAuthentication.Enable(Nancy.INancyModule,Nancy.Authentication.Basic.BasicAuthenticationConfiguration)">
+            <summary>
+            Enables basic authentication for a module
+            </summary>
+            <param name="module">Module to add handlers to (usually "this")</param>
+            <param name="configuration">Forms authentication configuration</param>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.BasicAuthentication.GetCredentialRetrievalHook(Nancy.Authentication.Basic.BasicAuthenticationConfiguration)">
+            <summary>
+            Gets the pre request hook for loading the authenticated user's details
+            from the auth header.
+            </summary>
+            <param name="configuration">Basic authentication configuration to use</param>
+            <returns>Pre request hook delegate</returns>
+        </member>
+        <member name="T:Nancy.Authentication.Basic.BasicAuthenticationConfiguration">
+            <summary>
+            Configuration options for forms authentication
+            </summary>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.BasicAuthenticationConfiguration.#ctor(Nancy.Authentication.Basic.IUserValidator,System.String,Nancy.Authentication.Basic.UserPromptBehaviour)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Nancy.Authentication.Basic.BasicAuthenticationConfiguration"/> class.
+            </summary>
+            <param name="userValidator">A valid instance of <see cref="T:Nancy.Authentication.Basic.IUserValidator"/> class</param>
+            <param name="realm">Basic authentication realm</param>
+            <param name="userPromptBehaviour">Control when the browser should be instructed to prompt for credentials</param>
+        </member>
+        <member name="P:Nancy.Authentication.Basic.BasicAuthenticationConfiguration.UserValidator">
+            <summary>
+            Gets the user validator
+            </summary>
+        </member>
+        <member name="P:Nancy.Authentication.Basic.BasicAuthenticationConfiguration.Realm">
+            <summary>
+            Gets the basic authentication realm
+            </summary>
+        </member>
+        <member name="P:Nancy.Authentication.Basic.BasicAuthenticationConfiguration.UserPromptBehaviour">
+            <summary>
+            Determines when the browser should prompt the user for credentials
+            </summary>
+        </member>
+        <member name="T:Nancy.Authentication.Basic.BasicHttpExtensions">
+            <summary>
+            Some simple helpers give some nice authentication syntax in the modules.
+            </summary>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.BasicHttpExtensions.EnableBasicAuthentication(Nancy.INancyModule,Nancy.Authentication.Basic.BasicAuthenticationConfiguration)">
+            <summary>
+            Module requires basic authentication
+            </summary>
+            <param name="module">Module to enable</param>
+            <param name="configuration">Basic authentication configuration</param>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.BasicHttpExtensions.EnableBasicAuthentication(Nancy.Bootstrapper.IPipelines,Nancy.Authentication.Basic.BasicAuthenticationConfiguration)">
+            <summary>
+            Module requires basic authentication
+            </summary>
+            <param name="pipeline">Bootstrapper to enable</param>
+            <param name="configuration">Basic authentication configuration</param>
+        </member>
+        <member name="T:Nancy.Authentication.Basic.IUserValidator">
+            <summary>
+            Provides a way to validate the username and password
+            </summary>
+        </member>
+        <member name="M:Nancy.Authentication.Basic.IUserValidator.Validate(System.String,System.String)">
+            <summary>
+            Validates the username and password
+            </summary>
+            <param name="username">Username</param>
+            <param name="password">Password</param>
+            <returns>A value representing the authenticated user, null if the user was not authenticated.</returns>
+        </member>
+        <member name="T:Nancy.Authentication.Basic.UserPromptBehaviour">
+            <summary>
+            Options to control when the browser prompts the user for credentials
+            </summary>
+        </member>
+        <member name="F:Nancy.Authentication.Basic.UserPromptBehaviour.Never">
+            <summary>
+            Never present user with login prompt
+            </summary>
+        </member>
+        <member name="F:Nancy.Authentication.Basic.UserPromptBehaviour.Always">
+            <summary>
+            Always present user with login prompt
+            </summary>
+        </member>
+        <member name="F:Nancy.Authentication.Basic.UserPromptBehaviour.NonAjax">
+            <summary>
+            Only prompt the user for credentials on non-ajax requests
+            </summary>
+        </member>
+    </members>
+</doc>

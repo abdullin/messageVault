@@ -7,6 +7,8 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
+using StatsdClient;
+using System.Linq;
 
 namespace MessageVault.Server.Election {
 
@@ -45,7 +47,16 @@ namespace MessageVault.Server.Election {
 			
 			return _exclusiveFactory.StartNew(() => {
 				var segment = Get(stream);
-				return segment.Append(data);
+				using (Metrics.StartTimer("append.time")) {
+					var append = segment.Append(data);
+					Metrics.Counter("append.ok");
+					Metrics.Counter("append.events", data.Count);
+					Metrics.Counter("append.bytes", data.Sum(mw => mw.Value.Length));
+					Metrics.Gauge("stream." + stream, append);
+					return append;
+				}
+
+			
 			});
 		}
 

@@ -5,6 +5,7 @@ using MessageVault.Cloud;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
+using StatsdClient;
 
 namespace MessageVault.Server.Election {
 
@@ -32,27 +33,32 @@ namespace MessageVault.Server.Election {
 				_scheduler = null;
 				Log.Verbose("API will forward writes to leader");
 			}
-			
 		}
 
 		public GetStreamResponse GetReadAccess(string stream) {
-			var signature = CloudSetup.GetReadAccessSignature(_client, stream);
-			return new GetStreamResponse {
-				Signature = signature
-			};
+			using (Metrics.StartTimer("api.read")) {
+				var signature = CloudSetup.GetReadAccessSignature(_client, stream);
+				return new GetStreamResponse {
+					Signature = signature
+				};
+			}
 		}
 
 		public async Task<PostMessagesResponse> Append(string id, ICollection<MessageToWrite> writes) {
 			var writer = _scheduler;
 			if (null != writer) {
-				var result = await writer.Append(id, writes);
-				return new PostMessagesResponse {
-					Position = result
-				};
+				using (Metrics.StartTimer("api.append")) {
+					var result = await writer.Append(id, writes);
+					return new PostMessagesResponse {
+						Position = result
+					};
+				}
 			} else {
-				var endpoint = await _poller.GetLeaderClientAsync();
-				var result = await endpoint.PostMessagesAsync(id, writes);
-				return result;
+				using (Metrics.StartTimer("api.forward")) {
+					var endpoint = await _poller.GetLeaderClientAsync();
+					var result = await endpoint.PostMessagesAsync(id, writes);
+					return result;
+				}
 			}
 		}
 	}

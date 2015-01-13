@@ -14,7 +14,6 @@ namespace WorkerRole {
 			    .Wait();
 		}
 
-
 		App _app;
 
 		public override bool OnStart() {
@@ -23,7 +22,7 @@ namespace WorkerRole {
 
 			var storage = RoleEnvironment.GetConfigurationSettingValue("Storage");
 			var account = CloudStorageAccount.Parse(storage);
-
+			
 			var config = new AppConfig {
 				InternalUri = GetEndpointAsUri("InternalHttp"),
 				PublicUri = GetEndpointAsUri("Http"),

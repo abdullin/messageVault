@@ -25,6 +25,8 @@ namespace MessageVault {
 
 		public const string ClusterNodeUser = "cluster-node";
 
+		public const string DefaultPassword = "ChangeThisNow!";
+		public const string DefaultLogin = "admin";
 
 		/// <summary>
 		/// Azure allows leases for 15, 30, 45, 60 or infinite.

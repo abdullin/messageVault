@@ -38,9 +38,7 @@ namespace InteractiveConsole {
 
 
 		static async Task RunAsync() {
-			
-
-			using (var client = new Client("http://127.0.0.1:8001", "admin", "ChangeThisPassword")) {
+			using (var client = new Client("http://127.0.0.1:8001", Constants.DefaultLogin, Constants.DefaultPassword)) {
 				
 				// consumer
 				var checkpoint = new MemoryCheckpointReaderWriter();

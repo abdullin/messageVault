@@ -45,8 +45,8 @@ namespace MessageVault.Server.Auth {
 
 		public static AuthData Default() {
 			var data = new AuthData();
-			data.Users.Add("admin", new UserInfo() {
-				Password = "ChangeThisPassword",
+			data.Users.Add(Constants.DefaultLogin, new UserInfo() {
+				Password = Constants.DefaultPassword,
 				Claims = new[] { "all:write" },
 			});
 			

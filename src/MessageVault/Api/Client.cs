@@ -35,16 +35,14 @@ namespace MessageVault.Api {
 				mem.Seek(0, SeekOrigin.Begin);
 
 				using (var sc = new StreamContent(mem)) {
-					
 					var result = await _client.PostAsync("/streams/" + stream, sc);
 					result.EnsureSuccessStatusCode();
-					
 					var content = await result.Content.ReadAsStringAsync();
-
 					return JsonConvert.DeserializeObject<PostMessagesResponse>(content);
 				}
 			}
 		}
+		
 
 		
 		public async Task<MessageReader> GetMessageReaderAsync(string stream) {

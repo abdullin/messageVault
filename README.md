@@ -21,7 +21,6 @@ Message Vault makes several design trade-offs:
 * **rely on Windows Azure** to do all the heavy-lifting (this simplifies code, but couples implementation to Azure);
 * **high-availability via master-slave setup** (uptime is limited by Azure uptime, no writes during failover);
 * **no channel encryption** (if needed, use SSL with Azure Load Balancer or your load balancer);
-* **no authorization schemes** (if needed, configure your load balancer or add a proxy on top);
 * **implemented in imperative C#** (.NET runtime is heavy, but Windows Azure is optimized for it);
 * **client library is intentionally simple** (view projections and even checkpoints are outside the scope);
 * **each stream is a sepate page blob** (they can grow to 1TB out-of-the-box, having thousands of streams isn't a good idea).

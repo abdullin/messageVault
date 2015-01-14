@@ -35,7 +35,10 @@ namespace MessageVault.Server.Election {
 
 		async Task LeaderMethod(CancellationToken token, CloudPageBlob blob) {
 			var processors = Environment.ProcessorCount;
-			var parallelism = Math.Min(processors * 2, 48);
+			int parallelism = processors / 2;
+			if (parallelism < 1) {
+				parallelism = 1;
+			}
 			_log.Information("Node is a leader with {processors} processors. Setting parallelism to {parallelism}", 
 				processors, 
 				parallelism);

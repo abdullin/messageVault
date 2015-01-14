@@ -46,9 +46,10 @@ namespace MessageVault.Server.Election {
 		public Task<long> Append(string stream, ICollection<MessageToWrite> data) {
 			stream = stream.ToLowerInvariant();
 			var hash = stream.GetHashCode();
+			var segment = Get(stream);
 
 			return _scheduler.StartNew(hash, () => {
-				var segment = Get(stream);
+				
 				using (Metrics.StartTimer("storage.append.time")) {
 					var append = segment.Append(data);
 					Metrics.Counter("storage.append.ok");

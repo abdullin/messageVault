@@ -10,8 +10,10 @@ namespace MessageVault.Server.Election {
 	/// </summary>
 	public sealed class TaskSchedulerWithAffinity {
 		readonly JobScheduler[] _schedulers;
+		
 
 		public TaskSchedulerWithAffinity(int parallelism) {
+			
 			_schedulers = new JobScheduler[parallelism];
 			for (int i = 0; i < parallelism; i++)
 			{

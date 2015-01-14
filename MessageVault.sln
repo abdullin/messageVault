@@ -17,8 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{EE0E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2D0F7870-C804-4185-9253-6D1F85B09B2F}"
 	ProjectSection(SolutionItems) = preProject
-		MessageVault.Server.nuspec = MessageVault.Server.nuspec
 		README.md = README.md
+		Server.nuspec = Server.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublisherSample", "src\PublisherSample\PublisherSample.csproj", "{E66257D8-E57D-47B1-8AAC-A5D32FA23B75}"

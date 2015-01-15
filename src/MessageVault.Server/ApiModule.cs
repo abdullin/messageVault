@@ -37,7 +37,7 @@ namespace MessageVault.Server {
 				var id = (string) x.id;
 				RequiresReadAccess(id);
 
-
+				
 				var response = _scheduler.GetReadAccess(id);
 				return Response.AsJson(response);
 			};

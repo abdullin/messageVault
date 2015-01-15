@@ -49,7 +49,7 @@ namespace InteractiveConsole {
 				for (int i = 0; i < 10; i++) {
 					var message = new MessageToWrite("test", new byte[20]);
 
-					var response = await client.PostMessagesAsync("test", new[] { message });
+					var response = await client.PostMessagesAsync("teststream", new[] { message });
 					Console.WriteLine(response.Position);
 
 					await Task.Delay(1000);

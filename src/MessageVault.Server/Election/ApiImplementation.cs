@@ -32,7 +32,7 @@ namespace MessageVault.Server.Election {
 		public void DisableDirectWrites() {
 			if (_scheduler != null) {
 				_scheduler = null;
-				Log.Verbose("API will forward writes to leader");
+				Log.Verbose("API will forward writes to leader");	
 			}
 		}
 

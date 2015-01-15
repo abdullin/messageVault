@@ -19,44 +19,45 @@ namespace MessageVault.Server.Election {
 		readonly CloudBlobClient _client;
 
 		readonly ConcurrentDictionary<string, MessageWriter> _writers;
-		readonly 	ConcurrentExclusiveSchedulerPair _scheduler;
-		readonly TaskFactory _exclusiveFactory;
+		readonly TaskSchedulerWithAffinity _scheduler;
+
+
 		
 		
-		public static MessageWriteScheduler Create(CloudStorageAccount account) {
+		
+		public static MessageWriteScheduler Create(CloudStorageAccount account, int parallelism) {
 			var client = account.CreateCloudBlobClient();
 			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(0.5), 3);
-			return new MessageWriteScheduler(client);
+			
+			return new MessageWriteScheduler(client, parallelism);
 		}
 		
-		MessageWriteScheduler(CloudBlobClient client) {
+		MessageWriteScheduler(CloudBlobClient client, int parallelism) {
 			_client = client;
 			_writers = new ConcurrentDictionary<string, MessageWriter>();
-			
-			_scheduler = new ConcurrentExclusiveSchedulerPair();
-			_exclusiveFactory = new TaskFactory(_scheduler.ExclusiveScheduler);
+			_scheduler = new TaskSchedulerWithAffinity(parallelism);
 		}
 
 		public async Task Shutdown() {
-			_scheduler.Complete();
-			await _scheduler.Completion;
+			await _scheduler.Shutdown();
 		}
 
 
 		public Task<long> Append(string stream, ICollection<MessageToWrite> data) {
-			
-			return _exclusiveFactory.StartNew(() => {
-				var segment = Get(stream);
-				using (Metrics.StartTimer("append.time")) {
+			stream = stream.ToLowerInvariant();
+			var hash = stream.GetHashCode();
+			var segment = Get(stream);
+
+			return _scheduler.StartNew(hash, () => {
+				
+				using (Metrics.StartTimer("storage.append.time")) {
 					var append = segment.Append(data);
-					Metrics.Counter("append.ok");
-					Metrics.Counter("append.events", data.Count);
-					Metrics.Counter("append.bytes", data.Sum(mw => mw.Value.Length));
+					Metrics.Counter("storage.append.ok");
+					Metrics.Counter("storage.append.events", data.Count);
+					Metrics.Counter("storage.append.bytes", data.Sum(mw => mw.Value.Length));
 					Metrics.Gauge("stream." + stream, append);
 					return append;
 				}
-
-			
 			});
 		}
 

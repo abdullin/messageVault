@@ -34,8 +34,16 @@ namespace MessageVault.Server.Election {
 		}
 
 		async Task LeaderMethod(CancellationToken token, CloudPageBlob blob) {
-			_log.Information("This node is a leader");
-			using (var scheduler = MessageWriteScheduler.Create(_account)) {
+			var processors = Environment.ProcessorCount;
+			int parallelism = processors / 2;
+			if (parallelism < 1) {
+				parallelism = 1;
+			}
+			_log.Information("Node is a leader with {processors} processors. Setting parallelism to {parallelism}", 
+				processors, 
+				parallelism);
+
+			using (var scheduler = MessageWriteScheduler.Create(_account, parallelism)) {
 				try {
 					_log.Information("Message write scheduler created");
 					_api.EnableDirectWrites(scheduler);
@@ -48,7 +56,7 @@ namespace MessageVault.Server.Election {
 				catch (OperationCanceledException) {
 					// expect this exception to be thrown in normal circumstances or check the cancellation token, because
 					// if the lease can't be renewed, the token will signal a cancellation request.
-					_log.Information("Leadership lost. Shutting down the scheduler");
+					_log.Information("Shutting down the scheduler");
 					// shutdown the scheduler
 					_api.DisableDirectWrites();
 

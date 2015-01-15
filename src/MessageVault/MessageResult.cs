@@ -6,11 +6,11 @@ namespace MessageVault {
 	///   A collection of loaded messages
 	/// </summary>
 	public sealed class MessageResult {
-		public readonly ICollection<Message> Messages;
+		public readonly IList<Message> Messages;
 
 		public readonly long NextOffset;
 
-		public MessageResult(ICollection<Message> messages, long nextOffset) {
+		public MessageResult(IList<Message> messages, long nextOffset) {
 
 			Require.Positive("nextOffset", nextOffset);
 			Require.NotNull("messages", messages);

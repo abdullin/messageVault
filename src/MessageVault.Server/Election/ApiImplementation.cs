@@ -54,12 +54,11 @@ namespace MessageVault.Server.Election {
 						Position = result
 					};
 				}
-			} else {
-				using (Metrics.StartTimer("api.forward")) {
-					var endpoint = await _poller.GetLeaderClientAsync();
-					var result = await endpoint.PostMessagesAsync(id, writes);
-					return result;
-				}
+			}
+			using (Metrics.StartTimer("api.forward")) {
+				var endpoint = await _poller.GetLeaderClientAsync();
+				var result = await endpoint.PostMessagesAsync(id, writes);
+				return result;
 			}
 		}
 	}

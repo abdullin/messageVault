@@ -8,7 +8,7 @@ namespace MessageVault.Files {
         readonly FileInfo _info;
         FileStream _stream;
 
-        byte[] _buffer = new byte[1024*1024];
+        readonly byte[] _buffer = new byte[1024*1024];
         public FilePageReader(FileInfo info) {
             _info = info;
         }

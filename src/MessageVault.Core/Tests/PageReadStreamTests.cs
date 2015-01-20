@@ -20,6 +20,10 @@ namespace MessageVault.Tests {
 				var buf = _mem.GetBuffer();
 				stream.Write(buf, (int)offset, (int)length);
 			}
+
+		    public void Dispose() {
+		        _mem.Dispose();
+		    }
 		}
 
 		readonly MemoryStream _mem;

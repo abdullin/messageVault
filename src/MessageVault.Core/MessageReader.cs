@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MessageVault {
 
-    public sealed class MessageReader {
+    public sealed class MessageReader : IDisposable{
         readonly ICheckpointReader _position;
         readonly IPageReader _messages;
 
@@ -66,6 +66,17 @@ namespace MessageVault {
                 return result;
             }
             return MessageResult.Empty(start);
+        }
+
+        bool _disposed;
+        public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+            using (_messages)
+            using (_position) {
+                _disposed = true;
+            }
         }
     }
 

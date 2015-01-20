@@ -63,7 +63,9 @@
     <Compile Include="Require.cs" />
     <Compile Include="Tests\MessageIdTests.cs" />
     <Compile Include="Tests\PageReadStreamTests.cs" />
+    <Compile Include="Tests\SyntheticFileTests.cs" />
     <Compile Include="Tests\SyntheticMemoryTests.cs" />
+    <Compile Include="Tests\SyntheticTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

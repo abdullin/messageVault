@@ -11,14 +11,16 @@ namespace MessageVault.Files {
         public void Init() {
             _info.Refresh();
             if (!_info.Exists) {
-                _stream = _info.Create();
+                _stream = _info.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+                _size = 0;
             } else {
                 _stream = _info.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+                _size = _info.Length;
             }
-            _size = _info.Length;
+            
         }
 
-        const int PageSize = 1024;
+        const int PageSize = 512;
 
         static long NextSize(long size) {
             Require.OffsetMultiple("size", size, PageSize);

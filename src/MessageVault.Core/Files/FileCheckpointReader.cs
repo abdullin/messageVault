@@ -32,6 +32,17 @@ namespace MessageVault.Files {
             return _reader.ReadInt64();
 
         }
+
+        bool _disposed;
+        public void Dispose() {
+            if (_disposed) {
+                return;
+            }
+            using (_stream)
+            using (_reader) {
+                _disposed = true;
+            }
+        }
     }
 
 }

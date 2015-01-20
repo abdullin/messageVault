@@ -52,6 +52,17 @@ namespace MessageVault.Memory {
 			var buf = _stream.GetBuffer();
 			stream.Write(buf, (int)offset, length);
 		}
+
+	    bool _disposed;
+	    public void Dispose() {
+	        if (_disposed) {
+	            return;
+	        }
+	        using (_stream) {
+	            _disposed = true;
+	        }
+	        
+	    }
 	}
 
 }

@@ -10,7 +10,7 @@ namespace MessageVault {
 	/// Writes messages as a stream to an underlying <see cref="IPageWriter"/>, 
 	/// using provided <see cref="ICheckpointWriter"/> to mark commits.
 	/// </summary>
-	public sealed class MessageWriter {
+	public sealed class MessageWriter : IDisposable{
 		
 		readonly IPageWriter _pages;
 		readonly ICheckpointWriter _positionWriter;
@@ -163,5 +163,17 @@ namespace MessageVault {
 			_positionWriter.Update(_position);
 			return _position;
 		}
+
+	    bool _disposed;
+	    public void Dispose() {
+	        if (_disposed) {
+	            return;
+	        }
+            using (_positionWriter)
+            using (_pages) {
+                _disposed = true;
+            }
+
+	    }
 	}
 }

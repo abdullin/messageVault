@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7E5AF258-FD10-48E5-AF06-6A3F5C1F9807}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{0BF027CA-F007-405D-BD85-F5578BFF0B2D}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StressTester</RootNamespace>
-    <AssemblyName>StressTester</AssemblyName>
+    <RootNamespace>MessageVault</RootNamespace>
+    <AssemblyName>MessageVault.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -36,23 +34,20 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MessageVault.Core\MessageVault.Core.csproj">
-      <Project>{0bf027ca-f007-405d-bd85-f5578bff0b2d}</Project>
-      <Name>MessageVault.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MessageVault\MessageVault.csproj">
-      <Project>{fa9fed71-1545-4cb9-ae0e-489b00288313}</Project>
-      <Name>MessageVault</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="ICheckpointReader.cs" />
+    <Compile Include="ICheckpointWriter.cs" />
+    <Compile Include="IPageReader.cs" />
+    <Compile Include="IPageWriter.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="MessageFormat.cs" />
+    <Compile Include="MessageId.cs" />
+    <Compile Include="MessageToWrite.cs" />
+    <Compile Include="MessageWriter.cs" />
+    <Compile Include="Require.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

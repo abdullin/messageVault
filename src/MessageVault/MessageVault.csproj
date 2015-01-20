@@ -48,38 +48,32 @@
   <ItemGroup>
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
-    <Compile Include="ICheckpointReader.cs" />
     <Compile Include="Api\Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="ICheckpointWriter.cs" />
     <Compile Include="Api\ApiMessageFramer.cs" />
-    <Compile Include="MessageFormat.cs" />
-    <Compile Include="MessageToWrite.cs" />
-    <Compile Include="IPageReader.cs" />
-    <Compile Include="IPageWriter.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
-    <Compile Include="Message.cs" />
     <Compile Include="Tests\MessageIdTests.cs" />
     <Compile Include="MessageReader.cs" />
     <Compile Include="Cloud\CloudPageWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointReader.cs" />
     <Compile Include="PageReadStream.cs" />
-    <Compile Include="Require.cs" />
-    <Compile Include="MessageWriter.cs" />
     <Compile Include="MessageResult.cs" />
     <Compile Include="Memory\MemoryPageReaderWriter.cs" />
     <Compile Include="Tests\MessageWriterTests.cs" />
     <Compile Include="Tests\SyntheticMemoryTests.cs" />
     <Compile Include="Tests\PageReadStreamTests.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
-    <Compile Include="MessageId.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  
+  <ItemGroup>
+    <ProjectReference Include="..\MessageVault.Core\MessageVault.Core.csproj">
+      <Project>{0bf027ca-f007-405d-bd85-f5578bff0b2d}</Project>
+      <Name>MessageVault.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

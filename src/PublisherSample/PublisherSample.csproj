@@ -39,12 +39,15 @@
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MessageVault.Core\MessageVault.Core.csproj">
+      <Project>{0bf027ca-f007-405d-bd85-f5578bff0b2d}</Project>
+      <Name>MessageVault.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MessageVault\MessageVault.csproj">
       <Project>{fa9fed71-1545-4cb9-ae0e-489b00288313}</Project>
       <Name>MessageVault</Name>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -22,13 +22,12 @@ namespace MessageVault {
 		readonly MemoryStream _stream;
 		readonly BinaryWriter _binary;
 
-		readonly string _streamName;
 
 
-		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter, string streamName) {
+		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter) {
 			_pages = pages;
 			_positionWriter = positionWriter;
-			_streamName = streamName;
+		
 			_buffer = new byte[pages.GetMaxCommitSize()];
 			_pageSize = pages.GetPageSize();
 			_stream = new MemoryStream(_buffer, true);

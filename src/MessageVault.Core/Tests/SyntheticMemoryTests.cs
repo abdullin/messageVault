@@ -22,7 +22,7 @@ namespace MessageVault.Tests {
 			_pages = new MemoryPageReaderWriter();
 			_checkpoint = new MemoryCheckpointReaderWriter();
 
-			_writer = new MessageWriter(_pages, _checkpoint, "test");
+			_writer = new MessageWriter(_pages, _checkpoint);
 			_reader = new MessageReader(_checkpoint, _pages);
 			_writer.Init();
 		}

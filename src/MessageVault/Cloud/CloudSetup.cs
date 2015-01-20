@@ -14,7 +14,7 @@ namespace MessageVault.Cloud {
 			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
 			var pageWriter = new CloudPageWriter(dataBlob);
 			var posWriter = new CloudCheckpointWriter(posBlob);
-			var writer = new MessageWriter(pageWriter, posWriter, stream);
+			var writer = new MessageWriter(pageWriter, posWriter);
 			writer.Init();
 
 			return writer;

@@ -6,23 +6,23 @@ using NUnit.Framework;
 namespace MessageVault.Tests {
 
     public abstract class SyntheticTestBase {
-        protected MessageWriter _writer;
-        protected MessageReader _reader;
-        protected IPageWriter _pageWriter;
-        protected ICheckpointReader _checkpointReader;
+        protected MessageWriter Writer;
+        protected MessageReader Reader;
+        protected IPageWriter PageWriter;
+        protected ICheckpointReader CheckpointReader;
         [Test]
         public void given_empty_when_check_position()
         {
 
-            Assert.AreEqual(0, _writer.GetPosition());
-            Assert.AreEqual(0, _reader.GetPosition());
+            Assert.AreEqual(0, Writer.GetPosition());
+            Assert.AreEqual(0, Reader.GetPosition());
         }
 
 
         [Test, ExpectedException(typeof(ArgumentException))]
         public void append_throws_on_empty_collection()
         {
-            _writer.Append(new MessageToWrite[0]);
+            Writer.Append(new MessageToWrite[0]);
         }
 
         static byte[] RandBytes(long len)
@@ -36,11 +36,11 @@ namespace MessageVault.Tests {
         public void given_empty_when_write_message()
         {
             var write = new MessageToWrite("test", RandBytes(200));
-            var result = _writer.Append(new[] { write });
+            var result = Writer.Append(new[] { write });
 
             Assert.AreNotEqual(0, result);
-            Assert.AreEqual(result, _writer.GetPosition());
-            Assert.AreEqual(result, _checkpointReader.Read());
+            Assert.AreEqual(result, Writer.GetPosition());
+            Assert.AreEqual(result, CheckpointReader.Read());
         }
 
         [Test]
@@ -48,9 +48,9 @@ namespace MessageVault.Tests {
         {
             // given
             var write = new MessageToWrite("test", RandBytes(200));
-            var result = _writer.Append(new[] { write });
+            var result = Writer.Append(new[] { write });
             // when
-            var read = _reader.ReadMessages(0, result, 100);
+            var read = Reader.ReadMessages(0, result, 100);
             // expect
             Assert.AreEqual(result, read.NextOffset);
             CollectionAssert.IsNotEmpty(read.Messages);
@@ -72,7 +72,7 @@ namespace MessageVault.Tests {
         [Test]
         public void quasi_random_test()
         {
-            var maxCommitSize = _pageWriter.GetMaxCommitSize();
+            var maxCommitSize = PageWriter.GetMaxCommitSize();
             var written = new List<MessageToWrite>();
             for (int i = 0; i < 100; i++)
             {
@@ -84,7 +84,7 @@ namespace MessageVault.Tests {
                     var write = new MessageToWrite("{0}:{1}", RandBytes(size + 1));
                     list[j] = write;
                 }
-                _writer.Append(list);
+                Writer.Append(list);
                 written.AddRange(list);
             }
         }

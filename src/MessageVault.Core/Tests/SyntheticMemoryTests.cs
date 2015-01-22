@@ -15,11 +15,11 @@ namespace MessageVault.Tests {
 			var pages = new MemoryPageReaderWriter();
 			var checkpoint = new MemoryCheckpointReaderWriter();
 
-			_writer = new MessageWriter(pages, checkpoint);
-			_reader = new MessageReader(checkpoint, pages);
-		    _checkpointReader = checkpoint;
-		    _pageWriter = pages;
-			_writer.Init();
+			Writer = new MessageWriter(pages, checkpoint);
+			Reader = new MessageReader(checkpoint, pages);
+		    CheckpointReader = checkpoint;
+		    PageWriter = pages;
+			Writer.Init();
 		}
 
 	

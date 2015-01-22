@@ -35,6 +35,10 @@ namespace MessageVault.Cloud {
 			_blob.SetMetadata(AccessCondition.GenerateIfMatchCondition(_etag));
 			_etag = _blob.Properties.ETag;
 		}
+
+	    public void Dispose() {
+	        
+	    }
 	}
 
 }

@@ -84,6 +84,10 @@ namespace MessageVault.Cloud {
 		public int GetPageSize() {
 			return PageSize;
 		}
+
+	    public void Dispose() {
+	        
+	    }
 	}
 
 }

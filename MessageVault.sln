@@ -7,7 +7,7 @@ Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "AzureCloudService", "src\Az
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerRole", "src\WorkerRole\WorkerRole.csproj", "{2BACA8A6-6024-4EC4-A879-E0B36A50959B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault", "src\MessageVault\MessageVault.csproj", "{FA9FED71-1545-4CB9-AE0E-489B00288313}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault.Client", "src\MessageVault\MessageVault.Client.csproj", "{FA9FED71-1545-4CB9-AE0E-489B00288313}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractiveConsole", "src\InteractiveConsole\InteractiveConsole.csproj", "{8D575A00-C8D8-4751-B58B-42E30FE455B1}"
 EndProject

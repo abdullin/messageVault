@@ -24,16 +24,16 @@ namespace MessageVault.Tests {
             var checkWriter = new FileCheckpointWriter(checkFile);
 
             
-            _writer = new MessageWriter(pageWriter, checkWriter);
-            _reader = new MessageReader(checkReader, pageReader);
-            _checkpointReader = checkReader;
-            _pageWriter = pageWriter;
-            _writer.Init();
+            Writer = new MessageWriter(pageWriter, checkWriter);
+            Reader = new MessageReader(checkReader, pageReader);
+            CheckpointReader = checkReader;
+            PageWriter = pageWriter;
+            Writer.Init();
         }
         [TearDown]
         public void TearDown() {
-            _writer.Dispose();
-            _reader.Dispose();
+            Writer.Dispose();
+            Reader.Dispose();
             Directory.Delete(_folder, true);
         }
     }

@@ -91,9 +91,9 @@
       <Project>{D48DBD24-16F4-4698-9197-6EFE5BA92498}</Project>
       <Name>MessageVault.Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MessageVault\MessageVault.csproj">
+    <ProjectReference Include="..\MessageVault\MessageVault.Client.csproj">
       <Project>{FA9FED71-1545-4CB9-AE0E-489B00288313}</Project>
-      <Name>MessageVault</Name>
+      <Name>MessageVault.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

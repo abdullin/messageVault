@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,6 +47,71 @@ namespace MessageVault {
                 }
             }
             return new MessageResult(list, position);
+        }
+
+        public ConcurrentQueue<Message> Subscribe(
+            CancellationToken ct, 
+            long start,
+            int bufferSize,
+            int cacheSize
+            ) {
+            var queue = new ConcurrentQueue<Message>();
+
+            Task.Factory.StartNew(() => RunSubscription(queue, start, ct, bufferSize, cacheSize),
+                TaskCreationOptions.LongRunning);
+            return queue;
+        }
+
+        
+
+        void RunSubscription(
+            ConcurrentQueue<Message> queue, 
+            long position, 
+            CancellationToken ct,
+            int bufferSize,
+                int cacheSize
+            ) {
+            var buffer = new byte[bufferSize];
+            // forever try
+            while (!ct.IsCancellationRequested) {
+                try {
+                    // read current max length
+                    var length = _position.Read();
+                    using (var prs = new PageReadStream(_messages, position, length, buffer)) {
+                        using (var bin = new BinaryReader(prs)) {
+
+                            while (prs.Position < prs.Length) {
+                                var message = MessageFormat.Read(bin);
+                                queue.Enqueue(message);
+                                position = prs.Position;
+                                while (queue.Count >= cacheSize) {
+                                    ct.WaitHandle.WaitOne(100);
+                                }
+                            }
+
+                            var newLength = WaitTillPositionChanges(ct, prs.Length);
+                            prs.SetLength(newLength);
+                        }
+                    }
+                }
+                catch (Exception ex) {
+                    Debug.Print("Exception {0}", ex);
+                    ct.WaitHandle.WaitOne(1000 * 20);
+                }
+            }
+
+        }
+
+        long WaitTillPositionChanges(CancellationToken token, long current) {
+            while (!token.IsCancellationRequested) {
+                var newPos = _position.Read();
+                if (newPos != current) {
+                    return newPos;
+                }
+                token.WaitHandle.WaitOne(1000);
+            }
+            // cancellation hit, we didn't change
+            return current;
         }
 
 

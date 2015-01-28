@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MessageVault {
 
-    public sealed class MessageReader : IDisposable{
+    public sealed class MessageReader : IDisposable {
         readonly ICheckpointReader _position;
         readonly IPageReader _messages;
 
@@ -50,7 +50,7 @@ namespace MessageVault {
         }
 
         public ConcurrentQueue<Message> Subscribe(
-            CancellationToken ct, 
+            CancellationToken ct,
             long start,
             int bufferSize,
             int cacheSize
@@ -62,14 +62,13 @@ namespace MessageVault {
             return queue;
         }
 
-        
 
         void RunSubscription(
-            ConcurrentQueue<Message> queue, 
-            long position, 
+            ConcurrentQueue<Message> queue,
+            long position,
             CancellationToken ct,
             int bufferSize,
-                int cacheSize
+            int cacheSize
             ) {
             var buffer = new byte[bufferSize];
             // forever try
@@ -79,7 +78,6 @@ namespace MessageVault {
                     var length = _position.Read();
                     using (var prs = new PageReadStream(_messages, position, length, buffer)) {
                         using (var bin = new BinaryReader(prs)) {
-
                             while (prs.Position < prs.Length) {
                                 var message = MessageFormat.Read(bin);
                                 queue.Enqueue(message);
@@ -88,31 +86,23 @@ namespace MessageVault {
                                     ct.WaitHandle.WaitOne(100);
                                 }
                             }
-
-                            var newLength = WaitTillPositionChanges(ct, prs.Length);
-                            prs.SetLength(newLength);
+                        }
+                    }
+                    // wait till we get chance to advance
+                    while (_position.Read() == position)
+                    {
+                        if (ct.WaitHandle.WaitOne(1000)) {
+                            return;
                         }
                     }
                 }
                 catch (Exception ex) {
                     Debug.Print("Exception {0}", ex);
-                    ct.WaitHandle.WaitOne(1000 * 20);
+                    ct.WaitHandle.WaitOne(1000*20);
                 }
             }
-
         }
 
-        long WaitTillPositionChanges(CancellationToken token, long current) {
-            while (!token.IsCancellationRequested) {
-                var newPos = _position.Read();
-                if (newPos != current) {
-                    return newPos;
-                }
-                token.WaitHandle.WaitOne(1000);
-            }
-            // cancellation hit, we didn't change
-            return current;
-        }
 
 
         public async Task<MessageResult> GetMessagesAsync(CancellationToken ct, long start,
@@ -136,13 +126,15 @@ namespace MessageVault {
         }
 
         bool _disposed;
+
         public void Dispose() {
             if (_disposed) {
                 return;
             }
-            using (_messages)
-            using (_position) {
-                _disposed = true;
+            using (_messages) {
+                using (_position) {
+                    _disposed = true;
+                }
             }
         }
     }

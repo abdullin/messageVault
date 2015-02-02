@@ -12,14 +12,14 @@ namespace MessageVault.Server.Election {
 
 	public sealed class ApiImplementation {
 		MessageWriteScheduler _scheduler;
-		readonly CloudBlobClient _client;
+		readonly ICloudFactory _client;
 		readonly LeaderInfoPoller _poller;
 
-		public static ApiImplementation Create(CloudStorageAccount account, LeaderInfoPoller poller, AuthData auth) {
-			return new ApiImplementation(account.CreateCloudBlobClient(), poller);
+		public static ApiImplementation Create(ICloudFactory account, LeaderInfoPoller poller, AuthData auth) {
+			return new ApiImplementation(account, poller);
 		}
 
-		ApiImplementation(CloudBlobClient client, LeaderInfoPoller poller) {
+		ApiImplementation(ICloudFactory client, LeaderInfoPoller poller) {
 			_client = client;
 			_poller = poller;
 		}
@@ -38,7 +38,8 @@ namespace MessageVault.Server.Election {
 
 		public GetStreamResponse GetReadAccess(string stream) {
 			using (Metrics.StartTimer("api.read")) {
-				var signature = CloudSetup.GetReadAccessSignature(_client, stream);
+				var container = _client.GetContainerReference(stream);
+				var signature = CloudSetup.GetReadAccessSignature(container);
 				return new GetStreamResponse {
 					Signature = signature
 				};

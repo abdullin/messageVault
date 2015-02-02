@@ -21,12 +21,8 @@ namespace MessageVault.Server.Auth {
 			return AuthData.Default();
 		}
 
-		public static AuthData LoadFromStorageAccount(CloudStorageAccount account) {
-
-			
-			var client = account.CreateCloudBlobClient();
-			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromMilliseconds(500), 3);
-			var container = client.GetContainerReference(Constants.SysContainer);
+		public static AuthData LoadFromStorageAccount(ICloudFactory account) {
+			var container = account.GetSysContainerReference();
 			var blob = container.GetBlockBlobReference(Constants.AuthFileName);
 			if (!blob.Exists()) {
 				return GetEmptyConfig();

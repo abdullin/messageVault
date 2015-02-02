@@ -15,7 +15,7 @@ namespace MessageVault.Server.Election {
 			_endpoint = endpoint;
 		}
 
-		public static async Task<LeaderInfo> Get(CloudBlobClient client) {
+		public static async Task<LeaderInfo> Get(ICloudFactory client) {
 			var blob = GetBlob(client);
 			var exists = await blob.ExistsAsync();
 			if (!exists) {
@@ -25,9 +25,9 @@ namespace MessageVault.Server.Election {
 			return new LeaderInfo(endpoint);
 		}
 
-		public async Task WriteToBlob(CloudStorageAccount storage) {
+		public async Task WriteToBlob(ICloudFactory storage) {
 
-			var blob = GetBlob(storage.CreateCloudBlobClient());
+			var blob = GetBlob(storage);
 
 			var exists = await blob.ExistsAsync();
 			if (!exists) {
@@ -37,8 +37,8 @@ namespace MessageVault.Server.Election {
 			await blob.SetMetadataAsync();
 		}
 
-		static CloudPageBlob GetBlob(CloudBlobClient cloudBlobClient) {
-			var container = cloudBlobClient.GetContainerReference(Constants.SysContainer);
+		static CloudPageBlob GetBlob(ICloudFactory cloudBlobClient) {
+			var container = cloudBlobClient.GetSysContainerReference();
 
 			var blob = container.GetPageBlobReference(Constants.MasterDataFileName);
 			return blob;

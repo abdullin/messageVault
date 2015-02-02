@@ -7,8 +7,8 @@ namespace MessageVault.Cloud {
 
 		public const string CheckpointMetadataName = "position";
 
-		public static MessageWriter CreateAndInitWriter(CloudBlobClient client, string stream) {
-			var container = client.GetContainerReference(stream);
+		public static MessageWriter CreateAndInitWriter(CloudBlobContainer container) {
+			
 			container.CreateIfNotExists();
 			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
 			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
@@ -20,8 +20,8 @@ namespace MessageVault.Cloud {
 			return writer;
 		}
 
-		public static string GetReadAccessSignature(CloudBlobClient client, string stream) {
-			var container = client.GetContainerReference(stream);
+		public static string GetReadAccessSignature(CloudBlobContainer container) {
+			
 			var signature = container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
 				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
 				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),

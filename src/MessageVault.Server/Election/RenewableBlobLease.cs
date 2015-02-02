@@ -25,13 +25,11 @@ namespace MessageVault.Server.Election {
 		readonly LeaderTask _leaderTask;
 		readonly ILogger _log = Log.ForContext<RenewableBlobLease>();
 
-		public static RenewableBlobLease Create(CloudStorageAccount account, LeaderTask task) {
+		public static RenewableBlobLease Create(ICloudFactory account, LeaderTask task) {
 			Require.NotNull("account", account);
 			Require.NotNull("task", task);
 
-			var client = account.CreateCloudBlobClient();
-			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(1), 3);
-			var container = client.GetContainerReference(Constants.SysContainer);
+			var container = account.GetSysContainerReference();
 			var blob = container.GetPageBlobReference(Constants.MasterLockFileName);
 			return new RenewableBlobLease(blob, task);
 		}

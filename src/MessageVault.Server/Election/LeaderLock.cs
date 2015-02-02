@@ -11,7 +11,7 @@ namespace MessageVault.Server.Election {
 	/// Acquires a unique blob lease and runs <see cref="LeaderMethod"/>, while it is a leader.
 	/// </summary>
 	public sealed class LeaderLock {
-		readonly CloudStorageAccount _account;
+		readonly ICloudFactory _account;
 		readonly LeaderInfo _info;
 		readonly ApiImplementation _api;
 		readonly RenewableBlobLease _lease;
@@ -19,7 +19,7 @@ namespace MessageVault.Server.Election {
 		readonly ILogger _log = Log.ForContext<LeaderLock>();
 
 		
-		public LeaderLock(CloudStorageAccount account, LeaderInfo info, ApiImplementation api) {
+		public LeaderLock(ICloudFactory account, LeaderInfo info, ApiImplementation api) {
 			Require.NotNull("account", account);
 			Require.NotNull("info", info);
 			_account = account;

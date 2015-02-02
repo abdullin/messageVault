@@ -11,17 +11,13 @@ namespace MessageVault.Server.Election {
 
 	public sealed class LeaderInfoPoller {
 
-		public static LeaderInfoPoller Create(CloudStorageAccount account) {
-			var client = account.CreateCloudBlobClient();
-			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(1),3);
-			return new LeaderInfoPoller(client);
-		}
+		
 
-		LeaderInfoPoller(CloudBlobClient storage) {
+		public LeaderInfoPoller(ICloudFactory storage) {
 			_storage = storage;
 		}
 
-		readonly CloudBlobClient _storage;
+		readonly ICloudFactory _storage;
 		Client _client;
 		string _endpoint;
 		public async Task KeepPollingForLeaderInfo(CancellationToken token) {
@@ -38,7 +34,7 @@ namespace MessageVault.Server.Election {
 					if (_endpoint != newEndpoint) {
 						Log.Information("Detected new leader {endpoint}", newEndpoint);
 						_endpoint = newEndpoint;
-						var password = _storage.Credentials.ExportBase64EncodedKey();
+						var password = _storage.GetSysPassword();
 						_client = new Client(_endpoint, Constants.ClusterNodeUser, password);
 					}
 

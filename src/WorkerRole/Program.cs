@@ -17,8 +17,8 @@ namespace WorkerRole {
 			var config = new AppConfig {
 				PublicUri = "http://127.0.0.1:" + range + "001",
 				InternalUri = "http://127.0.0.1:" + range + "002",
-				
-				StorageAccount = CloudStorageAccount.DevelopmentStorageAccount
+
+				StorageAccount = new SingleAccountFactory(CloudStorageAccount.DevelopmentStorageAccount)
 			};
 
 			var app = App.Initialize(config);

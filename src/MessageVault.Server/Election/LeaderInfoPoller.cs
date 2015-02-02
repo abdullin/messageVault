@@ -1,18 +1,12 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Api;
 using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
 namespace MessageVault.Server.Election {
 
 	public sealed class LeaderInfoPoller {
-
-		
-
 		public LeaderInfoPoller(ICloudFactory storage) {
 			_storage = storage;
 		}
@@ -20,8 +14,8 @@ namespace MessageVault.Server.Election {
 		readonly ICloudFactory _storage;
 		Client _client;
 		string _endpoint;
+
 		public async Task KeepPollingForLeaderInfo(CancellationToken token) {
-			
 			while (!token.IsCancellationRequested) {
 				try {
 					var info = await LeaderInfo.Get(_storage);

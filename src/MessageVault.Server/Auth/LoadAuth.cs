@@ -1,23 +1,17 @@
-using System;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
 namespace MessageVault.Server.Auth {
 
 	public static class LoadAuth {
-
-
 		static AuthData GetEmptyConfig() {
 			var log = Log.ForContext<AuthData>();
-			
+
 			log.Warning(
-				"Auth JSON file {blob} doesn't exist in container {container}. Using default login/password", 
+				"Auth JSON file {blob} doesn't exist in container {container}. Using default login/password",
 				Constants.AuthFileName,
 				Constants.SysContainer
 				);
-			
+
 			return AuthData.Default();
 		}
 
@@ -30,7 +24,6 @@ namespace MessageVault.Server.Auth {
 			var source = blob.DownloadText();
 			return AuthData.Deserialize(source);
 		}
-
 	}
 
 }

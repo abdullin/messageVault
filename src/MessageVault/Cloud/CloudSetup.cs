@@ -1,9 +1,12 @@
 using System;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 namespace MessageVault.Cloud {
 
 	public static class CloudSetup {
+
+		public static IRetryPolicy RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(0.5), 3);
 
 		public const string CheckpointMetadataName = "position";
 

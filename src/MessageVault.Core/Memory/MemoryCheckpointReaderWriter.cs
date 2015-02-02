@@ -17,6 +17,10 @@ namespace MessageVault.Memory {
 		public long Read() {
 			return Thread.VolatileRead(ref _value);
 		}
+
+	    public void Dispose() {
+	        
+	    }
 	}
 
 }

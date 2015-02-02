@@ -1,27 +1,30 @@
 using System;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 namespace MessageVault.Cloud {
 
 	public static class CloudSetup {
 
+		public static IRetryPolicy RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(0.5), 3);
+
 		public const string CheckpointMetadataName = "position";
 
-		public static MessageWriter CreateAndInitWriter(CloudBlobClient client, string stream) {
-			var container = client.GetContainerReference(stream);
+		public static MessageWriter CreateAndInitWriter(CloudBlobContainer container) {
+			
 			container.CreateIfNotExists();
 			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
 			var posBlob = container.GetPageBlobReference(Constants.PositionFileName);
 			var pageWriter = new CloudPageWriter(dataBlob);
 			var posWriter = new CloudCheckpointWriter(posBlob);
-			var writer = new MessageWriter(pageWriter, posWriter, stream);
+			var writer = new MessageWriter(pageWriter, posWriter);
 			writer.Init();
 
 			return writer;
 		}
 
-		public static string GetReadAccessSignature(CloudBlobClient client, string stream) {
-			var container = client.GetContainerReference(stream);
+		public static string GetReadAccessSignature(CloudBlobContainer container) {
+			
 			var signature = container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
 				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
 				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),

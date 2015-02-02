@@ -57,9 +57,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MessageVault\MessageVault.csproj">
+    <ProjectReference Include="..\MessageVault.Core\MessageVault.Core.csproj">
+      <Project>{0bf027ca-f007-405d-bd85-f5578bff0b2d}</Project>
+      <Name>MessageVault.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MessageVault\MessageVault.Client.csproj">
       <Project>{fa9fed71-1545-4cb9-ae0e-489b00288313}</Project>
-      <Name>MessageVault</Name>
+      <Name>MessageVault.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

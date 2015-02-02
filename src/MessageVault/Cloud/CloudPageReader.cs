@@ -18,6 +18,10 @@ namespace MessageVault.Cloud {
 
 			_blob.DownloadRangeToStream(stream, offset, length);
 		}
+
+	    public void Dispose() {
+	        
+	    }
 	}
 
 }

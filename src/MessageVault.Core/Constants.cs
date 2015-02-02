@@ -19,6 +19,7 @@ namespace MessageVault {
 		public const string StreamFileName = "000000000000.b6";
 
 		public const string SysContainer = "mv-sys";
+		public const string DataContainerPrefix = "mv-";
 		public const string MasterLockFileName = "master.lock";
 		public const string MasterDataFileName = "master.info";
 		public const string AuthFileName = "auth.json";

@@ -8,7 +8,7 @@ namespace MessageVault {
 	/// </summary>
 	public sealed class PageReadStream : Stream {
 		readonly IPageReader _reader;
-		readonly long _max;
+		 long _max;
 		readonly byte[] _buffer;
 		long _position;
 		
@@ -33,7 +33,7 @@ namespace MessageVault {
 		}
 
 		public override void SetLength(long value) {
-			throw new NotSupportedException();
+		    _max = value;
 		}
 
 		
@@ -96,6 +96,7 @@ namespace MessageVault {
 
 		public override long Length {
 			get { return _max; }
+            
 		}
 
 		public override long Position { get { return _position; }

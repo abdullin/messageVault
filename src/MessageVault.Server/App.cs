@@ -32,13 +32,13 @@ namespace MessageVault.Server {
 
 		public static App Initialize(AppConfig config) {
 			config.ThrowIfInvalid();
-			var poller = LeaderInfoPoller.Create(config.StorageAccount);
+			var poller =  new LeaderInfoPoller(config.StorageAccount);
 			var startOptions = new StartOptions();
 			startOptions.Urls.Add(config.InternalUri);
 			startOptions.Urls.Add(config.PublicUri);
 
 			var auth = LoadAuth.LoadFromStorageAccount(config.StorageAccount);
-			AddSystemAccess(auth, config.StorageAccount.Credentials.ExportBase64EncodedKey());
+			AddSystemAccess(auth, config.StorageAccount.GetSysPassword());
 			var api = ApiImplementation.Create(config.StorageAccount, poller, auth);
 			var nancyOptions = new NancyOptions
 			{

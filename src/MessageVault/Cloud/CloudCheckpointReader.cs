@@ -20,6 +20,10 @@ namespace MessageVault.Cloud {
 			Ensure.ZeroOrGreater("result", result);
 			return result;
 		}
+
+	    public void Dispose() {
+	        
+	    }
 	}
 
 }

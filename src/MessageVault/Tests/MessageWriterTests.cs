@@ -16,8 +16,8 @@ namespace MessageVault.Tests {
 		}
 
 		MessageWriter CreateWriter(string name) {
-			
-			return CloudSetup.CreateAndInitWriter(TestEnvironment.Client,  _folder);
+			var container = TestEnvironment.Client.GetContainerReference(_folder);
+			return CloudSetup.CreateAndInitWriter(container);
 		}
 
 		static readonly MessageToWrite SmallMessageToWrite = new MessageToWrite("test", Guid.NewGuid().ToByteArray());

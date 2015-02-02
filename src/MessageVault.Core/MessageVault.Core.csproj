@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FA9FED71-1545-4CB9-AE0E-489B00288313}</ProjectGuid>
+    <ProjectGuid>{0BF027CA-F007-405D-BD85-F5578BFF0B2D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MessageVault</RootNamespace>
-    <AssemblyName>MessageVault</AssemblyName>
+    <AssemblyName>MessageVault.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\core\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,62 +24,52 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\core\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.WindowsAzure.Storage, Version=4.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\WindowsAzure.Storage.4.3.0\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cloud\CloudPageReader.cs" />
-    <Compile Include="Cloud\CloudSetup.cs" />
-    <Compile Include="ICheckpointReader.cs" />
-    <Compile Include="Api\Client.cs" />
-    <Compile Include="Api\GetStreamResponse.cs" />
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Files\FileCheckpointReader.cs" />
+    <Compile Include="Files\FileCheckpointWriter.cs" />
+    <Compile Include="Files\FilePageReader.cs" />
+    <Compile Include="Files\FilePageWriter.cs" />
+    <Compile Include="Files\FileSetup.cs" />
+    <Compile Include="ICheckpointReader.cs" />
     <Compile Include="ICheckpointWriter.cs" />
-    <Compile Include="Api\ApiMessageFramer.cs" />
-    <Compile Include="MessageFormat.cs" />
-    <Compile Include="MessageToWrite.cs" />
     <Compile Include="IPageReader.cs" />
     <Compile Include="IPageWriter.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
+    <Compile Include="Memory\MemoryPageReaderWriter.cs" />
     <Compile Include="Message.cs" />
-    <Compile Include="Tests\MessageIdTests.cs" />
+    <Compile Include="MessageFormat.cs" />
+    <Compile Include="MessageId.cs" />
     <Compile Include="MessageReader.cs" />
-    <Compile Include="Cloud\CloudPageWriter.cs" />
-    <Compile Include="Cloud\CloudCheckpointWriter.cs" />
-    <Compile Include="Cloud\CloudCheckpointReader.cs" />
+    <Compile Include="MessageResult.cs" />
+    <Compile Include="MessageToWrite.cs" />
+    <Compile Include="MessageWriter.cs" />
     <Compile Include="PageReadStream.cs" />
     <Compile Include="Require.cs" />
-    <Compile Include="MessageWriter.cs" />
-    <Compile Include="MessageResult.cs" />
-    <Compile Include="Memory\MemoryPageReaderWriter.cs" />
-    <Compile Include="Tests\MessageWriterTests.cs" />
-    <Compile Include="Tests\SyntheticMemoryTests.cs" />
+    <Compile Include="Tests\MessageIdTests.cs" />
     <Compile Include="Tests\PageReadStreamTests.cs" />
-    <Compile Include="Tests\TestEnvironment.cs" />
-    <Compile Include="MessageId.cs" />
+    <Compile Include="Tests\SyntheticFileTests.cs" />
+    <Compile Include="Tests\SyntheticMemoryTests.cs" />
+    <Compile Include="Tests\SyntheticTestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -16,7 +16,7 @@ namespace MessageVault.Server.Election {
 	/// Ensures that all writes to a single stream are sequential
 	/// </summary>
 	public sealed class MessageWriteScheduler : IDisposable{
-		readonly CloudBlobClient _client;
+		readonly ICloudFactory _factory;
 
 		readonly ConcurrentDictionary<string, MessageWriter> _writers;
 		readonly TaskSchedulerWithAffinity _scheduler;
@@ -25,15 +25,13 @@ namespace MessageVault.Server.Election {
 		
 		
 		
-		public static MessageWriteScheduler Create(CloudStorageAccount account, int parallelism) {
-			var client = account.CreateCloudBlobClient();
-			client.DefaultRequestOptions.RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(0.5), 3);
+		public static MessageWriteScheduler Create(ICloudFactory factory, int parallelism) {
 			
-			return new MessageWriteScheduler(client, parallelism);
+			return new MessageWriteScheduler(factory, parallelism);
 		}
 		
-		MessageWriteScheduler(CloudBlobClient client, int parallelism) {
-			_client = client;
+		MessageWriteScheduler(ICloudFactory factory, int parallelism) {
+			_factory = factory;
 			_writers = new ConcurrentDictionary<string, MessageWriter>();
 			_scheduler = new TaskSchedulerWithAffinity(parallelism);
 		}
@@ -62,14 +60,18 @@ namespace MessageVault.Server.Election {
 		}
 
 		public string GetReadAccessSignature(string stream) {
-			return CloudSetup.GetReadAccessSignature(_client, stream);
+			var container = _factory.GetContainerReference(stream);
+			return CloudSetup.GetReadAccessSignature(container);
 		}
 
 
 		MessageWriter Get(string stream) {
 			stream = stream.ToLowerInvariant();
 
-			return _writers.GetOrAdd(stream, s => CloudSetup.CreateAndInitWriter(_client, stream));
+			return _writers.GetOrAdd(stream, s => {
+				var container = _factory.GetContainerReference(stream);
+				return CloudSetup.CreateAndInitWriter(container);
+			});
 		}
 
 		public void Dispose() {

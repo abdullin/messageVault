@@ -57,16 +57,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MessageVault.Core\MessageVault.Core.csproj">
+      <Project>{0bf027ca-f007-405d-bd85-f5578bff0b2d}</Project>
+      <Name>MessageVault.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MessageVault.Server\MessageVault.Server.csproj">
       <Project>{D48DBD24-16F4-4698-9197-6EFE5BA92498}</Project>
       <Name>MessageVault.Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MessageVault\MessageVault.csproj">
+    <ProjectReference Include="..\MessageVault\MessageVault.Client.csproj">
       <Project>{FA9FED71-1545-4CB9-AE0E-489B00288313}</Project>
-      <Name>MessageVault</Name>
+      <Name>MessageVault.Client</Name>
     </ProjectReference>
   </ItemGroup>
-  
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

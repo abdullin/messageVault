@@ -26,7 +26,7 @@ namespace WorkerRole {
 			var config = new AppConfig {
 				InternalUri = GetEndpointAsUri("InternalHttp"),
 				PublicUri = GetEndpointAsUri("Http"),
-				StorageAccount = account
+				StorageAccount = new SingleAccountFactory(account)
 			};
 			_app = App.Initialize(config);
 

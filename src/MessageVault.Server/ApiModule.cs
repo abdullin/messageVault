@@ -8,13 +8,12 @@ using Nancy.Security;
 namespace MessageVault.Server {
 
 	public sealed class ApiModule : NancyModule {
-		readonly ApiImplementation _scheduler;
+		readonly ApiImplementation _apiServices;
 
-		public ApiModule(ApiImplementation scheduler) {
-			_scheduler = scheduler;
+		public ApiModule(ApiImplementation apiServices) {
+			_apiServices = apiServices;
 			BuildRoutes();
 		}
-
 
 		Response WrapException(Exception ex) {
 			var se = ex as StorageException;
@@ -31,16 +30,15 @@ namespace MessageVault.Server {
 		void BuildRoutes() {
 			Get["/"] = x => "This is MessageVault speaking!";
 
-
 			Get["/streams/{id}"] = x => {
 				this.RequiresAuthentication();
 				var id = (string) x.id;
 				RequiresReadAccess(id);
-
 				
-				var response = _scheduler.GetReadAccess(id);
+				var response = _apiServices.GetReadAccess(id);
 				return Response.AsJson(response);
 			};
+
 			Post["/streams/{id}", true] = async (x, ct) => {
 				this.RequiresAuthentication();
 				var id = (string) x.id;
@@ -48,7 +46,7 @@ namespace MessageVault.Server {
 				// read messages in request thread
 				var messages = ApiMessageFramer.ReadMessages(Request.Body);
 				try {
-					var response = await _scheduler.Append(id, messages);
+					var response = await _apiServices.Append(id, messages);
 
 					return Response.AsJson(response);
 				}
@@ -66,5 +64,4 @@ namespace MessageVault.Server {
 			this.RequiresAnyClaim(new[] {"all:write", id + ":write"});
 		}
 	}
-
 }

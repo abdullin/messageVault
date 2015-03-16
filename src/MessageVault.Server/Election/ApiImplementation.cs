@@ -3,35 +3,35 @@ using System.Threading.Tasks;
 using MessageVault.Api;
 using MessageVault.Cloud;
 using MessageVault.Server.Auth;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 using StatsdClient;
 
 namespace MessageVault.Server.Election {
-
+	/// <summary>
+	/// API service used to apped messages to the message stream.
+	/// </summary>
 	public sealed class ApiImplementation {
-		MessageWriteScheduler _scheduler;
+		MessageWriteScheduler _writeScheduler;
 		readonly ICloudFactory _client;
-		readonly LeaderInfoPoller _poller;
+		readonly LeaderInfoPoller _leader;
 
-		public static ApiImplementation Create(ICloudFactory account, LeaderInfoPoller poller, AuthData auth) {
-			return new ApiImplementation(account, poller);
+		public static ApiImplementation Create(ICloudFactory account, LeaderInfoPoller leader, AuthData auth) {
+			return new ApiImplementation(account, leader);
 		}
 
-		ApiImplementation(ICloudFactory client, LeaderInfoPoller poller) {
+		ApiImplementation(ICloudFactory client, LeaderInfoPoller leader) {
 			_client = client;
-			_poller = poller;
+			_leader = leader;
 		}
 
 		public void EnableDirectWrites(MessageWriteScheduler scheduler) {
-			_scheduler = scheduler;
+			_writeScheduler = scheduler;
 			Log.Verbose("API will handle writes on this node");
 		}
 
 		public void DisableDirectWrites() {
-			if (_scheduler != null) {
-				_scheduler = null;
+			if (_writeScheduler != null) {
+				_writeScheduler = null;
 				Log.Verbose("API will forward writes to leader");	
 			}
 		}
@@ -47,7 +47,7 @@ namespace MessageVault.Server.Election {
 		}
 
 		public async Task<PostMessagesResponse> Append(string id, ICollection<MessageToWrite> writes) {
-			var writer = _scheduler;
+			var writer = _writeScheduler;
 			if (null != writer) {
 				using (Metrics.StartTimer("api.append")) {
 					var result = await writer.Append(id, writes);
@@ -57,7 +57,7 @@ namespace MessageVault.Server.Election {
 				}
 			}
 			using (Metrics.StartTimer("api.forward")) {
-				var endpoint = await _poller.GetLeaderClientAsync();
+				var endpoint = await _leader.GetLeaderClientAsync();
 				var result = await endpoint.PostMessagesAsync(id, writes);
 				return result;
 			}

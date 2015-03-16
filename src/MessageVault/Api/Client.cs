@@ -26,7 +26,6 @@ namespace MessageVault.Api {
 				new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 		}
 
-
 		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
 			// TODO: use a buffer pool
 			using (var mem = new MemoryStream()) {
@@ -43,8 +42,6 @@ namespace MessageVault.Api {
 			}
 		}
 		
-
-		
 		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
 			var result = await _client.GetAsync("/streams/" + stream);
 			result.EnsureSuccessStatusCode();
@@ -53,7 +50,6 @@ namespace MessageVault.Api {
 			
 			return CloudSetup.GetReader(response.Signature);
 		}
-
 
 		public void Dispose() {
 			_client.Dispose();

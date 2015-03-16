@@ -21,7 +21,6 @@ namespace MessageVault {
             _buffer = new byte[Limit];
         }
 
-
         public long GetPosition() {
             return _position.Read();
         }
@@ -102,8 +101,6 @@ namespace MessageVault {
                 }
             }
         }
-
-
 
         public async Task<MessageResult> GetMessagesAsync(CancellationToken ct, long start,
             int limit) {

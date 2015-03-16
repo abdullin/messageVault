@@ -31,7 +31,6 @@ namespace MessageVault {
 		public static readonly DateTime Epoch =
 			new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-
 		static int _counter = GetNodeLocalNumber();
 
 		static int GetNodeLocalNumber() {
@@ -48,7 +47,6 @@ namespace MessageVault {
 		readonly uint _b;
 		readonly uint _c;
 		readonly uint _d;
-
 
 		[Pure]
 		public DateTime GetTimeUtc() {
@@ -138,7 +136,6 @@ namespace MessageVault {
 				throw new ArgumentOutOfRangeException("offset", "Offset must fit in 6 bytes");
 			}
 
-
 			// aaaaaaaabbbbbbbbccccccccdddddddd
 			// timestamp...offset......rand....
 			// AABBCCDDEEFF00112233445566778899
@@ -150,7 +147,6 @@ namespace MessageVault {
 			_c = (uint) (offset & 0xFFFFFFFF);
 			_d = (uint) counter;
 		}
-
 
 		[Pure]
 		public byte[] GetBytes() {
@@ -179,7 +175,6 @@ namespace MessageVault {
 			return _d.CompareTo(other._d);
 		}
 
-
 		public override int GetHashCode() {
 			unchecked {
 				var hashCode = _b;
@@ -201,5 +196,4 @@ namespace MessageVault {
 			throw new InvalidOperationException("Can't compare with non-MessageId");
 		}
 	}
-
 }

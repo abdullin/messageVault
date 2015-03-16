@@ -13,7 +13,6 @@ namespace MessageVault.Cloud {
 			_blob = blob;
 		}
 
-
 		public long GetOrInitPosition() {
 			// blob.Exists actually fetches metadata
 			if (!_blob.Exists()) {

@@ -2,6 +2,9 @@ using Serilog;
 
 namespace MessageVault.Server.Auth {
 
+	/// <summary>
+	/// Loads <see cref="AuthData"/> out of cloud storage.
+	/// </summary>
 	public static class LoadAuth {
 		static AuthData GetEmptyConfig() {
 			var log = Log.ForContext<AuthData>();

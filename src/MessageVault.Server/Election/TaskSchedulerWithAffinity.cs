@@ -9,15 +9,14 @@ namespace MessageVault.Server.Election {
 	/// with the same hash will always run sequentially.
 	/// </summary>
 	public sealed class TaskSchedulerWithAffinity {
-		readonly JobScheduler[] _schedulers;
-		
+		readonly SequentialJobScheduler[] _schedulers;
 
 		public TaskSchedulerWithAffinity(int parallelism) {
 			
-			_schedulers = new JobScheduler[parallelism];
+			_schedulers = new SequentialJobScheduler[parallelism];
 			for (int i = 0; i < parallelism; i++)
 			{
-				_schedulers[i] = new JobScheduler();
+				_schedulers[i] = new SequentialJobScheduler();
 			}
 		}
 
@@ -35,16 +34,14 @@ namespace MessageVault.Server.Election {
 			return Task.WhenAll(completes);
 		}
 
-		sealed class JobScheduler {
+		sealed class SequentialJobScheduler {
 			internal readonly ConcurrentExclusiveSchedulerPair Scheduler;
 			internal readonly TaskFactory Factory;
 
-			public JobScheduler() {
+			public SequentialJobScheduler() {
 				Scheduler = new ConcurrentExclusiveSchedulerPair();
 				Factory = new TaskFactory(Scheduler.ExclusiveScheduler);
 			}
 		}
-
 	}
-
 }

@@ -4,7 +4,11 @@ using System.Text;
 
 namespace MessageVault.Api {
 
+	/// <summary>
+	/// Handles messages formatting to be passed in a stream (such as HTTP request body).
+	/// </summary>
 	public static class ApiMessageFramer {
+
 		public static void WriteMessages(ICollection<MessageToWrite> messages, Stream stream) {
 			using (var bin = new BinaryWriter(stream, Encoding.UTF8, true)) {
 				// int
@@ -28,12 +32,9 @@ namespace MessageVault.Api {
 					var size = bin.ReadInt32();
 					var data = bin.ReadBytes(size);
 					result.Add(new MessageToWrite(contract, data));
-					
 				}
 				return result;
 			}
-			
 		}
 	}
-
 }

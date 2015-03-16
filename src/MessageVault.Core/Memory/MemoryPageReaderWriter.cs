@@ -23,7 +23,6 @@ namespace MessageVault.Memory {
 				target = NextSize();
 			}
 			_stream.SetLength(target);
-				
 		}
 
 		public byte[] ReadPage(long offset) {
@@ -61,8 +60,6 @@ namespace MessageVault.Memory {
 	        using (_stream) {
 	            _disposed = true;
 	        }
-	        
 	    }
 	}
-
 }

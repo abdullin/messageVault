@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Server.Auth;
@@ -32,33 +31,41 @@ namespace MessageVault.Server {
 
 		public static App Initialize(AppConfig config) {
 			config.ThrowIfInvalid();
-			var poller =  new LeaderInfoPoller(config.StorageAccount);
+
+			// Initialize polling for the current leader
+			var leaderPolling =  new LeaderInfoPoller(config.StorageAccount);
+
+			// Initialize users and their claims
+			var auth = LoadAuth.LoadFromStorageAccount(config.StorageAccount);
+			AddSystemAccess(auth, config.StorageAccount.GetSysPassword());
+
+			// Initialize API access
+			var api = ApiImplementation.Create(config.StorageAccount, leaderPolling, auth);
+
+			// Initialize leader election
+			var nodeInfo = new LeaderInfo(config.InternalUri);
+			var leaderLock = new LeaderLock(config.StorageAccount, nodeInfo, api);
+			
+			var serverShutDownCts = new CancellationTokenSource(); // Token used to notify all processes about server shutdown
+
+			// fire up leader and scheduler first
+			var tasks = new List<Task> {
+				leaderLock.KeepTryingToAcquireLock(serverShutDownCts.Token), 
+				leaderPolling.KeepPollingForLeaderInfo(serverShutDownCts.Token),
+			};
+			
+			// Initialize endpoints
 			var startOptions = new StartOptions();
 			startOptions.Urls.Add(config.InternalUri);
 			startOptions.Urls.Add(config.PublicUri);
 
-			var auth = LoadAuth.LoadFromStorageAccount(config.StorageAccount);
-			AddSystemAccess(auth, config.StorageAccount.GetSysPassword());
-			var api = ApiImplementation.Create(config.StorageAccount, poller, auth);
+			// bind the API
 			var nancyOptions = new NancyOptions
 			{
 				Bootstrapper = new NancyBootstrapper(api, new UserValidator(auth))
 			};
-			var nodeInfo = new LeaderInfo(config.InternalUri);
-			
-			var selector = new LeaderLock(config.StorageAccount, nodeInfo, api);
-			
-			var cts = new CancellationTokenSource();
-			// fire up leader and scheduler first
-			var tasks = new List<Task> {
-				selector.KeepTryingToAcquireLock(cts.Token), 
-				poller.KeepPollingForLeaderInfo(cts.Token),
-			};
-
-			
-			// bind the API
 			var webApp = WebApp.Start(startOptions, x => x.UseNancy(nancyOptions));
-			return new App(webApp, cts, tasks);
+			return new App(webApp, serverShutDownCts, tasks);
 		}
 
 		static void AddSystemAccess(AuthData auth, string accountStorageKey) {

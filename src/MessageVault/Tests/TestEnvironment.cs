@@ -16,11 +16,8 @@ namespace MessageVault.Tests {
 
 		static int _sequence;
 
-	
-
 		public static string GetContainerName(string prefix) {
 			
-
 			var value = Interlocked.Increment(ref _sequence);
 			var container = string.Format("{0}-{1:yyyy-MM-dd-hh-mm-ss}-{2}",
 				prefix.ToLowerInvariant(),

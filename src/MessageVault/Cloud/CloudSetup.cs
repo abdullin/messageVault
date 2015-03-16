@@ -43,5 +43,4 @@ namespace MessageVault.Cloud {
 			return new MessageReader(position, messages);
 		}
 	}
-
 }

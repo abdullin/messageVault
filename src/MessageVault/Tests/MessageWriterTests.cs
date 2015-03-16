@@ -8,7 +8,6 @@ namespace MessageVault.Tests {
 	public sealed class MessageWriterTests {
 		string _folder;
 
-
 		[SetUp]
 		public void Setup() {
 
@@ -21,7 +20,6 @@ namespace MessageVault.Tests {
 		}
 
 		static readonly MessageToWrite SmallMessageToWrite = new MessageToWrite("test", Guid.NewGuid().ToByteArray());
-
 
 		[TearDown]
 		public void Teardown() {
@@ -93,9 +91,6 @@ namespace MessageVault.Tests {
 				accumulated += SmallMessageToWrite.Value.Length;
 			}
 			writer.Append(batch);
-
-
 		}
 	}
-
 }

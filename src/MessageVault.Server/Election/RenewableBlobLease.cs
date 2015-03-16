@@ -2,9 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 
 namespace MessageVault.Server.Election {
@@ -38,7 +36,6 @@ namespace MessageVault.Server.Election {
 			_blob = blob;
 			_leaderTask = leaderTask;
 		}
-
 
 		public async Task RunElectionsForever(CancellationToken token) {
 			var leaseWrapper = new BlobLeaseWrapper(_blob, 512);

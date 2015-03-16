@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -15,6 +16,11 @@ namespace MessageVault.Server.Election {
 			_endpoint = endpoint;
 		}
 
+		/// <summary>
+		/// Gets the information about the current client.
+		/// </summary>
+		/// <param name="client">The client.</param>
+		/// <returns>Task which returns current leader information, or <c>null</c> if master file doesn't exist and there's no master elected.</returns>
 		public static async Task<LeaderInfo> Get(ICloudFactory client) {
 			var blob = GetBlob(client);
 			var exists = await blob.ExistsAsync();
@@ -25,16 +31,23 @@ namespace MessageVault.Server.Election {
 			return new LeaderInfo(endpoint);
 		}
 
-		public async Task WriteToBlob(ICloudFactory storage) {
+		/// <summary>
+		/// Writes current node info to blob.
+		/// </summary>
+		/// <param name="storage">The storage.</param>
+		/// <param name="token">The token.</param>
+		/// <returns>Task representing writing process.</returns>
+		/// <remarks>This is usually called when the current node becomes the master to notify everyone about it.</remarks>
+		public async Task WriteToBlobAsync(ICloudFactory storage, CancellationToken token) {
 
 			var blob = GetBlob(storage);
 
-			var exists = await blob.ExistsAsync();
+			var exists = await blob.ExistsAsync(token);
 			if (!exists) {
-				blob.Create(0, AccessCondition.GenerateIfNoneMatchCondition("*"));
+				await blob.CreateAsync(0, AccessCondition.GenerateIfNoneMatchCondition("*"), null, null, token);
 			}
 			blob.Metadata["endpoint"] = this._endpoint;
-			await blob.SetMetadataAsync();
+			await blob.SetMetadataAsync(token);
 		}
 
 		static CloudPageBlob GetBlob(ICloudFactory cloudBlobClient) {

@@ -9,5 +9,4 @@ namespace MessageVault {
 			Value = value;
 		}
 	}
-
 }

@@ -3,9 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 using StatsdClient;
 using System.Linq;
@@ -20,10 +17,6 @@ namespace MessageVault.Server.Election {
 
 		readonly ConcurrentDictionary<string, MessageWriter> _writers;
 		readonly TaskSchedulerWithAffinity _scheduler;
-
-
-		
-		
 		
 		public static MessageWriteScheduler Create(ICloudFactory factory, int parallelism) {
 			
@@ -39,7 +32,6 @@ namespace MessageVault.Server.Election {
 		public async Task Shutdown() {
 			await _scheduler.Shutdown();
 		}
-
 
 		public Task<long> Append(string stream, ICollection<MessageToWrite> data) {
 			stream = stream.ToLowerInvariant();
@@ -78,5 +70,4 @@ namespace MessageVault.Server.Election {
 			Log.Information("Disposing write scheduler");
 		}
 	}
-
 }

@@ -33,6 +33,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CqrsReplicator", "src\CqrsR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageVault.Core", "src\MessageVault.Core\MessageVault.Core.csproj", "{0BF027CA-F007-405D-BD85-F5578BFF0B2D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagrams", "Diagrams", "{636435A4-C383-426B-A546-F2440C9D2652}"
+	ProjectSection(SolutionItems) = preProject
+		diagrams\LeaderElection.dgml = diagrams\LeaderElection.dgml
+		diagrams\WriteScheduling.dgml = diagrams\WriteScheduling.dgml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

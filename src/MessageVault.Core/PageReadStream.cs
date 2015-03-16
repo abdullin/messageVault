@@ -36,8 +36,6 @@ namespace MessageVault {
 		    _max = value;
 		}
 
-		
-
 		public override int Read(byte[] buffer, int offset, int count) {
 			Require.NotNull("buffer", buffer);
 			Require.ZeroOrGreater("offset", offset);
@@ -50,7 +48,6 @@ namespace MessageVault {
 			var read = _mem.Read(buffer, offset, count);
 			_position += read;
 			return read;
-			
 		}
 
 		void PreLoad(int count) {
@@ -96,12 +93,10 @@ namespace MessageVault {
 
 		public override long Length {
 			get { return _max; }
-            
 		}
 
 		public override long Position { get { return _position; }
 			set { throw new InvalidOperationException("Can't seek on this stream"); }
 		}
 	}
-
 }

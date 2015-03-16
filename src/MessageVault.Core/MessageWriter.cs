@@ -15,7 +15,7 @@ namespace MessageVault {
 		readonly IPageWriter _pageWriter;
 		readonly ICheckpointWriter _positionWriter;
 
-		long _position;
+		long _savedPosition;
 		readonly int _pageSize;
 
 		readonly byte[] _buffer;
@@ -33,7 +33,7 @@ namespace MessageVault {
 		}
 
 		public long GetPosition() {
-			return _position;
+			return _savedPosition;
 		}
 		public int GetBufferSize()
 		{
@@ -42,15 +42,15 @@ namespace MessageVault {
 
 		public void Init() {
 			_pageWriter.Init();
-			_position = _positionWriter.GetOrInitPosition();
+			_savedPosition = _positionWriter.GetOrInitPosition();
 
 			//_log.Verbose("Stream {stream} at {offset}", _streamName, _position);
 
-			var tail = TailInPage(_position);
+			var tail = TailInPage(_savedPosition);
 			if (tail != 0) {
 				// preload tail
 
-				var offset = FloorInPage(_position);
+				var offset = FloorInPage(_savedPosition);
 				//_log.Verbose("Load tail at {offset}", offset);
 				var page = _pageWriter.ReadPage(offset);
 				_stream.Write(page, 0, tail);
@@ -79,14 +79,14 @@ namespace MessageVault {
 		}
 
 		long VirtualPosition() {
-			return FloorInPage(_position) + _stream.Position;
+			return FloorInPage(_savedPosition) + _stream.Position;
 		}
 
 		long BufferStarts() {
-			return FloorInPage(_position);
+			return FloorInPage(_savedPosition);
 		}
 		long DataStarts() {
-			return _position;
+			return _savedPosition;
 		}
 		long DataEnds() {
 			return BufferStarts() + _stream.Position;
@@ -110,25 +110,30 @@ namespace MessageVault {
 			var newPosition = VirtualPosition();
 			_pageWriter.EnsureSize(PageCeiling(newPosition));
 			
-			var fullBytesToWrite = (int) PageCeiling(_stream.Position);
+			// how many bytes do we need to write, rounded up to pages
+			var pageBytesToWrite = (int) PageCeiling(_stream.Position);
 
-			// Write all data out of buffer that fill up entire pages
-			using (var copy = new MemoryStream(_buffer, 0, fullBytesToWrite)) {
-				_pageWriter.Save(copy, FloorInPage(_position));
+			// Write all data out of buffer, including the empty tail (if present)
+			// starting from the _savedPosition, rounded down to pages
+			using (var copy = new MemoryStream(_buffer, 0, pageBytesToWrite)) {
+				_pageWriter.Save(copy, FloorInPage(_savedPosition));
 			}
 
-			_position = newPosition;
-
+			_savedPosition = newPosition;
+			// we write so little, that our page tail didn't change
 			if (bytesToWrite < _pageSize) {
 				return;
 			}
-
+			// grab the tail of the stream (up to the page size)
+			// and keep it for future writes
 			var tail = TailInPage(bytesToWrite);
 
 			if (tail == 0) {
+				// our position is at the page boundary, nothing to keep
 				Array.Clear(_buffer, 0, _buffer.Length);
 				_stream.Seek(0, SeekOrigin.Begin);
 			} else {
+				// we need to save the tail in memory
 				Array.Copy(_buffer, FloorInPage(bytesToWrite), _buffer, 0, _pageSize);
 				Array.Clear(_buffer, _pageSize, _buffer.Length - _pageSize);
 				_stream.Seek(tail, SeekOrigin.Begin);
@@ -163,8 +168,8 @@ namespace MessageVault {
 				MessageFormat.Write(_binary, id, item);
 			}
 			FlushBuffer();
-			_positionWriter.Update(_position);
-			return _position;
+			_positionWriter.Update(_savedPosition);
+			return _savedPosition;
 		}
 
 	    bool _disposed;

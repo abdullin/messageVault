@@ -1,35 +1,27 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Serilog;
 using StatsdClient;
-using System.Linq;
 
 namespace MessageVault.Server.Election {
 
 	/// <summary>
-	/// Ensures that all writes to a single stream are sequential
+	///     Ensures that all writes to a single stream are sequential
 	/// </summary>
-	public sealed class MessageWriteScheduler : IDisposable{
+	public sealed class MessageWriteScheduler : IDisposable {
 		readonly ICloudFactory _factory;
 
 		readonly ConcurrentDictionary<string, MessageWriter> _writers;
 		readonly TaskSchedulerWithAffinity _scheduler;
 
-
-		
-		
-		
 		public static MessageWriteScheduler Create(ICloudFactory factory, int parallelism) {
-			
 			return new MessageWriteScheduler(factory, parallelism);
 		}
-		
+
 		MessageWriteScheduler(ICloudFactory factory, int parallelism) {
 			_factory = factory;
 			_writers = new ConcurrentDictionary<string, MessageWriter>();
@@ -47,10 +39,9 @@ namespace MessageVault.Server.Election {
 			var segment = Get(stream);
 
 			return _scheduler.StartNew(hash, () => {
-				
 				using (Metrics.StartTimer("storage.append.time")) {
 					var append = segment.Append(data);
-					
+
 					Metrics.Counter("storage.append.events", data.Count);
 					Metrics.Counter("storage.append.bytes", data.Sum(mw => mw.Value.Length));
 

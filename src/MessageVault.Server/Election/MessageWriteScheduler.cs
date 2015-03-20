@@ -50,6 +50,7 @@ namespace MessageVault.Server.Election {
 
 					// number of appends to a stream
 					Metrics.Counter("stream." + stream + ".append.ok");
+					Metrics.Counter("stream." + stream + ".append.events", data.Count);
 
 					return append;
 				}

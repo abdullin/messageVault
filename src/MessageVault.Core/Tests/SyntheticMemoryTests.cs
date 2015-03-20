@@ -8,8 +8,6 @@ namespace MessageVault.Tests {
     [TestFixture]
 	public sealed class SyntheticMemoryTests : SyntheticTestBase{
 
-		
-
 		[SetUp]
 		public void Setup() {
 			var pages = new MemoryPageReaderWriter();
@@ -21,12 +19,6 @@ namespace MessageVault.Tests {
 		    PageWriter = pages;
 			Writer.Init();
 		}
-
-	
-
-
-
-
 	}
 
 }

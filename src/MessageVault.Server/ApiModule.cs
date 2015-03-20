@@ -42,17 +42,20 @@ namespace MessageVault.Server {
 				return Response.AsJson(response);
 			};
 			Post["/streams/{id}", true] = async (x, ct) => {
+
 				this.RequiresAuthentication();
 				var id = (string) x.id;
 				RequiresWriteAccess(id);
-				// read messages in request thread
-				var messages = ApiMessageFramer.ReadMessages(Request.Body);
+				
 				try {
+					// read messages in request thread
+					var messages = ApiMessageFramer.ReadMessages(Request.Body);
 					var response = await _scheduler.Append(id, messages);
 
 					return Response.AsJson(response);
 				}
 				catch (Exception ex) {
+					Serilog.Log.Error(ex, "Failure in POST to {id}", id);
 					return WrapException(ex);
 				}
 			};

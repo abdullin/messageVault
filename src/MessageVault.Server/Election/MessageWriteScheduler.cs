@@ -50,10 +50,16 @@ namespace MessageVault.Server.Election {
 				
 				using (Metrics.StartTimer("storage.append.time")) {
 					var append = segment.Append(data);
-					Metrics.Counter("storage.append.ok");
+					
 					Metrics.Counter("storage.append.events", data.Count);
 					Metrics.Counter("storage.append.bytes", data.Sum(mw => mw.Value.Length));
+
+					// current position of a stream
 					Metrics.Gauge("stream." + stream, append);
+
+					// number of appends to a stream
+					Metrics.Counter("stream." + stream + ".append.ok");
+
 					return append;
 				}
 			});

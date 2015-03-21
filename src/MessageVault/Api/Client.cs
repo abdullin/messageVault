@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace MessageVault.Api {
 
-	public sealed class Client : IDisposable {
+	public sealed class Client : IClient, IDisposable {
 		readonly HttpClient _client;
 
 		public Client(string url, string username, string password) {

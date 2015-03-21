@@ -46,6 +46,8 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\IClient.cs" />
+    <Compile Include="Memory\MemoryClient.cs" />
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
     <Compile Include="Api\Client.cs" />

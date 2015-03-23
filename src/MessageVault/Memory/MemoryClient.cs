@@ -15,6 +15,7 @@ namespace MessageVault.Memory {
 
 			public InMemStream() {
 				Pages = new MemoryPageReaderWriter();
+				Pages.Init();
 				Checkpoint = new MemoryCheckpointReaderWriter();
 				Writer = new MessageWriter(Pages, Checkpoint);
 			}

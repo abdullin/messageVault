@@ -45,6 +45,10 @@ namespace MessageVault.Memory {
 			var reader = new MessageReader(mem.Checkpoint, mem.Pages);
 			return Task.FromResult(reader);
 		}
+
+		public void Dispose() {
+			_streams.Clear();
+		}
 	}
 
 }

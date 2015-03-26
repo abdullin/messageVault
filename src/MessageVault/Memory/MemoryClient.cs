@@ -3,15 +3,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Api;
+using NUnit.Framework;
 
 namespace MessageVault.Memory {
 
 	public sealed class MemoryClient : IClient {
-
 		sealed class InMemStream {
 			public readonly MemoryPageReaderWriter Pages;
 			public readonly MemoryCheckpointReaderWriter Checkpoint;
 			public readonly MessageWriter Writer;
+
+			internal readonly object WriteLock = new object();
 
 			public InMemStream() {
 				Pages = new MemoryPageReaderWriter();
@@ -21,23 +23,24 @@ namespace MessageVault.Memory {
 			}
 		}
 
-		readonly ConcurrentDictionary<string, InMemStream> _streams = new ConcurrentDictionary<string, InMemStream>(StringComparer.InvariantCultureIgnoreCase);
+
+		readonly ConcurrentDictionary<string, InMemStream> _streams =
+			new ConcurrentDictionary<string, InMemStream>(StringComparer.InvariantCultureIgnoreCase);
 
 		InMemStream Get(string name) {
 			return _streams.GetOrAdd(name, s => new InMemStream());
 		}
 
-		public Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
+		public Task<PostMessagesResponse> PostMessagesAsync(string stream,
+			ICollection<MessageToWrite> messages) {
 			var inMem = Get(stream);
 
-			// we need to ensure only a single writer
-			return Task.Factory.StartNew(() => {
-				lock (inMem.Writer) {
-					var value = inMem.Writer.Append(messages);
-					return new PostMessagesResponse {
-						Position = value
-					};
-				}
+			long value;
+			lock (inMem.WriteLock) {
+				value = inMem.Writer.Append(messages);
+			}
+			return Task.FromResult(new PostMessagesResponse {
+				Position = value
 			});
 		}
 
@@ -49,6 +52,20 @@ namespace MessageVault.Memory {
 
 		public void Dispose() {
 			_streams.Clear();
+		}
+	}
+
+	[TestFixture]
+	public sealed class MemoryClientTests {
+		[Test]
+		public void Posting() {
+			using (var client = new MemoryClient()) {
+				var task = client.PostMessagesAsync("test", new[] {new MessageToWrite("Key", new byte[0]),});
+				var ok = task.Wait(1000);
+
+				Assert.IsTrue(ok);
+				Assert.AreEqual(25, task.Result.Position);
+			}
 		}
 	}
 

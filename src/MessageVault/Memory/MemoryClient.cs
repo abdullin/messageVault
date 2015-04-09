@@ -67,6 +67,26 @@ namespace MessageVault.Memory {
 				Assert.AreEqual(25, task.Result.Position);
 			}
 		}
+
+		[Test]
+		public void Publisher() {
+			using (var client = new MemoryClient())
+			{
+				Publish(client, new MessageToWrite("Key", new byte[0]));
+			}
+		}
+
+
+
+		public async Task PublishAsync(IClient client, params MessageToWrite[] messages)
+		{
+			await  client.PostMessagesAsync("demo", messages);
+		}
+
+		public void Publish(IClient client, params MessageToWrite[] events)
+		{
+			PublishAsync(client, events).Wait();
+		}
 	}
 
 }

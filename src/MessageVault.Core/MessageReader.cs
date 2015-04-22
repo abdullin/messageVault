@@ -8,7 +8,16 @@ using System.Threading.Tasks;
 
 namespace MessageVault {
 
-    public sealed class MessageReader : IDisposable {
+	public sealed class Subscription {
+		public readonly ConcurrentQueue<Message> Buffer = new ConcurrentQueue<Message>();
+		public Task Task { get; internal set; }
+
+		public long DebugStartPosition { get; internal set; }
+		public long DebugKnownMaxOffset { get; internal set; }
+		public long DebugEnqueuedOffset { get; internal set; }
+	}
+
+	public sealed class MessageReader : IDisposable {
         readonly ICheckpointReader _position;
         readonly IPageReader _messages;
 
@@ -49,41 +58,46 @@ namespace MessageVault {
             return new MessageResult(list, position);
         }
 
-        public ConcurrentQueue<Message> Subscribe(
+        public Subscription Subscribe(
             CancellationToken ct,
             long start,
             int bufferSize,
             int cacheSize
             ) {
-            var queue = new ConcurrentQueue<Message>();
+	        var sub = new Subscription();
 
-            Task.Factory.StartNew(() => RunSubscription(queue, start, ct, bufferSize, cacheSize),
+            sub.Task = Task.Factory.StartNew(() => RunSubscription(sub, start, ct, bufferSize, cacheSize),
                 TaskCreationOptions.LongRunning);
-            return queue;
+            return sub;
         }
 
 
         void RunSubscription(
-            ConcurrentQueue<Message> queue,
+            Subscription sub,
             long position,
             CancellationToken ct,
             int bufferSize,
             int cacheSize
             ) {
+
+	        sub.DebugStartPosition = position;
             var buffer = new byte[bufferSize];
             // forever try
             while (!ct.IsCancellationRequested) {
                 try {
                     // read current max length
                     var length = _position.Read();
+	                sub.DebugKnownMaxOffset = length;
                     using (var prs = new PageReadStream(_messages, position, length, buffer)) {
                         using (var bin = new BinaryReader(prs)) {
                             while (prs.Position < prs.Length) {
                                 var message = MessageFormat.Read(bin);
-                                queue.Enqueue(message);
+                                sub.Buffer.Enqueue(message);
+	                            sub.DebugEnqueuedOffset = prs.Position;
                                 position = prs.Position;
-                                while (queue.Count >= cacheSize) {
-                                    ct.WaitHandle.WaitOne(100);
+
+                                while (sub.Buffer.Count >= cacheSize) {
+                                    ct.WaitHandle.WaitOne(500);
                                 }
                             }
                         }
@@ -98,7 +112,7 @@ namespace MessageVault {
                 }
                 catch (Exception ex) {
                     Debug.Print("Exception {0}", ex);
-                    ct.WaitHandle.WaitOne(1000*20);
+                    ct.WaitHandle.WaitOne(1000*5);
                 }
             }
         }

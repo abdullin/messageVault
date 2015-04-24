@@ -20,7 +20,7 @@ namespace MessageVault.Tests {
 			return CloudSetup.CreateAndInitWriter(container);
 		}
 
-		static readonly MessageToWrite SmallMessageToWrite = new MessageToWrite("test", Guid.NewGuid().ToByteArray());
+		static readonly MessageToWrite SmallMessageToWrite = new MessageToWrite(MessageFlags.None,  "test", Guid.NewGuid().ToByteArray());
 
 
 		[TearDown]

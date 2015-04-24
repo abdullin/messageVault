@@ -60,7 +60,7 @@ namespace MessageVault.Memory {
 		[Test]
 		public void Posting() {
 			using (var client = new MemoryClient()) {
-				var task = client.PostMessagesAsync("test", new[] {new MessageToWrite("Key", new byte[0]),});
+				var task = client.PostMessagesAsync("test", new[] {new MessageToWrite(MessageFlags.None, "Key", new byte[0]),});
 				var ok = task.Wait(1000);
 
 				Assert.IsTrue(ok);
@@ -72,7 +72,7 @@ namespace MessageVault.Memory {
 		public void Publisher() {
 			using (var client = new MemoryClient())
 			{
-				Publish(client, new MessageToWrite("Key", new byte[0]));
+				Publish(client, new MessageToWrite(MessageFlags.None, "Key", new byte[0]));
 			}
 		}
 

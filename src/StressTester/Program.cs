@@ -86,7 +86,7 @@ namespace StressTester {
 				for (int k = 0; k < batchSize; k++) {
 					var contract = string.Format("message{0}-{1}", j, k);
 					var seq = j * batchSize + k;
-					messages.Add(new MessageToWrite(contract, GenerateMessage(seq)));
+					messages.Add(new MessageToWrite(MessageFlags.None, contract, GenerateMessage(seq)));
 				}
 				var started = Stopwatch.StartNew();
 				await client.PostMessagesAsync(streamName, messages);

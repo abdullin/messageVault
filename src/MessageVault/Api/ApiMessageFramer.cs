@@ -4,19 +4,18 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Linq;
+using LZ4s;
 
 namespace MessageVault.Api {
+
+
+
 
 	/// <summary>
 	/// Is responsible for passing
 	/// </summary>
 	public static class ApiMessageFramer {
-
-		
 		public static byte[] WriteMessages(ICollection<MessageToWrite> messages, Stream stream) {
-
-			
-
 					using (var bin = new BinaryWriter(stream, Encoding.UTF8, true)) {
 						// int
 						bin.Write(messages.Count);
@@ -61,10 +60,11 @@ namespace MessageVault.Api {
 				var len = bin.ReadInt32();
 				var result = new MessageToWrite[len];
 				for (int i = 0; i < len; i++) {
+					var flags = (MessageFlags) bin.ReadByte();
 					var contract = bin.ReadString();
 					var size = bin.ReadInt32();
 					var data = bin.ReadBytes(size);
-					result[i] = new MessageToWrite(contract, data);
+					result[i] = new MessageToWrite(flags, contract, data);
 				}
 				return result;
 			}

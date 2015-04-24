@@ -22,7 +22,7 @@ namespace MessageVault.Tests {
         [Test, ExpectedException(typeof(ArgumentException))]
         public void append_throws_on_empty_collection()
         {
-            Writer.Append(new MessageToWrite[0]);
+            Writer.Append(new Message[0]);
         }
 
         static byte[] RandBytes(long len)
@@ -35,7 +35,7 @@ namespace MessageVault.Tests {
         [Test]
         public void given_empty_when_write_message()
         {
-            var write = new MessageToWrite(0, "test", RandBytes(200));
+            var write = Message.Create("test", RandBytes(200));
             var result = Writer.Append(new[] { write });
 
             Assert.AreNotEqual(0, result);
@@ -47,7 +47,7 @@ namespace MessageVault.Tests {
         public void given_one_written_message_when_read_from_start()
         {
             // given
-            var write = new MessageToWrite(0, "test", RandBytes(200));
+			var write = Message.Create("test", RandBytes(200));
             var result = Writer.Append(new[] { write });
             // when
             var read = Reader.ReadMessages(0, result, 100);
@@ -56,7 +56,7 @@ namespace MessageVault.Tests {
             CollectionAssert.IsNotEmpty(read.Messages);
             Assert.AreEqual(1, read.Messages.Count);
             var msg = read.Messages.First();
-            Assert.AreEqual(write.Key, msg.Key);
+            CollectionAssert.AreEqual(write.Key, msg.Key);
             CollectionAssert.AreEqual(write.Value, msg.Value);
             Assert.AreEqual(0, msg.Id.GetOffset());
         }
@@ -73,15 +73,15 @@ namespace MessageVault.Tests {
         public void quasi_random_test()
         {
             var maxCommitSize = PageWriter.GetMaxCommitSize();
-            var written = new List<MessageToWrite>();
+            var written = new List<Message>();
             for (int i = 0; i < 100; i++)
             {
                 var batchSize = (i % 10) + 1;
-                var list = new MessageToWrite[batchSize];
+                var list = new Message[batchSize];
                 for (int j = 0; j < batchSize; j++)
                 {
-                    var size = ((i * 1024 + j + 3) % (maxCommitSize - 512)) %Constants.MaxMessageSize;
-                    var write = new MessageToWrite(0, "{0}:{1}", RandBytes(size + 1));
+                    var size = ((i * 1024 + j + 3) % (maxCommitSize - 512)) %Constants.MaxValueSize;
+					var write = Message.Create("{0}:{1}", RandBytes(size + 1));
                     list[j] = write;
                 }
                 Writer.Append(list);

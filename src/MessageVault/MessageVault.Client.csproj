@@ -52,11 +52,10 @@
     <Compile Include="Cloud\CloudSetup.cs" />
     <Compile Include="Api\Client.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
-    <Compile Include="Api\ApiMessageFramer.cs" />
     <Compile Include="Cloud\CloudPageWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointReader.cs" />
-    <Compile Include="Tests\MessageFramerTests.cs" />
+    <Compile Include="Tests\TransferFormatTests.cs" />
     <Compile Include="Tests\MessageWriterTests.cs" />
     <Compile Include="Tests\TestEnvironment.cs" />
   </ItemGroup>

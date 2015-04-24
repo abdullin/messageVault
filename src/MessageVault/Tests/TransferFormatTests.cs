@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using MessageVault.Api;
 using NUnit.Framework;
 
 namespace MessageVault.Tests {
 
 	[TestFixture]
-	public sealed class MessageFramerTests {
-		static MessageToWrite[] GenerateMessages(int count) {
-			var result = new List<MessageToWrite>();
+	public sealed class TransferFormatTests {
+		static Message[] GenerateMessages(int count) {
+			var result = new List<Message>();
 			for (int i = 0; i < count; i++) {
 				var key = "key" + i;
 				var bytes = new byte[i + i % 7 * 21];
@@ -18,12 +19,12 @@ namespace MessageVault.Tests {
 				}
 
 
-				result.Add(new MessageToWrite(0, key, bytes));
+				result.Add(Message.Create(key, bytes));
 			}
 			return result.ToArray();
 		}
 
-		void AssertEqual(MessageToWrite[] a, MessageToWrite[] b) {
+		void AssertEqual(Message[] a, Message[] b) {
 			Assert.AreEqual(a.Length, b.Length);
 
 			for (int i = 0; i < a.Length; i++) {
@@ -40,10 +41,10 @@ namespace MessageVault.Tests {
 		public void ValidHash() {
 			using (var mem = new MemoryStream()) {
 				var messages = GenerateMessages(7);
-				var hash = ApiMessageFramer.WriteMessages(messages, mem);
+				TransferFormat.WriteMessages(messages, mem);
 				mem.Seek(0, SeekOrigin.Begin);
 
-				var actual = ApiMessageFramer.ReadMessages(mem, hash);
+				var actual = TransferFormat.ReadMessages(mem);
 
 				AssertEqual(messages, actual);
 			}
@@ -53,11 +54,15 @@ namespace MessageVault.Tests {
 		public void InValidHash() {
 			using (var mem = new MemoryStream()) {
 				var messages = GenerateMessages(7);
-				var hash = ApiMessageFramer.WriteMessages(messages, mem);
-				hash[0] += 1;
+				TransferFormat.WriteMessages(messages, mem);
+
+				// zero the hash
+				mem.Seek(-16,SeekOrigin.Current);
+				mem.Write(new byte[16], 0,4);
+
 				mem.Seek(0, SeekOrigin.Begin);
 
-				var actual = ApiMessageFramer.ReadMessages(mem, hash);
+				var actual = TransferFormat.ReadMessages(mem);
 
 				AssertEqual(messages, actual);
 			}

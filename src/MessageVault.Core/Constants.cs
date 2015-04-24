@@ -6,11 +6,14 @@ namespace MessageVault {
 		// this would allow consumers to use fixed-size buffers.
 		// Also see Snappy framing format
 		// https://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
-		public const long MaxMessageSize = 65536;
+		
+		public const long MaxValueSize = ushort.MaxValue; //65535
 		/// <summary>
 		/// Tweak this, but keep low. Contract is always read
 		/// </summary>
-		public const int MaxContractLength = 256;
+		public const int MaxKeySize = byte.MaxValue; // 256
+
+		public const int MaxBatchSize = ushort.MaxValue;
 
 		public const string PositionFileName = "position.c6";
 		/// <summary>

@@ -32,7 +32,7 @@ namespace MessageVault.Memory {
 		}
 
 		public Task<PostMessagesResponse> PostMessagesAsync(string stream,
-			ICollection<MessageToWrite> messages) {
+			ICollection<Message> messages) {
 			var inMem = Get(stream);
 
 			long value;
@@ -60,7 +60,7 @@ namespace MessageVault.Memory {
 		[Test]
 		public void Posting() {
 			using (var client = new MemoryClient()) {
-				var task = client.PostMessagesAsync("test", new[] {new MessageToWrite(0, "Key", new byte[0]),});
+				var task = client.PostMessagesAsync("test", new[] {Message.Create("Key", new byte[0]),});
 				var ok = task.Wait(1000);
 
 				Assert.IsTrue(ok);
@@ -72,18 +72,18 @@ namespace MessageVault.Memory {
 		public void Publisher() {
 			using (var client = new MemoryClient())
 			{
-				Publish(client, new MessageToWrite(0, "Key", new byte[0]));
+				Publish(client, Message.Create("Key", new byte[0]));
 			}
 		}
 
 
 
-		public async Task PublishAsync(IClient client, params MessageToWrite[] messages)
+		public async Task PublishAsync(IClient client, params Message[] messages)
 		{
 			await  client.PostMessagesAsync("demo", messages);
 		}
 
-		public void Publish(IClient client, params MessageToWrite[] events)
+		public void Publish(IClient client, params Message[] events)
 		{
 			PublishAsync(client, events).Wait();
 		}

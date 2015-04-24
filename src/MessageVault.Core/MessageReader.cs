@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MessageVault {
 
 	public sealed class Subscription {
-		public readonly ConcurrentQueue<Message> Buffer = new ConcurrentQueue<Message>();
+		public readonly ConcurrentQueue<MessageWithId> Buffer = new ConcurrentQueue<MessageWithId>();
 		public Task Task { get; internal set; }
 
 		public long DebugStartPosition { get; internal set; }
@@ -40,13 +40,13 @@ namespace MessageVault {
             Require.ZeroOrGreater("maxOffset", till);
             Require.Positive("maxCount", maxCount);
 
-            var list = new List<Message>(maxCount);
+            var list = new List<MessageWithId>(maxCount);
             var position = from;
 
             using (var prs = new PageReadStream(_messages, from, till, _buffer)) {
                 using (var bin = new BinaryReader(prs)) {
                     while (prs.Position < prs.Length) {
-                        var message = MessageFormat.Read(bin);
+                        var message = StorageFormat.Read(bin);
                         list.Add(message);
                         position = prs.Position;
                         if (list.Count >= maxCount) {
@@ -91,7 +91,7 @@ namespace MessageVault {
                     using (var prs = new PageReadStream(_messages, position, length, buffer)) {
                         using (var bin = new BinaryReader(prs)) {
                             while (prs.Position < prs.Length) {
-                                var message = MessageFormat.Read(bin);
+                                var message = StorageFormat.Read(bin);
                                 sub.Buffer.Enqueue(message);
 	                            sub.DebugEnqueuedOffset = prs.Position;
                                 position = prs.Position;

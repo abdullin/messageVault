@@ -48,14 +48,8 @@ namespace MessageVault.Server {
 				RequiresWriteAccess(id);
 				
 				try {
-					var md5 = Request.Query["md5"];
-					byte[] hash = null;
-
-					if (md5 != null) {
-						hash = Guid.Parse((string) md5).ToByteArray();
-					}
 					// read messages in request thread
-					var messages = ApiMessageFramer.ReadMessages(Request.Body, hash);
+					var messages = TransferFormat.ReadMessages(Request.Body);
 					var response = await _scheduler.Append(id, messages);
 
 					return Response.AsJson(response);

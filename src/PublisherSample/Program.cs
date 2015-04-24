@@ -18,7 +18,7 @@ namespace PublisherSample {
 
 		public static async Task KeepPostingForever(Client client) {
 			while (true) {
-				var message = new MessageToWrite(0, "test", new byte[20]);
+				var message = Message.Create("test", new byte[20]);
 
 				var response = await client.PostMessagesAsync("test", new[] {message});
 				Console.WriteLine("Wrote at position {0}", response.Position);

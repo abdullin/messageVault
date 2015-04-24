@@ -46,7 +46,7 @@ namespace MessageVault.Server.Election {
 			}
 		}
 
-		public async Task<PostMessagesResponse> Append(string id, ICollection<MessageToWrite> writes) {
+		public async Task<PostMessagesResponse> Append(string id, ICollection<Message> writes) {
 			var writer = _scheduler;
 			if (null != writer) {
 				using (Metrics.StartTimer("api.append")) {

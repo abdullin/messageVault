@@ -30,17 +30,16 @@ namespace MessageVault.Api {
 		}
 
 
-		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
+		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<Message> messages) {
 			
 			using (var mem = StreamFactory()) {
 
-				var hashed = ApiMessageFramer.WriteMessages(messages, mem);
+				TransferFormat.WriteMessages(messages, mem);
 
 				mem.Seek(0, SeekOrigin.Begin);
-
-				string hash = new Guid(hashed).ToString("N");
+				
 				using (var sc = new StreamContent(mem)) {
-					var result = await _client.PostAsync("/streams/" + stream + "?md5=" + hash, sc);
+					var result = await _client.PostAsync("/streams/" + stream, sc);
 					result.EnsureSuccessStatusCode();
 					var content = await result.Content.ReadAsStringAsync();
 					return JsonConvert.DeserializeObject<PostMessagesResponse>(content);

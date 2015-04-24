@@ -21,6 +21,7 @@ namespace MessageVault.Api {
 						bin.Write(messages.Count);
 
 						foreach (var message in messages) {
+							bin.Write( message.Flags);
 							bin.Write(message.Key);
 							bin.Write(message.Value.Length); //int32
 							bin.Write(message.Value);
@@ -60,7 +61,7 @@ namespace MessageVault.Api {
 				var len = bin.ReadInt32();
 				var result = new MessageToWrite[len];
 				for (int i = 0; i < len; i++) {
-					var flags = (MessageFlags) bin.ReadByte();
+					var flags =  bin.ReadUInt32();
 					var contract = bin.ReadString();
 					var size = bin.ReadInt32();
 					var data = bin.ReadBytes(size);

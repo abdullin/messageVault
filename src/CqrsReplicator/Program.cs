@@ -92,7 +92,7 @@ namespace CqrsReplicator {
 				using (var zip = new GZipStream(stream, CompressionLevel.Fastest, true)) {
 					zip.Write(record.Data, 0, record.Data.Length);
 				}
-				return new MessageToWrite(MessageFlags.None, record.Key, stream.ToArray());
+				return new MessageToWrite(0, record.Key, stream.ToArray());
 			}
 		}
 	}

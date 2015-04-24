@@ -18,7 +18,7 @@ namespace MessageVault.Tests {
 				}
 
 
-				result.Add(new MessageToWrite(MessageFlags.None, key, bytes));
+				result.Add(new MessageToWrite(0, key, bytes));
 			}
 			return result.ToArray();
 		}

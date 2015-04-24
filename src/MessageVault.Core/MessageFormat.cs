@@ -33,13 +33,13 @@ namespace MessageVault {
 			{
 				throw new InvalidOperationException("Unknown storage format");
 			}
-			var flags = binary.ReadInt32();
+			var flags = binary.ReadUInt32();
 			var id = binary.ReadBytes(16);
 			var contract = binary.ReadString();
 			var len = binary.ReadInt32();
 			var data = binary.ReadBytes(len);
 			var uuid = new MessageId(id);
-			var message = new Message(uuid, (MessageFlags) flags, contract, data);
+			var message = new Message(uuid, flags, contract, data);
 			return message;
 		}
 

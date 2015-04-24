@@ -35,7 +35,7 @@ namespace MessageVault.Tests {
         [Test]
         public void given_empty_when_write_message()
         {
-            var write = new MessageToWrite(MessageFlags.None, "test", RandBytes(200));
+            var write = new MessageToWrite(0, "test", RandBytes(200));
             var result = Writer.Append(new[] { write });
 
             Assert.AreNotEqual(0, result);
@@ -47,7 +47,7 @@ namespace MessageVault.Tests {
         public void given_one_written_message_when_read_from_start()
         {
             // given
-            var write = new MessageToWrite(MessageFlags.None, "test", RandBytes(200));
+            var write = new MessageToWrite(0, "test", RandBytes(200));
             var result = Writer.Append(new[] { write });
             // when
             var read = Reader.ReadMessages(0, result, 100);
@@ -81,7 +81,7 @@ namespace MessageVault.Tests {
                 for (int j = 0; j < batchSize; j++)
                 {
                     var size = ((i * 1024 + j + 3) % (maxCommitSize - 512)) %Constants.MaxMessageSize;
-                    var write = new MessageToWrite(MessageFlags.None, "{0}:{1}", RandBytes(size + 1));
+                    var write = new MessageToWrite(0, "{0}:{1}", RandBytes(size + 1));
                     list[j] = write;
                 }
                 Writer.Append(list);

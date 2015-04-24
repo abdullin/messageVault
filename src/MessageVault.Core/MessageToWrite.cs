@@ -1,6 +1,8 @@
+using System;
+
 namespace MessageVault {
 
-	public sealed class MessageToWrite {
+	public sealed class MessageToWrite  {
 		public readonly string Key;
 		public readonly byte[] Value;
 
@@ -8,6 +10,8 @@ namespace MessageVault {
 			Key = key;
 			Value = value;
 		}
+
+		
 	}
 
 }

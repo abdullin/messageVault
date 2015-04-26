@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\IClient.cs" />
+    <Compile Include="Api\PagedClient.cs" />
     <Compile Include="Memory\MemoryClient.cs" />
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />

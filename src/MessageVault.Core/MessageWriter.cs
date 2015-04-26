@@ -22,8 +22,6 @@ namespace MessageVault {
 		readonly MemoryStream _stream;
 		readonly BinaryWriter _binary;
 
-
-
 		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter) {
 			_pages = pages;
 			_positionWriter = positionWriter;
@@ -32,7 +30,6 @@ namespace MessageVault {
 			_pageSize = pages.GetPageSize();
 			_stream = new MemoryStream(_buffer, true);
 			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
-			
 		}
 
 		public long GetPosition() {

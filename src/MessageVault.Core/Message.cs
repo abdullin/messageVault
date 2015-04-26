@@ -14,10 +14,12 @@ namespace MessageVault {
 
 		public Message(byte attributes, byte[] key, byte[] value, uint crc32 ) {
 			if (key.Length > Constants.MaxKeySize) {
-				throw new ArgumentException("key can't be larger than " + Constants.MaxKeySize, "key");
+				var message = "key can't be larger than " + Constants.MaxKeySize + " but got " + key.Length;
+				throw new ArgumentException(message, "key");
 			}
 			if (value.Length > Constants.MaxValueSize) {
-				throw new ArgumentException("value can't be larger than " + Constants.MaxKeySize, "value");
+				var message = "value can't be larger than " + Constants.MaxValueSize + " but got " + value.Length;
+				throw new ArgumentException(message, "value");
 			}
 			Attributes = attributes;
 			Key = key;

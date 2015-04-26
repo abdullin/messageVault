@@ -7,7 +7,7 @@ namespace MessageVault {
 		// Also see Snappy framing format
 		// https://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
 		
-		public const long MaxValueSize = ushort.MaxValue; //65535
+		public const int MaxValueSize = ushort.MaxValue; //65535
 		/// <summary>
 		/// Tweak this, but keep low. Contract is always read
 		/// </summary>

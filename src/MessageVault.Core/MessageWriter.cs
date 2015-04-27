@@ -22,8 +22,6 @@ namespace MessageVault {
 		readonly MemoryStream _stream;
 		readonly BinaryWriter _binary;
 
-
-
 		public MessageWriter(IPageWriter pages, ICheckpointWriter positionWriter) {
 			_pages = pages;
 			_positionWriter = positionWriter;
@@ -32,7 +30,6 @@ namespace MessageVault {
 			_pageSize = pages.GetPageSize();
 			_stream = new MemoryStream(_buffer, true);
 			_binary = new BinaryWriter(_stream, Encoding.UTF8, true);
-			
 		}
 
 		public long GetPosition() {
@@ -132,23 +129,22 @@ namespace MessageVault {
 			}
 		}
 
-
-		public long Append(ICollection<MessageToWrite> messages) {
+		public long Append(ICollection<Message> messages) {
 			if (messages.Count == 0) {
 				throw new ArgumentException("Must provide non-empty array", "messages");
 			}
 			foreach (var item in messages) {
-				if (item.Value.Length > Constants.MaxMessageSize) {
-					string message = "Each message must be smaller than " + Constants.MaxMessageSize;
+				if (item.Value.Length > Constants.MaxValueSize) {
+					string message = "Each message must be smaller than " + Constants.MaxValueSize;
 					throw new InvalidOperationException(message);
 				}
 
-				if (item.Key.Length > Constants.MaxContractLength) {
-					var message = "Each contract must be shorter than " + Constants.MaxContractLength;
+				if (item.Key.Length > Constants.MaxKeySize) {
+					var message = "Each contract must be shorter than " + Constants.MaxKeySize;
 					throw new InvalidOperationException(message);
 				}
 
-				var sizeEstimate = MessageFormat.EstimateSize(item);
+				var sizeEstimate = StorageFormat.EstimateSize(item);
 
 				var availableInBuffer = _stream.Length - _stream.Position;
 				if (sizeEstimate > availableInBuffer) {
@@ -157,7 +153,7 @@ namespace MessageVault {
 
 				var offset = VirtualPosition();
 				var id = MessageId.CreateNew(offset);
-				MessageFormat.Write(_binary, id, item);
+				StorageFormat.Write(_binary, id, item);
 			}
 			FlushBuffer();
 			_positionWriter.Update(_position);

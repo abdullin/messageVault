@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Crc32Algorithm.cs" />
     <Compile Include="Files\FileCheckpointReader.cs" />
     <Compile Include="Files\FileCheckpointWriter.cs" />
     <Compile Include="Files\FilePageReader.cs" />
@@ -50,14 +51,20 @@
     <Compile Include="ICheckpointWriter.cs" />
     <Compile Include="IPageReader.cs" />
     <Compile Include="IPageWriter.cs" />
+    <Compile Include="LZ4\LZ4Codec.cs" />
+    <Compile Include="LZ4\LZ4Codec.Safe.cs" />
+    <Compile Include="LZ4\LZ4Codec.Safe32.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Safe64.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Safe32HC.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Safe64HC.Dirty.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
     <Compile Include="Memory\MemoryPageReaderWriter.cs" />
-    <Compile Include="Message.cs" />
-    <Compile Include="MessageFormat.cs" />
+    <Compile Include="MessageWithId.cs" />
+    <Compile Include="StorageFormat.cs" />
     <Compile Include="MessageId.cs" />
     <Compile Include="MessageReader.cs" />
     <Compile Include="MessageResult.cs" />
-    <Compile Include="MessageToWrite.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="MessageWriter.cs" />
     <Compile Include="PageReadStream.cs" />
     <Compile Include="Require.cs" />
@@ -66,6 +73,7 @@
     <Compile Include="Tests\SyntheticFileTests.cs" />
     <Compile Include="Tests\SyntheticMemoryTests.cs" />
     <Compile Include="Tests\SyntheticTestBase.cs" />
+    <Compile Include="TransferFormat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

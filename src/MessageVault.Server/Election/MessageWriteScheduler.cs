@@ -33,7 +33,7 @@ namespace MessageVault.Server.Election {
 		}
 
 
-		public Task<long> Append(string stream, ICollection<MessageToWrite> data) {
+		public Task<long> Append(string stream, ICollection<Message> data) {
 			stream = stream.ToLowerInvariant();
 			var hash = stream.GetHashCode();
 			var segment = Get(stream);

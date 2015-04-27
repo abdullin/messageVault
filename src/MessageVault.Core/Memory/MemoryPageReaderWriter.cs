@@ -41,7 +41,7 @@ namespace MessageVault.Memory {
 		}
 
 		public int GetMaxCommitSize() {
-			return 4 * 1024;
+			return 4 * 1024 * 1024;
 		}
 
 		public int GetPageSize() {

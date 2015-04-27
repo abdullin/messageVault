@@ -85,14 +85,14 @@ namespace CqrsReplicator {
 			}
 		}
 
-		static MessageToWrite MessageToWrite(DataWithKey record) {
+		static Message MessageToWrite(DataWithKey record) {
 			// by compressing we trade off some CPU to IO operations.
 			// smaller files are faster to download and easier to manage
 			using (var stream = new MemoryStream()) {
 				using (var zip = new GZipStream(stream, CompressionLevel.Fastest, true)) {
 					zip.Write(record.Data, 0, record.Data.Length);
 				}
-				return new MessageToWrite(record.Key, stream.ToArray());
+				return Message.Create(record.Key, stream.ToArray());
 			}
 		}
 	}

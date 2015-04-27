@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
@@ -11,6 +12,8 @@ namespace MessageVault.Api {
 
 	public sealed class Client : IClient, IDisposable {
 		readonly HttpClient _client;
+
+		public static Func<Stream> StreamFactory = () => new MemoryStream(); 
 
 		public Client(string url, string username, string password) {
 			_client = new HttpClient {
@@ -27,13 +30,14 @@ namespace MessageVault.Api {
 		}
 
 
-		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<MessageToWrite> messages) {
-			// TODO: use a buffer pool
-			using (var mem = new MemoryStream()) {
+		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<Message> messages) {
+			
+			using (var mem = StreamFactory()) {
 
-				ApiMessageFramer.WriteMessages(messages, mem);
+				TransferFormat.WriteMessages(messages, mem);
+
 				mem.Seek(0, SeekOrigin.Begin);
-
+				
 				using (var sc = new StreamContent(mem)) {
 					var result = await _client.PostAsync("/streams/" + stream, sc);
 					result.EnsureSuccessStatusCode();

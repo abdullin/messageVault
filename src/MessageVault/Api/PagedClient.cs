@@ -60,7 +60,7 @@ namespace MessageVault.Api {
 
 		public void ChaseEventsForever(CancellationToken token, 
 			Action<MessageWithId, Subscription> callback,
-			Action<Subscription> idle)
+			Action<Subscription> idle = null)
 		{
 			var current = 0;
 			var reader =  _client.GetMessageReaderAsync(_stream);
@@ -74,7 +74,9 @@ namespace MessageVault.Api {
 			{
 				MessageWithId msg;
 				while (!subscription.Buffer.TryDequeue(out msg)) {
-					idle(subscription);
+					if (idle != null) {
+						idle(subscription);
+					}
 					if (token.WaitHandle.WaitOne(100))
 					{
 						// time to stop

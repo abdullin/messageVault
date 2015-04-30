@@ -58,7 +58,9 @@ namespace MessageVault.Api {
 		}
 
 
-		public void ChaseEventsForever(CancellationToken token, Action<MessageWithId, Subscription> callback)
+		public void ChaseEventsForever(CancellationToken token, 
+			Action<MessageWithId, Subscription> callback,
+			Action<Subscription> idle = null)
 		{
 			var current = 0;
 			var reader =  _client.GetMessageReaderAsync(_stream);
@@ -71,8 +73,10 @@ namespace MessageVault.Api {
 			while (!token.IsCancellationRequested)
 			{
 				MessageWithId msg;
-				while (!subscription.Buffer.TryDequeue(out msg))
-				{
+				while (!subscription.Buffer.TryDequeue(out msg)) {
+					if (idle != null) {
+						idle(subscription);
+					}
 					if (token.WaitHandle.WaitOne(100))
 					{
 						// time to stop

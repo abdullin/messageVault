@@ -122,14 +122,13 @@ namespace MessageVault.Api {
 					}
 					mem.Seek(0, SeekOrigin.Begin);
 
-					using (var lz = new LZ4Stream(mem, CompressionMode.Decompress)) {
+					using (var lz = new LZ4Stream(mem, CompressionMode.Decompress, keepOpen:true)) {
 						using (var output = _manager.GetStream("chase-2")) {
 							lz.CopyTo(output);
 
 							var last = pages.Last();
 
 							callback(new MessageWithId(last.Id, last.Attributes, last.Key, output.ToArray(), 0), subscription);
-
 						}
 
 					}

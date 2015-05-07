@@ -8,16 +8,39 @@ using LZ4n;
 
 namespace MessageVault.Api {
 
+	/// <summary>
+	/// Replace with RecyclableMemoryStream from Microsoft, if you want to use your pool
+	/// </summary>
+	public interface IMemoryStreamManager {
+		MemoryStream GetStream(string tag);
+		MemoryStream GetStream(string tag, int length);
+	}
+
+	public sealed class MemoryStreamFactory : IMemoryStreamManager {
+		public MemoryStream GetStream(string tag) {
+			return new MemoryStream();
+		}
+
+		public MemoryStream GetStream(string tag, int length) {
+			return new MemoryStream();
+		}
+	}
+
 	public sealed class PagedClient {
 		readonly IClient _client;
 		readonly string _stream;
 
+		readonly IMemoryStreamManager _manager;
+
+		
+
 		public int ReadMessagesBuffer = 1000;
 		public int ReadBytesBuffer = 2 * 1024 * 1024;
 
-		public PagedClient(IClient client, string stream) {
+		public PagedClient(IClient client, string stream, IMemoryStreamManager manager = null) {
 			_client = client;
 			_stream = stream;
+			_manager = manager ?? new MemoryStreamFactory();
 		}
 
 		public  long Publish(ICollection<UnpackedMessage> unpacked, CancellationToken token)
@@ -93,14 +116,14 @@ namespace MessageVault.Api {
 
 
 				var total = pages.Sum(m => m.Value.Length);
-				using (var mem = new MemoryStream(total)) {
+				using (var mem = _manager.GetStream("chase-1",total)) {
 					foreach (var page in pages) {
 						mem.Write(page.Value, 0, page.Value.Length);
 					}
 					mem.Seek(0, SeekOrigin.Begin);
 
 					using (var lz = new LZ4Stream(mem, CompressionMode.Decompress)) {
-						using (var output = new MemoryStream()) {
+						using (var output = _manager.GetStream("chase-2")) {
 							lz.CopyTo(output);
 
 							var last = pages.Last();

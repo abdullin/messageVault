@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework">
@@ -52,11 +54,12 @@
     <Compile Include="IPageReader.cs" />
     <Compile Include="IPageWriter.cs" />
     <Compile Include="LZ4\LZ4Codec.cs" />
-    <Compile Include="LZ4\LZ4Codec.Safe.cs" />
-    <Compile Include="LZ4\LZ4Codec.Safe32.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Codec.Safe64.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Codec.Safe32HC.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Codec.Safe64HC.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Unsafe.cs" />
+    <Compile Include="LZ4\LZ4Codec.Unsafe32.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Unsafe32HC.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Unsafe64.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Codec.Unsafe64HC.Dirty.cs" />
+    <Compile Include="LZ4\LZ4Stream.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
     <Compile Include="Memory\MemoryPageReaderWriter.cs" />
     <Compile Include="MessageWithId.cs" />

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using LZ4s;
 
 namespace MessageVault {
 

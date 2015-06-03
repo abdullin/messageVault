@@ -42,6 +42,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppendResult.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Crc32Algorithm.cs" />
     <Compile Include="Files\FileCheckpointReader.cs" />

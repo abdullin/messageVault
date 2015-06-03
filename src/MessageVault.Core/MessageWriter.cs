@@ -129,10 +129,11 @@ namespace MessageVault {
 			}
 		}
 
-		public long Append(ICollection<Message> messages) {
+		public AppendResult Append(ICollection<Message> messages) {
 			if (messages.Count == 0) {
 				throw new ArgumentException("Must provide non-empty array", "messages");
 			}
+			var ids = new List<MessageId>(messages.Count);
 			foreach (var item in messages) {
 				if (item.Value.Length > Constants.MaxValueSize) {
 					string message = "Each message must be smaller than " + Constants.MaxValueSize;
@@ -154,10 +155,13 @@ namespace MessageVault {
 				var offset = VirtualPosition();
 				var id = MessageId.CreateNew(offset);
 				StorageFormat.Write(_binary, id, item);
+				ids.Add(id);
 			}
 			FlushBuffer();
+
 			_positionWriter.Update(_position);
-			return _position;
+
+			return new AppendResult(ids, _position);
 		}
 
 	    bool _disposed;

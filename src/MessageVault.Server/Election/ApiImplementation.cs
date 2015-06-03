@@ -52,7 +52,8 @@ namespace MessageVault.Server.Election {
 				using (Metrics.StartTimer("api.append")) {
 					var result = await writer.Append(id, writes);
 					return new PostMessagesResponse {
-						Position = result
+						Position = result.Position,
+						Ids = result.Ids
 					};
 				}
 			}

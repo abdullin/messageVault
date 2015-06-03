@@ -10,11 +10,11 @@ namespace MessageVault.Api {
 
 	public sealed class PublishResult {
 		public readonly long Position;
-		public readonly IList<long> Ids;
+		public readonly IList<long> Offsets;
 
-		public PublishResult(long position, IList<long> ids) {
+		public PublishResult(long position, IList<long> offsets) {
 			Position = position;
-			Ids = ids;
+			Offsets = offsets;
 		}
 	}
 

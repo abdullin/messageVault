@@ -39,10 +39,8 @@ namespace MessageVault.Memory {
 			lock (inMem.WriteLock) {
 				value = inMem.Writer.Append(messages);
 			}
-			return Task.FromResult(new PostMessagesResponse {
-				Position = value.Position,
-				Ids = value.Ids
-			});
+			var response = PostMessagesResponse.FromAppendResult(value);
+			return Task.FromResult(response);
 		}
 
 		public Task<MessageReader> GetMessageReaderAsync(string stream) {

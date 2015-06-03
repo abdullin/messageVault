@@ -10,9 +10,9 @@ namespace MessageVault.Api {
 
 	public sealed class PublishResult {
 		public readonly long Position;
-		public readonly ICollection<MessageId> Ids;
+		public readonly IList<long> Ids;
 
-		public PublishResult(long position, ICollection<MessageId> ids) {
+		public PublishResult(long position, IList<long> ids) {
 			Position = position;
 			Ids = ids;
 		}
@@ -66,7 +66,7 @@ namespace MessageVault.Api {
 			}
 			var result = _client.PostMessagesAsync(_stream, outgoing);
 			result.Wait(token);
-			return new PublishResult(result.Result.Position, result.Result.Ids);
+			return new PublishResult(result.Result.Position, result.Result.Offsets);
 		}
 
 

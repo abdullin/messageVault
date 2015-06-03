@@ -52,9 +52,13 @@ namespace MessageVault {
 
 		[Pure]
 		public DateTime GetTimeUtc() {
-			long offset = ((long) _a << 16) + (_b >> 16);
-			return Epoch.AddMilliseconds(offset);
+			return Epoch.AddMilliseconds(GetTimestamp());
 		}
+
+		long GetTimestamp() {
+			return ((long) _a << 16) + (_b >> 16);
+		}
+
 
 		[Pure]
 		public long GetOffset() {

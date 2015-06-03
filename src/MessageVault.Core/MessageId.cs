@@ -97,6 +97,7 @@ namespace MessageVault {
 
 		public static readonly MessageId Empty = default(MessageId);
 
+		public MessageId(Guid id): this(id.ToByteArray()) {}
 
 		public MessageId(byte[] array) {
 			_a = ReadUintInBigEndian(array, 0);
@@ -161,6 +162,10 @@ namespace MessageVault {
 			WriteIntInBigEndian(_d, result, 12);
 
 			return result;
+		}
+		[Pure]
+		public Guid ToGuid() {
+			return new Guid(GetBytes());
 		}
 
 		public int CompareTo(MessageId other) {

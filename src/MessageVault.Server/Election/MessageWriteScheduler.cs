@@ -33,7 +33,7 @@ namespace MessageVault.Server.Election {
 		}
 
 
-		public Task<long> Append(string stream, ICollection<Message> data) {
+		public Task<AppendResult> Append(string stream, ICollection<Message> data) {
 			stream = stream.ToLowerInvariant();
 			var hash = stream.GetHashCode();
 			var segment = Get(stream);
@@ -46,7 +46,7 @@ namespace MessageVault.Server.Election {
 					Metrics.Counter("storage.append.bytes", data.Sum(mw => mw.Value.Length));
 
 					// current position of a stream
-					Metrics.Gauge("stream." + stream, append);
+					Metrics.Gauge("stream." + stream, append.Position);
 
 					// number of appends to a stream
 					Metrics.Counter("stream." + stream + ".append.ok");

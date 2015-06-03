@@ -35,12 +35,13 @@ namespace MessageVault.Memory {
 			ICollection<Message> messages) {
 			var inMem = Get(stream);
 
-			long value;
+			AppendResult value;
 			lock (inMem.WriteLock) {
 				value = inMem.Writer.Append(messages);
 			}
 			return Task.FromResult(new PostMessagesResponse {
-				Position = value
+				Position = value.Position,
+				Ids = value.Ids
 			});
 		}
 

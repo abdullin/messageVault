@@ -36,11 +36,11 @@ namespace MessageVault.Tests {
         public void given_empty_when_write_message()
         {
             var write = Message.Create("test", RandBytes(200));
-            var result = Writer.Append(new[] { write });
+	        var result = Writer.Append(new[] { write });
 
-            Assert.AreNotEqual(0, result);
-            Assert.AreEqual(result, Writer.GetPosition());
-            Assert.AreEqual(result, CheckpointReader.Read());
+            Assert.AreNotEqual(0, result.Position);
+            Assert.AreEqual(result.Position, Writer.GetPosition());
+            Assert.AreEqual(result.Position, CheckpointReader.Read());
         }
 
         [Test]
@@ -50,9 +50,9 @@ namespace MessageVault.Tests {
 			var write = Message.Create("test", RandBytes(200));
             var result = Writer.Append(new[] { write });
             // when
-            var read = Reader.ReadMessages(0, result, 100);
+            var read = Reader.ReadMessages(0, result.Position, 100);
             // expect
-            Assert.AreEqual(result, read.NextOffset);
+            Assert.AreEqual(result.Position, read.NextOffset);
             CollectionAssert.IsNotEmpty(read.Messages);
             Assert.AreEqual(1, read.Messages.Count);
             var msg = read.Messages.First();

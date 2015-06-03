@@ -2,7 +2,7 @@ using System;
 using System.Text;
 
 namespace MessageVault {
-	
+
 	public sealed class Message {
 
 		public static readonly Encoding UTF8NoBOM = new UTF8Encoding(false);

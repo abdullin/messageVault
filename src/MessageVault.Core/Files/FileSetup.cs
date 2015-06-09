@@ -39,5 +39,4 @@ namespace MessageVault.Files {
             return reader;
         }
     }
-
 }

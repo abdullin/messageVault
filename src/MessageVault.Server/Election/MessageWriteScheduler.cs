@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
 using Serilog;
@@ -14,16 +15,18 @@ namespace MessageVault.Server.Election {
 	/// </summary>
 	public sealed class MessageWriteScheduler : IDisposable {
 		readonly ICloudFactory _factory;
+		readonly CancellationTokenSource _source;
 
 		readonly ConcurrentDictionary<string, MessageWriter> _writers;
 		readonly TaskSchedulerWithAffinity _scheduler;
 
-		public static MessageWriteScheduler Create(ICloudFactory factory, int parallelism) {
-			return new MessageWriteScheduler(factory, parallelism);
+		public static MessageWriteScheduler Create(ICloudFactory factory, int parallelism, CancellationTokenSource source) {
+			return new MessageWriteScheduler(factory, parallelism, source);
 		}
 
-		MessageWriteScheduler(ICloudFactory factory, int parallelism) {
+		MessageWriteScheduler(ICloudFactory factory, int parallelism, CancellationTokenSource source) {
 			_factory = factory;
+			_source = source;
 			_writers = new ConcurrentDictionary<string, MessageWriter>();
 			_scheduler = new TaskSchedulerWithAffinity(parallelism);
 		}
@@ -34,25 +37,33 @@ namespace MessageVault.Server.Election {
 
 
 		public Task<AppendResult> Append(string stream, ICollection<Message> data) {
+			_source.Token.ThrowIfCancellationRequested();
 			stream = stream.ToLowerInvariant();
 			var hash = stream.GetHashCode();
 			var segment = Get(stream);
 
 			return _scheduler.StartNew(hash, () => {
 				using (Metrics.StartTimer("storage.append.time")) {
-					var append = segment.Append(data);
+					try {
+						var append = segment.Append(data);
 
-					Metrics.Counter("storage.append.events", data.Count);
-					Metrics.Counter("storage.append.bytes", data.Sum(mw => mw.Value.Length));
+						Metrics.Counter("storage.append.events", data.Count);
+						Metrics.Counter("storage.append.bytes", data.Sum(mw => mw.Value.Length));
 
-					// current position of a stream
-					Metrics.Gauge("stream." + stream, append.Position);
+						// current position of a stream
+						Metrics.Gauge("stream." + stream, append.Position);
 
-					// number of appends to a stream
-					Metrics.Counter("stream." + stream + ".append.ok");
-					Metrics.Counter("stream." + stream + ".append.events", data.Count);
+						// number of appends to a stream
+						Metrics.Counter("stream." + stream + ".append.ok");
+						Metrics.Counter("stream." + stream + ".append.events", data.Count);
 
-					return append;
+						return append;
+					}
+					catch (PanicException) {
+						_source.Cancel();
+						throw;
+					}
+
 				}
 			});
 		}
@@ -64,6 +75,8 @@ namespace MessageVault.Server.Election {
 
 
 		MessageWriter Get(string stream) {
+
+			_source.Token.ThrowIfCancellationRequested();
 			stream = stream.ToLowerInvariant();
 
 			return _writers.GetOrAdd(stream, s => {

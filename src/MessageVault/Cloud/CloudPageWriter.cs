@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Net;
+using System.Runtime.Serialization;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -73,8 +75,18 @@ namespace MessageVault.Cloud {
 				throw new ArgumentException(message);
 			}
 
-			_blob.WritePages(stream,offset, accessCondition:AccessCondition.GenerateIfMatchCondition(_etag));
-			_etag = _blob.Properties.ETag;
+			try {
+
+				_blob.WritePages(stream, offset,
+					accessCondition : AccessCondition.GenerateIfMatchCondition(_etag));
+				_etag = _blob.Properties.ETag;
+			}
+			catch (StorageException ex) {
+				if (ex.RequestInformation.HttpStatusCode == (int) HttpStatusCode.PreconditionFailed) {
+					throw new PanicException("ETAG failed, must reboot");
+				}
+				throw;
+			}
 		}
 
 		public int GetMaxCommitSize() {
@@ -88,6 +100,24 @@ namespace MessageVault.Cloud {
 	    public void Dispose() {
 	        
 	    }
+	}
+
+	[Serializable]
+	public class PanicException : Exception {
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public PanicException() {}
+		public PanicException(string message) : base(message) {}
+		public PanicException(string message, Exception inner) : base(message, inner) {}
+
+		protected PanicException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context) {}
 	}
 
 }

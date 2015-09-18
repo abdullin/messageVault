@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace MessageVault.Cloud {
@@ -16,7 +17,19 @@ namespace MessageVault.Cloud {
 			Require.ZeroOrGreater("offset", offset);
 			Require.Positive("length", length);
 
-			_blob.DownloadRangeToStream(stream, offset, length);
+			try {
+
+				_blob.DownloadRangeToStream(stream, offset, length);
+			}
+			catch (StorageException ex)
+			{
+				// if forbidden, then we might have an expired SAS token
+				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403)
+				{
+					throw new ForbiddenException("Can't read blob", ex);
+				}
+				throw;
+			}
 		}
 
 	    public void Dispose() {

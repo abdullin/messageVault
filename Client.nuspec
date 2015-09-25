@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MessageVault.Client</id>
-        <version>2.2.1</version>
+        <version>3.0.0</version>
         <authors>AgileHarbor</authors>
         <owners>AgileHarbor</owners>
         <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>
@@ -12,15 +12,15 @@
         <copyright>AgileHarbor</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="Newtonsoft.Json" version="5.0.8" />
-                <dependency id="WindowsAzure.Storage" version="4.3.0" />                
+                <dependency id="Newtonsoft.Json" version="7.0.1" />
+                <dependency id="WindowsAzure.Storage" version="4.3.0" />
             </group>
         </dependencies>
     </metadata>
     <files>
-        <file src="bin\core\MessageVault.Core.dll" target="lib\MessageVault.Core.dll" />
-        <file src="bin\core\MessageVault.Core.pdb" target="lib\MessageVault.Core.pdb" />
-        <file src="bin\core\MessageVault.Client.dll" target="lib\MessageVault.Client.dll" />
-        <file src="bin\core\MessageVault.Client.pdb" target="lib\MessageVault.Client.pdb" />
+        <file src="bin\core\MessageVault.Core.dll" target="lib\net45\MessageVault.Core.dll" />
+        <file src="bin\core\MessageVault.Core.pdb" target="lib\net45\MessageVault.Core.pdb" />
+        <file src="bin\core\MessageVault.Client.dll" target="lib\net45\MessageVault.Client.dll" />
+        <file src="bin\core\MessageVault.Client.pdb" target="lib\net45\MessageVault.Client.pdb" />
     </files>
 </package>

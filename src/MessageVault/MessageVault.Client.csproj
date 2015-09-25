@@ -34,9 +34,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\WindowsAzure.Storage.4.3.0\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
@@ -46,8 +46,14 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\ErrorResponse.cs" />
     <Compile Include="Api\IClient.cs" />
+    <Compile Include="Api\IMemoryStreamManager.cs" />
+    <Compile Include="Api\MemoryStreamFactory.cs" />
     <Compile Include="Api\PagedClient.cs" />
+    <Compile Include="Api\PostMessagesResponse.cs" />
+    <Compile Include="Cloud\Throw.cs" />
+    <Compile Include="Files\FileClient.cs" />
     <Compile Include="Memory\MemoryClient.cs" />
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
@@ -61,6 +67,7 @@
     <Compile Include="Tests\TestEnvironment.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +76,7 @@
       <Name>MessageVault.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

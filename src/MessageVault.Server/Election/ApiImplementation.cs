@@ -1,10 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Api;
 using MessageVault.Cloud;
 using MessageVault.Server.Auth;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
+
 using Serilog;
 using StatsdClient;
 
@@ -51,10 +51,7 @@ namespace MessageVault.Server.Election {
 			if (null != writer) {
 				using (Metrics.StartTimer("api.append")) {
 					var result = await writer.Append(id, writes);
-					return new PostMessagesResponse {
-						Position = result.Position,
-						Ids = result.Ids
-					};
+					return PostMessagesResponse.FromAppendResult(result);
 				}
 			}
 			using (Metrics.StartTimer("api.forward")) {

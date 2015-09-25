@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MessageVault.Server</id>
-        <version>2.0.0</version>
+        <version>3.0.1</version>
         <authors>AgileHarbor</authors>
         <owners>AgileHarbor</owners>
         <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>
@@ -26,12 +26,13 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="bin\server\MessageVault.Client.dll" target="lib\MessageVault.Client.dll" />
-        <file src="bin\server\MessageVault.Client.pdb" target="lib\MessageVault.Client.pdb" />
+        <file src="bin\server\MessageVault.Client.dll" target="lib\net45\MessageVault.Client.dll" />
+        <file src="bin\server\MessageVault.Client.pdb" target="lib\net45\MessageVault.Client.pdb" />
 
-        <file src="bin\server\MessageVault.Core.dll" target="lib\MessageVault.Core.dll" />
-        <file src="bin\server\MessageVault.Core.pdb" target="lib\MessageVault.Core.pdb" />
-        <file src="bin\server\MessageVault.Server.dll" target="lib\MessageVault.Server.dll" />
-        <file src="bin\server\MessageVault.Server.pdb" target="lib\MessageVault.Server.pdb" />
+        <file src="bin\server\MessageVault.Core.dll" target="lib\net45\MessageVault.Core.dll" />
+        <file src="bin\server\MessageVault.Core.pdb" target="lib\net45\MessageVault.Core.pdb" />
+        
+        <file src="bin\server\MessageVault.Server.dll" target="lib\net45\MessageVault.Server.dll" />
+        <file src="bin\server\MessageVault.Server.pdb" target="lib\net45\MessageVault.Server.pdb" />
     </files>
 </package>

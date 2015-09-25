@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 
@@ -42,8 +41,9 @@ namespace MessageVault.Server.Election {
 			_log.Information("Node is a leader with {processors} processors. Setting parallelism to {parallelism}", 
 				processors, 
 				parallelism);
-
-			using (var scheduler = MessageWriteScheduler.Create(_account, parallelism)) {
+			using (var source = new CancellationTokenSource())
+			using (var linked = CancellationTokenSource.CreateLinkedTokenSource(token, source.Token))
+			using (var scheduler = MessageWriteScheduler.Create(_account, parallelism, source)) {
 				try {
 					_log.Information("Message write scheduler created");
 					_api.EnableDirectWrites(scheduler);
@@ -51,7 +51,7 @@ namespace MessageVault.Server.Election {
 					// tell the world who is the leader
 					await _info.WriteToBlob(_account);
 					// sleep till cancelled
-					await Task.Delay(-1, token);
+					await Task.Delay(-1, linked.Token);
 				}
 				catch (OperationCanceledException) {
 					// expect this exception to be thrown in normal circumstances or check the cancellation token, because

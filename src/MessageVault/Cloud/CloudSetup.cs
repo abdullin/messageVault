@@ -27,7 +27,8 @@ namespace MessageVault.Cloud {
 			
 			var signature = container.GetSharedAccessSignature(new SharedAccessBlobPolicy {
 				Permissions = SharedAccessBlobPermissions.List | SharedAccessBlobPermissions.Read, 
-				SharedAccessExpiryTime = DateTimeOffset.Now.AddDays(7),
+				// since Microsoft servers don't have an uptime longer than a year
+				SharedAccessExpiryTime = DateTimeOffset.Now.AddYears(7),
 			});
 			return container.Uri + signature;
 		}

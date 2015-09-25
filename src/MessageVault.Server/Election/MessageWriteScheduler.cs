@@ -19,6 +19,7 @@ namespace MessageVault.Server.Election {
 
 		readonly ConcurrentDictionary<string, MessageWriter> _writers;
 		readonly TaskSchedulerWithAffinity _scheduler;
+		readonly ILogger _log = Log.ForContext<MessageWriteScheduler>();
 
 		public static MessageWriteScheduler Create(ICloudFactory factory, int parallelism, CancellationTokenSource source) {
 			return new MessageWriteScheduler(factory, parallelism, source);
@@ -59,8 +60,8 @@ namespace MessageVault.Server.Election {
 
 						return append;
 					}
-					catch (NonTransientAppendFailure) {
-						// ok, underlying code tells us that append failed.
+					catch (NonTransientAppendFailure ex) {
+						_log.Error(ex, "Append has failed, canceling this leader process");
 						_source.Cancel();
 						throw;
 					}
@@ -69,14 +70,7 @@ namespace MessageVault.Server.Election {
 			});
 		}
 
-		public string GetReadAccessSignature(string stream) {
-			var container = _factory.GetContainerReference(stream);
-			return CloudSetup.GetReadAccessSignature(container);
-		}
-
-
 		MessageWriter Get(string stream) {
-
 			_source.Token.ThrowIfCancellationRequested();
 			stream = stream.ToLowerInvariant();
 

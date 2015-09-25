@@ -18,9 +18,9 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="bin\core\MessageVault.Core.dll" target="lib\MessageVault.Core.dll" />
-        <file src="bin\core\MessageVault.Core.pdb" target="lib\MessageVault.Core.pdb" />
-        <file src="bin\core\MessageVault.Client.dll" target="lib\MessageVault.Client.dll" />
-        <file src="bin\core\MessageVault.Client.pdb" target="lib\MessageVault.Client.pdb" />
+        <file src="bin\core\MessageVault.Core.dll" target="lib\net45\MessageVault.Core.dll" />
+        <file src="bin\core\MessageVault.Core.pdb" target="lib\net45\MessageVault.Core.pdb" />
+        <file src="bin\core\MessageVault.Client.dll" target="lib\net45\MessageVault.Client.dll" />
+        <file src="bin\core\MessageVault.Client.pdb" target="lib\net45\MessageVault.Client.pdb" />
     </files>
 </package>

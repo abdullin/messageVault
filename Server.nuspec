@@ -12,6 +12,7 @@
         <copyright>AgileHarbor</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
+                <dependency id="Newtonsoft.Json" version="7.0.1" />
                 <dependency id="Serilog" version="1.4.102" />
                 <dependency id="WindowsAzure.Storage" version="4.3.0" />
                 <dependency id="Nancy" version="0.23.2" />

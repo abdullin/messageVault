@@ -31,14 +31,15 @@ namespace MessageVault.Cloud {
 
 		public void Update(long position) {
 			Require.ZeroOrGreater("position", position);
-			_blob.Metadata[CloudSetup.CheckpointMetadataName] = Convert.ToString(position);
-			_blob.SetMetadata(AccessCondition.GenerateIfMatchCondition(_etag));
-			_etag = _blob.Properties.ETag;
+
+			Throw.OnEtagMismatchDuringAppend(() => {
+				_blob.Metadata[CloudSetup.CheckpointMetadataName] = Convert.ToString(position);
+				_blob.SetMetadata(AccessCondition.GenerateIfMatchCondition(_etag));
+				_etag = _blob.Properties.ETag;
+			});
 		}
 
-	    public void Dispose() {
-	        
-	    }
+		public void Dispose() {}
 	}
 
 }

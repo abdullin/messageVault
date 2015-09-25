@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MessageVault.Server</id>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
         <authors>AgileHarbor</authors>
         <owners>AgileHarbor</owners>
         <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>

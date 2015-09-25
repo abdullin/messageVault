@@ -52,6 +52,7 @@
     <Compile Include="Api\MemoryStreamFactory.cs" />
     <Compile Include="Api\PagedClient.cs" />
     <Compile Include="Api\PostMessagesResponse.cs" />
+    <Compile Include="Cloud\Throw.cs" />
     <Compile Include="Files\FileClient.cs" />
     <Compile Include="Memory\MemoryClient.cs" />
     <Compile Include="Cloud\CloudPageReader.cs" />

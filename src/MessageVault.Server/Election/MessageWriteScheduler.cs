@@ -59,7 +59,8 @@ namespace MessageVault.Server.Election {
 
 						return append;
 					}
-					catch (PanicException) {
+					catch (NonTransientAppendFailure) {
+						// ok, underlying code tells us that append failed.
 						_source.Cancel();
 						throw;
 					}

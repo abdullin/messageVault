@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 
 namespace MessageVault.Files {
 
@@ -16,7 +17,7 @@ namespace MessageVault.Files {
             
             if (!_info.Exists) {
                 _stream = _info.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-                _writer = new BinaryWriter(_stream  );
+                _writer = new BinaryWriter(_stream);
                 _writer.Write((long)(0));
                 _stream.Flush();
                 return 0;
@@ -24,7 +25,7 @@ namespace MessageVault.Files {
             _stream = _info.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
             _writer = new BinaryWriter(_stream);
 
-            using (var read = new BinaryReader(_stream)) {
+            using (var read = new BinaryReader(_stream,Encoding.UTF8, true)) {
                 return read.ReadInt64();
             }
         }

@@ -45,9 +45,14 @@ namespace MessageVault.Files {
 			return Task.FromResult(response);
 		}
 
+
+
 		public Task<MessageReader> GetMessageReaderAsync(string stream) {
-			var reader = FileSetup.GetReader(_dir, stream);
-			return Task.FromResult(reader);
+			return Task.FromResult(GetMessageReader(stream));
+		}
+
+		public MessageReader GetMessageReader(string stream) {
+			return FileSetup.GetReader(_dir, stream);
 		}
 	}
 

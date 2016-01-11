@@ -35,6 +35,32 @@ namespace MessageVault {
 			return _position.Read();
 		}
 
+		public void ReadMessages(long from, long till, int maxCount, Action<MessageWithId> action)
+		{
+			Require.ZeroOrGreater("from", from);
+			Require.ZeroOrGreater("maxOffset", till);
+			Require.Positive("maxCount", maxCount);
+			
+			var count = 0;
+			using (var prs = new PageReadStream(_messages, from, till, _buffer))
+			{
+				using (var bin = new BinaryReader(prs))
+				{
+					while (prs.Position < prs.Length)
+					{
+						
+						var message = StorageFormat.Read(bin);
+						action(message);
+						count += 1;
+						if (count >= maxCount)
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		public MessageResult ReadMessages(long from, long till, int maxCount) {
 			Require.ZeroOrGreater("from", from);
 			Require.ZeroOrGreater("maxOffset", till);
@@ -134,7 +160,7 @@ namespace MessageVault {
 					await Task.Delay(1000, ct);
 					continue;
 				}
-				var result = await Task.Run(() => ReadMessages(start, actual, limit));
+				var result = await Task.Run(() => ReadMessages(start, actual, limit), ct);
 
 				return result;
 			}

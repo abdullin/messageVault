@@ -72,8 +72,8 @@ namespace MessageVault.Api {
 
 		public void ChaseEventsForever(CancellationToken token,
 			Action<MessageWithId, Subscription> callback,
-			Action<Subscription> idle = null) {
-			const int current = 0;
+			Action<Subscription> idle = null, 
+			long start = 0) {
 			var reader = _client.GetMessageReaderAsync(_stream);
 			reader.Wait(token);
 
@@ -81,7 +81,7 @@ namespace MessageVault.Api {
 			using (var local = new CancellationTokenSource()) {
 				using (var linked = CancellationTokenSource.CreateLinkedTokenSource(token, local.Token)) {
 					// TODO - figure buffer size
-					var subscription = reader.Result.Subscribe(linked.Token, current, ReadBytesBuffer,
+					var subscription = reader.Result.Subscribe(linked.Token, start, ReadBytesBuffer,
 						ReadMessagesBuffer);
 					var pages = new List<MessageWithId>();
 

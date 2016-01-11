@@ -12,14 +12,15 @@ namespace MessageVault.Api {
 
 	public sealed class Client : IClient, IDisposable {
 		readonly HttpClient _client;
+		public readonly Uri Server;
 
 		public static Func<Stream> StreamFactory = () => new MemoryStream(); 
 
 		public Client(string url, string username, string password) {
+			Server = new Uri(url);
 			_client = new HttpClient {
-				BaseAddress = new Uri(url)
+				BaseAddress = Server
 			};
-
 			SetupBasicAuth(username, password);
 		}
 
@@ -28,7 +29,6 @@ namespace MessageVault.Api {
 			_client.DefaultRequestHeaders.Authorization =
 				new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 		}
-
 
 		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<Message> messages) {
 			
@@ -46,18 +46,26 @@ namespace MessageVault.Api {
 				}
 			}
 		}
-		
 
-		
-		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
+		public MessageReader GetMessageReader(string stream) {
+			var task = GetMessageReaderAsync(stream);
+			task.Wait();
+			return task.Result;
+		}
+
+		public async Task<string> GetReaderSignature(string stream) {
 			var result = await _client.GetAsync("/streams/" + stream);
 			result.EnsureSuccessStatusCode();
 			var content = await result.Content.ReadAsStringAsync();
 			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
-			
-			return CloudSetup.GetReader(response.Signature);
+			var signature = response.Signature;
+			return signature;
 		}
-
+		
+		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
+			var signature = await GetReaderSignature(stream);
+			return CloudSetup.GetReader(signature);
+		}
 
 		public void Dispose() {
 			_client.Dispose();

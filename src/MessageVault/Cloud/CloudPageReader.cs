@@ -18,23 +18,18 @@ namespace MessageVault.Cloud {
 			Require.Positive("length", length);
 
 			try {
-
 				_blob.DownloadRangeToStream(stream, offset, length);
 			}
-			catch (StorageException ex)
-			{
+			catch (StorageException ex) {
 				// if forbidden, then we might have an expired SAS token
-				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403)
-				{
+				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403) {
 					throw new ForbiddenException("Can't read blob", ex);
 				}
 				throw;
 			}
 		}
 
-	    public void Dispose() {
-	        
-	    }
+		public void Dispose() {}
 	}
 
 }

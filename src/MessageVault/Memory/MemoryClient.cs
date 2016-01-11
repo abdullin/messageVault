@@ -44,9 +44,12 @@ namespace MessageVault.Memory {
 		}
 
 		public Task<MessageReader> GetMessageReaderAsync(string stream) {
+			return Task.FromResult(GetMessageReader(stream));
+		}
+
+		public MessageReader GetMessageReader(string stream) {
 			var mem = Get(stream);
-			var reader = new MessageReader(mem.Checkpoint, mem.Pages);
-			return Task.FromResult(reader);
+			return new MessageReader(mem.Checkpoint, mem.Pages);
 		}
 
 		public void Dispose() {

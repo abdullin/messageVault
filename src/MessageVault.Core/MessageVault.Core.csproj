@@ -63,7 +63,6 @@
     <Compile Include="LZ4\LZ4Stream.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
     <Compile Include="Memory\MemoryPageReaderWriter.cs" />
-    <Compile Include="MessageDownloader.cs" />
     <Compile Include="MessageWithId.cs" />
     <Compile Include="StorageFormat.cs" />
     <Compile Include="MessageId.cs" />

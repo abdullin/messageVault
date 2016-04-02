@@ -26,7 +26,6 @@ namespace Cache
 			}
 
 
-
 			var connection = args[0].Trim('"','\'').Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
 			var streamName = args[1];
 			var cache = Path.Combine(Directory.GetCurrentDirectory(), "cache");

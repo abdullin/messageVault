@@ -41,6 +41,12 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Serilog">
+      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx">
+      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
@@ -50,6 +56,7 @@
     <Compile Include="Api\IClient.cs" />
     <Compile Include="Api\IMemoryStreamManager.cs" />
     <Compile Include="Api\MemoryStreamFactory.cs" />
+    <Compile Include="Api\MessageDownloader.cs" />
     <Compile Include="Api\PagedClient.cs" />
     <Compile Include="Api\PostMessagesResponse.cs" />
     <Compile Include="Cloud\Throw.cs" />

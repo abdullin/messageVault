@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using LZ4;
+using NUnit.Framework;
 
 
 namespace MessageVault.Api {

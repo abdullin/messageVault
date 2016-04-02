@@ -18,6 +18,20 @@ namespace MessageVault {
 			writer.Write(item.Crc32);
 		}
 
+		public static void Write(BinaryWriter writer, MessageWithId item)
+		{
+			writer.Write(ReservedFormatVersion);
+			writer.Write(item.Attributes);
+			writer.Write(item.Id.GetBytes());
+			// we know for 100% that key length will be byte 
+			writer.Write((byte)item.Key.Length);
+			writer.Write(item.Key);
+			// we know for 100% that value length will be ushort
+			writer.Write((ushort)item.Value.Length);
+			writer.Write(item.Value);
+			writer.Write(item.Crc32);
+		}
+
 		public static int EstimateSize(Message item) {
 			int sizeEstimate
 				= 1 // magic byte 

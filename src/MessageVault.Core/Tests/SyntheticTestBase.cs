@@ -19,10 +19,10 @@ namespace MessageVault.Tests {
         }
 
 
-        [Test, ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void append_throws_on_empty_collection()
         {
-            Writer.Append(new Message[0]);
+			Assert.Throws<ArgumentException>(() => Writer.Append(new Message[0]));
         }
 
         static byte[] RandBytes(long len)

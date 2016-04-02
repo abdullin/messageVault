@@ -53,7 +53,7 @@ namespace MessageVault.Tests {
 			}
 		}
 
-		[Test, ExpectedException(typeof(InvalidDataException))]
+		[Test]
 		public void InValidHash() {
 			using (var mem = new MemoryStream()) {
 				var messages = GenerateMessages(7);

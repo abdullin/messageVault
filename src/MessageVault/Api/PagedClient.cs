@@ -4,7 +4,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
-using LZ4n;
+using LZ4;
+
 
 namespace MessageVault.Api {
 
@@ -40,7 +41,7 @@ namespace MessageVault.Api {
 
 			foreach (var message in unpacked) {
 				using (var mem = new MemoryStream()) {
-					using (var zip = new LZ4Stream(mem, CompressionMode.Compress, false, 0, true)) {
+					using (var zip = new LZ4Stream(mem, CompressionMode.Compress)) {
 						zip.Write(message.Value, 0, message.Value.Length);
 					}
 
@@ -50,7 +51,7 @@ namespace MessageVault.Api {
 
 
 					while (remains > 0) {
-						Console.WriteLine("Page...");
+						
 						var pick = Math.Min(remains, Constants.MaxValueSize);
 						var hasMoreToWrite = remains > pick;
 
@@ -113,7 +114,7 @@ namespace MessageVault.Api {
 							}
 							mem.Seek(0, SeekOrigin.Begin);
 
-							using (var lz = new LZ4Stream(mem, CompressionMode.Decompress, keepOpen : true)) {
+							using (var lz = new LZ4Stream(mem, CompressionMode.Decompress, LZ4StreamFlags.IsolateInnerStream)) {
 								using (var output = _manager.GetStream("chase-2")) {
 									lz.CopyTo(output);
 

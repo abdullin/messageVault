@@ -1,8 +1,8 @@
 using System.IO;
 
-namespace MessageVault.Api {
+namespace MessageVault.MemoryPool {
 
-	public sealed class MemoryStreamFactory : IMemoryStreamManager {
+	public sealed class MemoryStreamFactoryManager : IMemoryStreamManager {
 		public MemoryStream GetStream(string tag) {
 			return new MemoryStream();
 		}

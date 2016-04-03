@@ -10,13 +10,13 @@ using Newtonsoft.Json;
 
 namespace MessageVault.Api {
 
-	public sealed class Client : IClient, IDisposable {
+	public sealed class CloudClient : IClient, IDisposable {
 		readonly HttpClient _client;
 		public readonly Uri Server;
 
 		public static Func<Stream> StreamFactory = () => new MemoryStream(); 
 
-		public Client(string url, string username, string password) {
+		public CloudClient(string url, string username, string password) {
 			Server = new Uri(url);
 			_client = new HttpClient {
 				BaseAddress = Server
@@ -53,17 +53,23 @@ namespace MessageVault.Api {
 			return task.Result;
 		}
 
-		public async Task<string> GetReaderSignature(string stream) {
-			var result = await _client.GetAsync("/streams/" + stream);
+		public async Task<string> GetReaderSignatureAsync(string stream) {
+			var result = await _client.GetAsync("/streams/" + stream).ConfigureAwait(false);
 			result.EnsureSuccessStatusCode();
-			var content = await result.Content.ReadAsStringAsync();
+			var content = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
 			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
 			var signature = response.Signature;
 			return signature;
 		}
+
+		public string GetReaderSignature(string stream) {
+			var task = GetReaderSignatureAsync(stream);
+			task.Wait();
+			return task.Result;
+		}
 		
 		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
-			var signature = await GetReaderSignature(stream);
+			var signature = await GetReaderSignatureAsync(stream).ConfigureAwait(false);
 			return CloudSetup.GetReader(signature);
 		}
 

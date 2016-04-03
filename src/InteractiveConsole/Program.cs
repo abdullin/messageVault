@@ -38,7 +38,7 @@ namespace InteractiveConsole {
 
 
 		static async Task RunAsync() {
-			using (var client = new Client("http://127.0.0.1:8001", Constants.DefaultLogin, Constants.DefaultPassword)) {
+			using (var client = new CloudClient("http://127.0.0.1:8001", Constants.DefaultLogin, Constants.DefaultPassword)) {
 				
 				// consumer
 				var checkpoint = new MemoryCheckpointReaderWriter();
@@ -64,18 +64,18 @@ namespace InteractiveConsole {
 	public sealed class ConsumerSample
 	{
 		readonly ICheckpointWriter _checkpoint;
-		readonly Client _client;
+		readonly CloudClient _cloudClient;
 
-		public ConsumerSample(ICheckpointWriter checkpoint, Client client)
+		public ConsumerSample(ICheckpointWriter checkpoint, CloudClient cloudClient)
 		{
 			_checkpoint = checkpoint;
-			_client = client;
+			_cloudClient = cloudClient;
 		}
 
 		public async void Run(CancellationToken ct)
 		{
 			var current = _checkpoint.GetOrInitPosition();
-			var reader = await _client.GetMessageReaderAsync("test");
+			var reader = await _cloudClient.GetMessageReaderAsync("test");
 
 
 			while (!ct.IsCancellationRequested)

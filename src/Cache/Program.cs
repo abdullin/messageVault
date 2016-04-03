@@ -46,33 +46,59 @@ namespace Cache
 			
 			
 			
-			var reader = new Client(server, user, pwd);
-			var sas = reader.GetReaderSignature(streamName);
+			var client = new CloudClient(server, user, pwd);
+			var sas = client.GetReaderSignatureAsync(streamName);
 			sas.Wait();
 
 			
 
 
 			var fetcher = CacheFetcher.CreateStandalone(sas.Result, streamName, new DirectoryInfo(cache));
-			
-			
-			while (true) {
-				var started = Stopwatch.StartNew();
-				var downloadTask = fetcher.DownloadNext();
-				downloadTask.Wait();
-				var result = downloadTask.Result;
 
-				if (result.DownloadedBytes == 0) {
-					break;
+			var cacheReader = fetcher.CreateReaderInstance();
+
+			using (var source = new CancellationTokenSource()) {
+				var token = source.Token;
+				var recordCount = 500;
+				Task.Factory.StartNew(() => {
+					var pos = 0L;
+					while (!token.IsCancellationRequested) {
+						var result = cacheReader.ReadAll(pos, recordCount, c => { });
+						if (result.ReadRecords == 0) {
+							token.WaitHandle.WaitOne(100);
+							continue;
+						}
+						Console.WriteLine("Read {0} records",result.ReadRecords);
+
+						pos = result.CurrentCachePosition;
+					}
+				});
+
+
+				while (true) {
+					var started = Stopwatch.StartNew();
+					var downloadTask = fetcher.DownloadNext();
+					downloadTask.Wait(token);
+					var result = downloadTask.Result;
+
+					var percent = (100*(result.UsedBytes + result.CachedRemotePosition))/
+					              result.ActualRemotePosition;
+					var usedPerSec = result.UsedBytes/started.Elapsed.TotalSeconds;
+					
+
+					Console.WriteLine("Downloaded {0}% at speed {1:F1}. {2} records", percent, usedPerSec, result.DownloadedRecords);
+
+					if (result.DownloadedBytes == 0)
+					{
+						break;
+					}
 				}
 
-				var percent =(100*(result.UsedBytes + result.CachedRemotePosition))/result.ActualRemotePosition;
-				var usedPerSec = result.UsedBytes/started.Elapsed.TotalSeconds;
-
-
-				Console.WriteLine("Downloaded {0} at speed {1:F1}", percent, usedPerSec);
+				source.Cancel();
+				Console.WriteLine("Done");
+				Console.ReadLine();
 			}
-			
+
 
 			//var async = reader.GetMessageReaderAsync(streamName);
 			//async.Wait();
@@ -97,7 +123,7 @@ namespace Cache
 			//	}
 			//}
 
-			Console.WriteLine("Done");
+			
 
 
 

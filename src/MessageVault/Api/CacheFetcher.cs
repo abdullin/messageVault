@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
 using MessageVault.Files;
+using MessageVault.MemoryPool;
 
 namespace MessageVault.Api {
 
@@ -13,37 +15,35 @@ namespace MessageVault.Api {
 	/// Fetches multiple caches in parallel
 	/// </summary>
 	public sealed class CacheManager {
-		readonly IDictionary<string, string> _nameAndSas;
 		readonly DirectoryInfo _cacheFolder;
 		readonly IMemoryStreamManager _manager;
-
+		readonly CacheFetcher[] _fetchers;
 
 		public CacheManager(IDictionary<string, string> nameAndSas, DirectoryInfo cacheFolder,
 			IMemoryStreamManager manager) {
-			_nameAndSas = nameAndSas;
 			_cacheFolder = cacheFolder;
 			_manager = manager;
-		}
 
-		public void Run(CancellationToken token) {
-
-			var fetchers = _nameAndSas
-				.Select(p => {
+			_fetchers = nameAndSas
+				.Select(p =>
+				{
 					var fetcher = new CacheFetcher(p.Value, p.Key, _cacheFolder, _manager);
 					fetcher.Init();
 					return fetcher;
 				})
 				.ToArray();
+		}
 
+		public void Run(CancellationToken token) {
 
-			var array = new Task<FetchResult>[fetchers.Length];
+			var array = new Task<FetchResult>[_fetchers.Length];
 
 			
 			
 			while (!token.IsCancellationRequested) {
 				
-				for (int i = 0; i < fetchers.Length; i++) {
-					array[i] = fetchers[i].DownloadNext();
+				for (int i = 0; i < _fetchers.Length; i++) {
+					array[i] = _fetchers[i].DownloadNext();
 					array[i].Start();
 				}
 				
@@ -57,12 +57,66 @@ namespace MessageVault.Api {
 		}
 	}
 
+	public sealed class CacheReader {
+		FileCheckpointArrayWriter _checkpoint;
+		FileStream _readStream;
+		BinaryReader _reader;
+
+		public CacheReader(FileCheckpointArrayWriter checkpoint, FileStream readStream) {
+			_checkpoint = checkpoint;
+			_readStream = readStream;
+
+			_reader = new BinaryReader(readStream, new UTF8Encoding(false));
+		}
+
+		public long GetLocalCachePosition()
+		{
+			return _checkpoint.ReadPositionVolatile()[0];
+		}
+
+		public ReadResult ReadAll(long startingFrom, int maxCount, Action<MessageWithId> handler) {
+			var maxPos = GetLocalCachePosition();
+
+			var result = new ReadResult() {
+				StartingCachePosition = startingFrom,
+				AvailableCachePosition = maxPos
+			};
+			if (startingFrom >= maxPos) {
+				return result;
+			}
+			var read = 0;
+			_readStream.Seek(startingFrom, SeekOrigin.Begin);
+			while (_readStream.Position < maxPos && read < maxCount) {
+				var frame =StorageFormat.Read(_reader);
+				handler(frame);
+				read += 1;
+			}
+
+			result.ReadRecords = read;
+			result.CurrentCachePosition = _readStream.Position;
+
+			return result;
+
+
+		}
+
+
+	}
+
+	public sealed class ReadResult {
+		public int ReadRecords;
+		public long CurrentCachePosition;
+		public long StartingCachePosition;
+		public long AvailableCachePosition;
+
+	}
 
 	public sealed class FetchResult {
 		public long CachedRemotePosition;
 		public long ActualRemotePosition;
 		public long LocalStoragePosition;
 		public long DownloadedBytes;
+		public long DownloadedRecords;
 		public long UsedBytes;
 		public long SavedBytes;
 	}
@@ -71,16 +125,26 @@ namespace MessageVault.Api {
 		readonly CloudPageReader _remote;
 		readonly CloudCheckpointReader _remotePos;
 
-		readonly FileStream _output;
-		readonly FileCheckpointArrayWriter _outputPos;
+		readonly FileStream _cacheWriter;
+		
+		readonly FileCheckpointArrayWriter _cacheChk;
 
 		readonly IMemoryStreamManager _streamManager;
 		readonly BinaryWriter _writer;
+		readonly static Encoding CacheFormat = new UTF8Encoding(false);
+		
 
 		public static CacheFetcher CreateStandalone(string sas, string stream, DirectoryInfo folder) {
-			var fetcher = new CacheFetcher(sas, stream, folder, new MemoryStreamFactory());
+			var fetcher = new CacheFetcher(sas, stream, folder, new MemoryStreamFactoryManager());
 			fetcher.Init();
 			return fetcher;
+		}
+
+		public CacheReader CreateReaderInstance() {
+
+			var cacheReader = _outputFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+			return new CacheReader(_cacheChk, cacheReader);
 		}
 
 		public CacheFetcher(string sas, string stream, DirectoryInfo folder, IMemoryStreamManager streamManager) {
@@ -96,13 +160,14 @@ namespace MessageVault.Api {
 			{
 				di.Create();
 			}
-			var outputInfo = new FileInfo(Path.Combine(di.FullName, Constants.CacheStreamName));
+			_outputFile = new FileInfo(Path.Combine(di.FullName, Constants.CacheStreamName));
 			var checkpointFile = new FileInfo(Path.Combine(di.FullName, Constants.CachePositionName));
 
-			outputInfo.Refresh();
-			_output = outputInfo.Open(outputInfo.Exists ? FileMode.Open : FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-			_writer = new BinaryWriter(_output);
-			_outputPos = new FileCheckpointArrayWriter(checkpointFile, 2);
+			_outputFile.Refresh();
+			_cacheWriter = _outputFile.Open(_outputFile.Exists ? FileMode.Open : FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+			
+			_writer = new BinaryWriter(_cacheWriter,CacheFormat);
+			_cacheChk = new FileCheckpointArrayWriter(checkpointFile, 2);
 		}
 
 		static bool TryRead(BinaryReader reader, out MessageWithId msg) {
@@ -117,13 +182,17 @@ namespace MessageVault.Api {
 		}
 
 		public int AmountToLoadMax = 1*1024*1024;
+		FileInfo _outputFile;
 
 		public void Init() {
-			_outputPos.GetOrInitPosition();
+			_cacheChk.GetOrInitPosition();
 		}
 
+		
+	
+
 		public async Task<FetchResult> DownloadNext() {
-			var pos = _outputPos.ReadPositionVolatile();
+			var pos = _cacheChk.ReadPositionVolatile();
 
 			var convertedLocalPos = pos[0];
 			var cachedRemotePos = pos[1];
@@ -148,6 +217,7 @@ namespace MessageVault.Api {
 			var amountToLoad = Math.Min(availableAmount, AmountToLoadMax);
 			
 			long usedBytes = 0;
+			long downloadedRecords = 0;
 
 			using (var mem = _streamManager.GetStream("fetcher")) {
 				await _remote.DownloadRangeToStreamAsync(mem, cachedRemotePos, (int) amountToLoad)
@@ -158,7 +228,7 @@ namespace MessageVault.Api {
 				mem.Seek(0, SeekOrigin.Begin);
 
 
-				_output.Seek(convertedLocalPos, SeekOrigin.Begin);
+				_cacheWriter.Seek(convertedLocalPos, SeekOrigin.Begin);
 
 				var pages = new List<MessageWithId>();
 				using (var bin = new BinaryReader(mem)) {
@@ -169,6 +239,7 @@ namespace MessageVault.Api {
 						if (false == hasMorePagesToRead && pages.Count == 0) {
 							// fast path, we can save message directly without merging
 							WriteMessage(msg);
+							downloadedRecords += 1;
 							usedBytes = mem.Position;
 							continue;
 						}
@@ -191,6 +262,7 @@ namespace MessageVault.Api {
 							var final = new MessageWithId(last.Id, last.Attributes, last.Key, sub.ToArray(), 0);
 							WriteMessage(final);
 							usedBytes = mem.Position;
+							downloadedRecords +=1;
 						}
 						pages.Clear();
 
@@ -200,14 +272,15 @@ namespace MessageVault.Api {
 					return result;
 				}
 
-				_output.Flush(true);
-				_outputPos.Update(new[] {
-					_output.Position,
+				_cacheWriter.Flush(true);
+				_cacheChk.Update(new[] {
+					_cacheWriter.Position,
 					cachedRemotePos + usedBytes,
 				});
 
 				result.UsedBytes = usedBytes;
-				result.SavedBytes = _output.Position - result.LocalStoragePosition;
+				result.SavedBytes = _cacheWriter.Position - result.LocalStoragePosition;
+				result.DownloadedRecords = downloadedRecords;
 				return result;
 			}
 		}
@@ -221,12 +294,12 @@ namespace MessageVault.Api {
 		{
 			const long shouldHaveMb = 2*1024*1024;
 			const long increaseByMb = 5*shouldHaveMb;
-			var current = _output.Length;
-			var pos = _output.Position;
+			var current = _cacheWriter.Length;
+			var pos = _cacheWriter.Position;
 
 			var available = current - pos;
 			if (available < shouldHaveMb) {
-				_output.SetLength(_output.Length + increaseByMb);
+				_cacheWriter.SetLength(_cacheWriter.Length + increaseByMb);
 			}
 
 

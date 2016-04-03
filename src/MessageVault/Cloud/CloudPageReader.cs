@@ -39,7 +39,7 @@ namespace MessageVault.Cloud {
 
 			try
 			{
-				await _blob.DownloadRangeToStreamAsync(stream, offset, length);
+				await _blob.DownloadRangeToStreamAsync(stream, offset, length).ConfigureAwait(false);
 			}
 			catch (StorageException ex)
 			{

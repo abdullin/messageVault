@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using LZ4;
+using MessageVault.MemoryPool;
 using NUnit.Framework;
 
 
@@ -33,7 +34,7 @@ namespace MessageVault.Api {
 		public PagedClient(IClient client, string stream, IMemoryStreamManager manager = null) {
 			_client = client;
 			_stream = stream;
-			_manager = manager ?? new MemoryStreamFactory();
+			_manager = manager ?? new MemoryStreamFactoryManager();
 		}
 
 		public PublishResult Publish(ICollection<UnpackedMessage> unpacked, CancellationToken token) {

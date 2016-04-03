@@ -59,9 +59,6 @@
     <Compile Include="Api\CacheFetcher.cs" />
     <Compile Include="Api\ErrorResponse.cs" />
     <Compile Include="Api\IClient.cs" />
-    <Compile Include="Api\IMemoryStreamManager.cs" />
-    <Compile Include="Api\MemoryStreamFactory.cs" />
-    <Compile Include="Api\MessageDownloader.cs" />
     <Compile Include="Api\PagedClient.cs" />
     <Compile Include="Api\PostMessagesResponse.cs" />
     <Compile Include="Cloud\Throw.cs" />
@@ -69,7 +66,7 @@
     <Compile Include="Memory\MemoryClient.cs" />
     <Compile Include="Cloud\CloudPageReader.cs" />
     <Compile Include="Cloud\CloudSetup.cs" />
-    <Compile Include="Api\Client.cs" />
+    <Compile Include="Api\CloudClient.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
     <Compile Include="Cloud\CloudPageWriter.cs" />
     <Compile Include="Cloud\CloudCheckpointWriter.cs" />

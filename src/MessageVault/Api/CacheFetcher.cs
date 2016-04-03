@@ -34,6 +34,10 @@ namespace MessageVault.Api {
 				.ToArray();
 		}
 
+		public IList<CacheFetcher> GetFetchers() {
+			return _fetchers;
+		} 
+
 		public void Run(CancellationToken token) {
 
 			var array = new Task<FetchResult>[_fetchers.Length];
@@ -57,6 +61,8 @@ namespace MessageVault.Api {
 		}
 	}
 
+	public delegate void MessageHandler(MessageWithId id, long currentPosition, long maxPosition);
+
 	public sealed class CacheReader {
 		FileCheckpointArrayWriter _checkpoint;
 		FileStream _readStream;
@@ -69,12 +75,12 @@ namespace MessageVault.Api {
 			_reader = new BinaryReader(readStream, new UTF8Encoding(false));
 		}
 
-		long GetLocalCachePosition()
+		public long GetLocalCachePosition()
 		{
 			return _checkpoint.ReadPositionVolatile()[0];
 		}
 
-		public ReadResult ReadAll(long startingFrom, int maxCount, Action<MessageWithId> handler) {
+		public ReadResult ReadAll(long startingFrom, int maxCount, MessageHandler handler) {
 			var maxPos = GetLocalCachePosition();
 
 			var result = new ReadResult() {
@@ -89,11 +95,12 @@ namespace MessageVault.Api {
 
 			try {
 				for (int i = 0; i < maxCount; i++) {
-					if (_readStream.Position >= maxPos) {
+					var currentPosition = _readStream.Position;
+					if (currentPosition >= maxPos) {
 						break;
 					}
 					var frame = StorageFormat.Read(_reader);
-					handler(frame);
+					handler(frame, currentPosition, maxPos);
 					read += 1;
 				}
 			}
@@ -143,6 +150,7 @@ namespace MessageVault.Api {
 		readonly IMemoryStreamManager _streamManager;
 		readonly BinaryWriter _writer;
 		readonly static Encoding CacheFormat = new UTF8Encoding(false);
+		public readonly string StreamName;
 		
 
 		public static CacheFetcher CreateStandalone(string sas, string stream, DirectoryInfo folder) {
@@ -159,6 +167,7 @@ namespace MessageVault.Api {
 		}
 
 		public CacheFetcher(string sas, string stream, DirectoryInfo folder, IMemoryStreamManager streamManager) {
+			StreamName = stream;
 			_streamManager = streamManager;
 			var raw = CloudSetup.GetReaderRaw(sas);
 

@@ -137,7 +137,7 @@ namespace Cache
 
 					try {
 
-						var result = cacheReader.ReadAll(pos, recordCount, c => { });
+						var result = cacheReader.ReadAll(pos, recordCount, (id, position, maxPosition) =>  { });
 						if (result.ReadEndOfCacheBeforeItWasFlushed) {
 							Console.WriteLine(name + ": we are too eager to read data :]");
 							token.WaitHandle.WaitOne(20);

@@ -138,8 +138,9 @@ namespace Cache
 					try {
 
 						var result = cacheReader.ReadAll(pos, recordCount, c => { });
-						if (result.HitNakedByte) {
-							Console.WriteLine(name + ": hit naked byte");
+						if (result.ReadEndOfCacheBeforeItWasFlushed) {
+							Console.WriteLine(name + ": we are too eager to read data :]");
+							token.WaitHandle.WaitOne(20);
 						}
 						if (result.ReadRecords == 0) {
 							token.WaitHandle.WaitOne(50+ random.Next(150));

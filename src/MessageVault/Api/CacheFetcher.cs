@@ -87,18 +87,19 @@ namespace MessageVault.Api {
 			var read = 0;
 			_readStream.Seek(startingFrom, SeekOrigin.Begin);
 
-			for (int i = 0; i < maxCount; i++) {
-				if (_readStream.Position >= maxPos) {
-					break;
+			try {
+				for (int i = 0; i < maxCount; i++) {
+					if (_readStream.Position >= maxPos) {
+						break;
+					}
+					var frame = StorageFormat.Read(_reader);
+					handler(frame);
+					read += 1;
 				}
-				// cache got to the end too early
-				if (_reader.PeekChar() == 0) {
-					result.HitNakedByte = true;
-					break;
-				}
-				var frame = StorageFormat.Read(_reader);
-				handler(frame);
-				read += 1;
+			}
+			catch (NoDataException) {
+				// not a problem, we just read end of cache before it was flushed to disk
+				result.ReadEndOfCacheBeforeItWasFlushed = true;
 			}
 
 			result.ReadRecords = read;
@@ -117,7 +118,7 @@ namespace MessageVault.Api {
 		public long CurrentCachePosition;
 		public long StartingCachePosition;
 		public long AvailableCachePosition;
-		public bool HitNakedByte;
+		public bool ReadEndOfCacheBeforeItWasFlushed;
 
 	}
 

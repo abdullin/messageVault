@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.Serialization;
 using MessageVault.MemoryPool;
 
 namespace MessageVault {
@@ -46,8 +47,11 @@ namespace MessageVault {
 
 		public static MessageWithId Read(BinaryReader binary) {
 			var version = binary.ReadByte();
-			if (version != ReservedFormatVersion)
-			{
+
+			if (version == 0) {
+				throw new NoDataException();
+			}
+			if (version != ReservedFormatVersion){
 				throw new InvalidOperationException("Unknown storage format :" + version);
 			}
 			var flags = binary.ReadByte();
@@ -63,6 +67,19 @@ namespace MessageVault {
 		}
 
 		public const byte ReservedFormatVersion = 0x01;
+	}
+
+	[Serializable]
+	public class NoDataException : Exception {
+		
+
+		public NoDataException() {}
+		public NoDataException(string message) : base(message) {}
+		public NoDataException(string message, Exception inner) : base(message, inner) {}
+
+		protected NoDataException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context) {}
 	}
 
 }

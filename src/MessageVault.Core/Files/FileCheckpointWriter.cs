@@ -103,12 +103,12 @@ namespace MessageVault.Files {
 
 		public void Update(long[] position)
 		{
-			_position = position;
 			_stream.Seek(0, SeekOrigin.Begin);
 			for (int i = 0; i < _count; i++) {
 				_writer.Write(position[i]);
 			}
-			_stream.Flush();
+			_stream.Flush(true);
+			_position = position;
 		}
 
 		public long[] ReadPositionVolatile()

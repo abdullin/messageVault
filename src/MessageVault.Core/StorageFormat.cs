@@ -48,7 +48,7 @@ namespace MessageVault {
 			var version = binary.ReadByte();
 			if (version != ReservedFormatVersion)
 			{
-				throw new InvalidOperationException("Unknown storage format");
+				throw new InvalidOperationException("Unknown storage format :" + version);
 			}
 			var flags = binary.ReadByte();
 			var id = binary.ReadBytes(16);

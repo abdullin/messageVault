@@ -69,7 +69,7 @@ namespace MessageVault.Api {
 			_reader = new BinaryReader(readStream, new UTF8Encoding(false));
 		}
 
-		public long GetLocalCachePosition()
+		long GetLocalCachePosition()
 		{
 			return _checkpoint.ReadPositionVolatile()[0];
 		}
@@ -86,8 +86,17 @@ namespace MessageVault.Api {
 			}
 			var read = 0;
 			_readStream.Seek(startingFrom, SeekOrigin.Begin);
-			while (_readStream.Position < maxPos && read < maxCount) {
-				var frame =StorageFormat.Read(_reader);
+
+			for (int i = 0; i < maxCount; i++) {
+				if (_readStream.Position >= maxPos) {
+					break;
+				}
+				// cache got to the end too early
+				if (_reader.PeekChar() == 0) {
+					result.HitNakedByte = true;
+					break;
+				}
+				var frame = StorageFormat.Read(_reader);
 				handler(frame);
 				read += 1;
 			}
@@ -108,6 +117,7 @@ namespace MessageVault.Api {
 		public long CurrentCachePosition;
 		public long StartingCachePosition;
 		public long AvailableCachePosition;
+		public bool HitNakedByte;
 
 	}
 
@@ -267,11 +277,12 @@ namespace MessageVault.Api {
 						pages.Clear();
 
 					}
+					
 				}
 				if (usedBytes == 0) {
 					return result;
 				}
-
+				_writer.Flush();
 				_cacheWriter.Flush(true);
 				_cacheChk.Update(new[] {
 					_cacheWriter.Position,

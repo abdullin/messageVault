@@ -55,24 +55,19 @@ namespace Cache
 
 			var fetcher = CacheFetcher.CreateStandalone(sas.Result, streamName, new DirectoryInfo(cache));
 
-			var cacheReader = fetcher.CreateReaderInstance();
+			
 
 			using (var source = new CancellationTokenSource()) {
-				var token = source.Token;
-				var recordCount = 500;
-				Task.Factory.StartNew(() => {
-					var pos = 0L;
-					while (!token.IsCancellationRequested) {
-						var result = cacheReader.ReadAll(pos, recordCount, c => { });
-						if (result.ReadRecords == 0) {
-							token.WaitHandle.WaitOne(100);
-							continue;
-						}
-						Console.WriteLine("Read {0} records",result.ReadRecords);
 
-						pos = result.CurrentCachePosition;
-					}
-				});
+				var token = source.Token;
+
+				var tasks = new List<Task>();
+
+				for (int i = 0; i < 5; i++) {
+					var task = LaunchReader(fetcher, token, string.Format("reader-{0}", i));
+					tasks.Add(task);
+				}
+				
 
 
 				while (true) {
@@ -94,9 +89,12 @@ namespace Cache
 					}
 				}
 
-				source.Cancel();
-				Console.WriteLine("Done");
+				Console.WriteLine("Downloading done. Hit <Enter> to stop readers");
 				Console.ReadLine();
+				source.Cancel();
+				Console.Write("Stopping readers....");
+				Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(10));
+				Console.WriteLine("done");
 			}
 
 
@@ -127,6 +125,37 @@ namespace Cache
 
 
 
+		}
+
+		static Task LaunchReader(CacheFetcher fetcher, CancellationToken token, string name) {
+			var cacheReader = fetcher.CreateReaderInstance();
+			var recordCount = 500;
+			var random = new Random();
+			return Task.Factory.StartNew(() => {
+				var pos = 0L;
+				while (!token.IsCancellationRequested) {
+
+					try {
+
+						var result = cacheReader.ReadAll(pos, recordCount, c => { });
+						if (result.HitNakedByte) {
+							Console.WriteLine(name + ": hit naked byte");
+						}
+						if (result.ReadRecords == 0) {
+							token.WaitHandle.WaitOne(50+ random.Next(150));
+							continue;
+						}
+						Console.WriteLine(name + ": read {0} records", result.ReadRecords);
+
+						pos = result.CurrentCachePosition;
+					}
+					catch (Exception ex) {
+						Console.WriteLine(name + ": error " + ex);
+					}
+				}
+
+				Console.WriteLine(name + ": terminating");
+			});
 		}
 	}
 }

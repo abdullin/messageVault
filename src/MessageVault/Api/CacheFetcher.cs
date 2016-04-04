@@ -48,7 +48,6 @@ namespace MessageVault.Api {
 				
 				for (int i = 0; i < _fetchers.Length; i++) {
 					array[i] = _fetchers[i].DownloadNext();
-					array[i].Start();
 				}
 				
 				Task.WaitAll(array, token);
@@ -64,9 +63,9 @@ namespace MessageVault.Api {
 	public delegate void MessageHandler(MessageWithId id, long currentPosition, long maxPosition);
 
 	public sealed class CacheReader {
-		FileCheckpointArrayWriter _checkpoint;
-		FileStream _readStream;
-		BinaryReader _reader;
+		readonly FileCheckpointArrayWriter _checkpoint;
+		readonly FileStream _readStream;
+		readonly BinaryReader _reader;
 
 		public CacheReader(FileCheckpointArrayWriter checkpoint, FileStream readStream) {
 			_checkpoint = checkpoint;
@@ -85,12 +84,13 @@ namespace MessageVault.Api {
 
 			var result = new ReadResult() {
 				StartingCachePosition = startingFrom,
-				AvailableCachePosition = maxPos
+				AvailableCachePosition = maxPos,
+				CurrentCachePosition = startingFrom
 			};
 			if (startingFrom >= maxPos) {
 				return result;
 			}
-			var read = 0;
+			
 			_readStream.Seek(startingFrom, SeekOrigin.Begin);
 
 			try {
@@ -101,16 +101,16 @@ namespace MessageVault.Api {
 					}
 					var frame = StorageFormat.Read(_reader);
 					handler(frame, currentPosition, maxPos);
-					read += 1;
+					// fix the position
+					result.ReadRecords += 1;
+					result.CurrentCachePosition = _readStream.Position;
+					
 				}
 			}
 			catch (NoDataException) {
 				// not a problem, we just read end of cache before it was flushed to disk
 				result.ReadEndOfCacheBeforeItWasFlushed = true;
 			}
-
-			result.ReadRecords = read;
-			result.CurrentCachePosition = _readStream.Position;
 
 			return result;
 

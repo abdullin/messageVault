@@ -21,6 +21,16 @@ namespace MessageVault.Api {
 		}
 	}
 
+	public class NonDisposingLZ4Stream : LZ4Stream {
+		public NonDisposingLZ4Stream(Stream innerStream, CompressionMode compressionMode, bool highCompression = false, int blockSize = 1048576) : base(innerStream, compressionMode, highCompression, blockSize) {}
+
+
+		protected override void Dispose(bool disposing) {
+			Flush();
+			base.Dispose(disposing);
+		}
+	}
+
 	public sealed class PagedClient {
 		readonly IClient _client;
 		readonly string _stream;
@@ -43,7 +53,7 @@ namespace MessageVault.Api {
 
 			foreach (var message in unpacked) {
 				using (var mem = new MemoryStream()) {
-					using (var zip = new LZ4Stream(mem, CompressionMode.Compress)) {
+					using (var zip = new NonDisposingLZ4Stream(mem, CompressionMode.Compress)) {
 						zip.Write(message.Value, 0, message.Value.Length);
 					}
 
@@ -116,7 +126,7 @@ namespace MessageVault.Api {
 							}
 							mem.Seek(0, SeekOrigin.Begin);
 
-							using (var lz = new LZ4Stream(mem, CompressionMode.Decompress, LZ4StreamFlags.IsolateInnerStream)) {
+							using (var lz = new NonDisposingLZ4Stream(mem, CompressionMode.Decompress)) {
 								using (var output = _manager.GetStream("chase-2")) {
 									lz.CopyTo(output);
 

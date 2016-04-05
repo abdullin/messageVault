@@ -79,7 +79,7 @@ namespace MessageVault.Api {
 		public ReadBulkResult ReadAll(long startingFrom, int maxCount) {
 
 			var result = new ReadBulkResult();
-			ReadAll(startingFrom, maxCount, (id, position, maxPosition) => {
+			var stats = ReadAll(startingFrom, maxCount, (id, position, maxPosition) => {
 				if (result.Messages == null) {
 					result.Messages = new List<MessageHandlerClosure>();
 				}
@@ -89,6 +89,12 @@ namespace MessageVault.Api {
 					Message = id
 				});
 			});
+
+			result.AvailableCachePosition = stats.AvailableCachePosition;
+			result.CurrentCachePosition = stats.CurrentCachePosition;
+			result.ReadEndOfCacheBeforeItWasFlushed = stats.ReadEndOfCacheBeforeItWasFlushed;
+			result.ReadRecords = stats.ReadRecords;
+			result.StartingCachePosition = stats.StartingCachePosition;
 			return result;
 		}
 

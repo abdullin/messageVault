@@ -57,8 +57,10 @@ namespace MessageVault.Files {
         }
     }
 
-
-	public class FileCheckpointArrayWriter 
+	public interface IVolatileCheckpointVectorAccess {
+		long[] ReadPositionVolatile();
+	}
+	public class FileCheckpointArrayWriter :IVolatileCheckpointVectorAccess
 	{
 
 		readonly FileInfo _info;

@@ -74,8 +74,8 @@ namespace Cache
 					downloadTask.Wait(token);
 					var result = downloadTask.Result;
 
-					var percent = (100*(result.UsedBytes + result.CachedRemotePosition))/
-					              result.ActualRemotePosition;
+					var percent = (100*(result.UsedBytes + result.CurrentRemotePosition))/
+					              result.MaxRemotePosition;
 					var usedPerSec = result.UsedBytes/started.Elapsed.TotalSeconds;
 					
 

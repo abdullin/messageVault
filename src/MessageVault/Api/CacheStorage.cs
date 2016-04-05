@@ -21,7 +21,7 @@ namespace MessageVault.Api {
 			var id = binary.ReadBytes(16);
 			var keyLength = binary.ReadByte();
 			var key = binary.ReadBytes(keyLength);
-			var dataLength = binary.ReadUInt16();
+			var dataLength = binary.ReadInt32();
 			var data = binary.ReadBytes(dataLength);
 			var footer = binary.ReadUInt16();
 
@@ -42,7 +42,7 @@ namespace MessageVault.Api {
 			writer.Write((byte)item.Key.Length);
 			writer.Write(item.Key);
 			// we know for 100% that value length will be ushort
-			writer.Write((ushort)item.Value.Length);
+			writer.Write(item.Value.Length);
 			writer.Write(item.Value);
 			writer.Write(FooterSignature);
 		}

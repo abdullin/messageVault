@@ -62,98 +62,6 @@ namespace MessageVault.Api {
 
 	public delegate void MessageHandler(MessageWithId id, long currentPosition, long maxPosition);
 
-	public sealed class CacheReader {
-		readonly FileCheckpointArrayWriter _checkpoint;
-		readonly FileCheckpointArrayReader _checkpointReader;
-		readonly FileStream _readStream;
-		readonly BinaryReader _reader;
-
-		public CacheReader(FileCheckpointArrayWriter checkpoint, FileStream readStream, FileCheckpointArrayReader checkpointReader) {
-			_checkpoint = checkpoint;
-			_readStream = readStream;
-			_checkpointReader = checkpointReader;
-
-			_reader = new BinaryReader(readStream, new UTF8Encoding(false));
-		}
-
-		public ReadBulkResult ReadAll(long startingFrom, int maxCount) {
-
-			var result = new ReadBulkResult();
-			var stats = ReadAll(startingFrom, maxCount, (id, position, maxPosition) => {
-				if (result.Messages == null) {
-					result.Messages = new List<MessageHandlerClosure>();
-				}
-				result.Messages.Add(new MessageHandlerClosure {
-					CurrentCachePosition = position,
-					MaxCachePosition = maxPosition,
-					Message = id
-				});
-			});
-
-			result.AvailableCachePosition = stats.AvailableCachePosition;
-			result.CurrentCachePosition = stats.CurrentCachePosition;
-			result.ReadEndOfCacheBeforeItWasFlushed = stats.ReadEndOfCacheBeforeItWasFlushed;
-			result.ReadRecords = stats.ReadRecords;
-			result.StartingCachePosition = stats.StartingCachePosition;
-			return result;
-		}
-
-		public ReadResult ReadAll(long startingFrom, int maxCount, MessageHandler handler) {
-			var maxPos = _checkpoint.ReadPositionVolatile()[0];
-
-			var result = new ReadResult() {
-				StartingCachePosition = startingFrom,
-				AvailableCachePosition = maxPos,
-				CurrentCachePosition = startingFrom
-			};
-			if (startingFrom >= maxPos) {
-				return result;
-			}
-
-
-			// double check on the file
-			maxPos = _checkpointReader.Read()[0];
-			if (startingFrom >= maxPos) {
-				return result;
-			}
-			
-			_readStream.Seek(startingFrom, SeekOrigin.Begin);
-			long currentPosition = startingFrom;
-			try {
-				for (int i = 0; i < maxCount; i++) {
-
-					currentPosition = _readStream.Position;
-					if (currentPosition >= maxPos) {
-						break;
-					}
-					var frame = CacheStorage.Read(_reader);
-
-
-					handler(frame, currentPosition, maxPos);
-					// fix the position
-					result.ReadRecords += 1;
-					result.CurrentCachePosition = _readStream.Position;
-				}
-			}
-			catch (InvalidStorageFormatException ex) {
-				throw new InvalidOperationException("Unexpected header at " + currentPosition, ex);
-			}
-			catch (NoDataException) {
-				// not a problem, we just read end of cache before it was flushed to disk
-				result.ReadEndOfCacheBeforeItWasFlushed = true;
-			}
-			catch (EndOfStreamException) {
-				result.ReadEndOfCacheBeforeItWasFlushed = true;
-			}
-
-			return result;
-
-
-		}
-
-
-	}
-
 	public sealed class MessageHandlerClosure {
 		public  MessageWithId Message;
 		public long CurrentCachePosition;
@@ -182,9 +90,9 @@ namespace MessageVault.Api {
 	
 
 	public sealed class FetchResult {
-		public long CachedRemotePosition;
-		public long ActualRemotePosition;
-		public long LocalStoragePosition;
+		public long CurrentRemotePosition;
+		public long MaxRemotePosition;
+		public long CurrentCachePosition;
 		public long DownloadedBytes;
 		public long DownloadedRecords;
 		public long UsedBytes;
@@ -195,8 +103,8 @@ namespace MessageVault.Api {
 		readonly CloudPageReader _remote;
 		readonly CloudCheckpointReader _remotePos;
 
-		public const string CachePositionName = "cache-v2.pos";
-		public const string CacheStreamName = "cache-v2.dat";
+		public const string CachePositionName = "cache-v3.pos";
+		public const string CacheStreamName = "cache-v3.dat";
 
 
 		readonly FileStream _cacheWriter;
@@ -216,9 +124,13 @@ namespace MessageVault.Api {
 		}
 
 		public CacheReader CreateReaderInstance() {
-			var cacheReader = _outputFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-			var checkpointReader = new FileCheckpointArrayReader(_outputCheckpoint, 2);
-			return new CacheReader(_cacheChk, cacheReader,checkpointReader);
+			return ReaderInstance(_outputFile, _outputCheckpoint, _cacheChk);
+		}
+
+		public static CacheReader ReaderInstance(FileInfo dataFile, FileInfo checkpointFile, FileCheckpointArrayWriter fileCheckpointArrayWriter) {
+			var cacheReader = dataFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			var checkpointReader = new FileCheckpointArrayReader(checkpointFile, 2);
+			return new CacheReader(fileCheckpointArrayWriter, cacheReader, checkpointReader);
 		}
 
 		public CacheFetcher(string sas, string stream, DirectoryInfo folder, IMemoryStreamManager streamManager) {
@@ -271,32 +183,32 @@ namespace MessageVault.Api {
 			var pos = _cacheChk.ReadPositionVolatile();
 
 			var convertedLocalPos = pos[0];
-			var cachedRemotePos = pos[1];
+			var currentRemotePosition = pos[1];
 			
 
-			var actualRemotePos = _remotePos.Read();
+			var maxRemotePos = _remotePos.Read();
 			var result = new FetchResult() {
-				CachedRemotePosition = cachedRemotePos,
-				ActualRemotePosition = actualRemotePos,
-				LocalStoragePosition = convertedLocalPos,
+				MaxRemotePosition = maxRemotePos,
+				CurrentRemotePosition = currentRemotePosition,
+				CurrentCachePosition = convertedLocalPos,
 				DownloadedBytes = 0,
 				UsedBytes = 0,
 				SavedBytes = 0
 			};
 
-			if (actualRemotePos <= cachedRemotePos) {
+			if (maxRemotePos <= currentRemotePosition) {
 				// we don't have anything to write
 				return result;
 			}
 
-			var availableAmount = actualRemotePos - cachedRemotePos;
+			var availableAmount = maxRemotePos - currentRemotePosition;
 			var amountToLoad = Math.Min(availableAmount, AmountToLoadMax);
 			
 			long usedBytes = 0;
 			long downloadedRecords = 0;
 
 			using (var mem = _streamManager.GetStream("fetcher")) {
-				await _remote.DownloadRangeToStreamAsync(mem, cachedRemotePos, (int) amountToLoad)
+				await _remote.DownloadRangeToStreamAsync(mem, currentRemotePosition, (int) amountToLoad)
 					.ConfigureAwait(false);
 				// cool, we've got some data back
 
@@ -351,11 +263,11 @@ namespace MessageVault.Api {
 				_cacheWriter.Flush(true);
 				_cacheChk.Update(new[] {
 					_cacheWriter.Position,
-					cachedRemotePos + usedBytes,
+					currentRemotePosition + usedBytes,
 				});
 
 				result.UsedBytes = usedBytes;
-				result.SavedBytes = _cacheWriter.Position - result.LocalStoragePosition;
+				result.SavedBytes = _cacheWriter.Position - result.CurrentCachePosition;
 				result.DownloadedRecords = downloadedRecords;
 				return result;
 			}

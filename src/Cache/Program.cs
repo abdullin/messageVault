@@ -50,11 +50,9 @@ namespace Cache
 			var sas = client.GetReaderSignatureAsync(streamName);
 			sas.Wait();
 
-			
-
 
 			var fetcher = CacheFetcher.CreateStandalone(sas.Result, streamName, new DirectoryInfo(cache));
-
+			fetcher.AmountToLoadMax = 1024*512;
 			
 
 			using (var source = new CancellationTokenSource()) {

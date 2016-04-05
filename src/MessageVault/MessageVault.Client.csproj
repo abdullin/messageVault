@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\CacheFetcher.cs" />
+    <Compile Include="Api\CacheStorage.cs" />
     <Compile Include="Api\ErrorResponse.cs" />
     <Compile Include="Api\IClient.cs" />
     <Compile Include="Api\PagedClient.cs" />

@@ -27,7 +27,6 @@ namespace MessageVault.Api {
 
 		protected override void Dispose(bool disposing) {
 			Flush();
-			base.Dispose(disposing);
 		}
 	}
 

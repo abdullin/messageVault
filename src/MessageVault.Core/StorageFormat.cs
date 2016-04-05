@@ -52,7 +52,7 @@ namespace MessageVault {
 				throw new NoDataException();
 			}
 			if (version != ReservedFormatVersion){
-				throw new InvalidOperationException("Unknown storage format :" + version);
+				throw new InvalidStorageFormatException("Unknown storage format :" + version);
 			}
 			var flags = binary.ReadByte();
 			var id = binary.ReadBytes(16);
@@ -67,6 +67,16 @@ namespace MessageVault {
 		}
 
 		public const byte ReservedFormatVersion = 0x01;
+	}
+	[Serializable]
+	public class InvalidStorageFormatException : Exception {
+		
+		public InvalidStorageFormatException(string message) : base(message) {}
+		public InvalidStorageFormatException(string message, Exception inner) : base(message, inner) {}
+
+		protected InvalidStorageFormatException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context) {}
 	}
 
 	[Serializable]

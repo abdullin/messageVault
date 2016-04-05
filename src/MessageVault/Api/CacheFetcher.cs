@@ -64,23 +64,36 @@ namespace MessageVault.Api {
 
 	public sealed class CacheReader {
 		readonly FileCheckpointArrayWriter _checkpoint;
+		readonly FileCheckpointArrayReader _checkpointReader;
 		readonly FileStream _readStream;
 		readonly BinaryReader _reader;
 
-		public CacheReader(FileCheckpointArrayWriter checkpoint, FileStream readStream) {
+		public CacheReader(FileCheckpointArrayWriter checkpoint, FileStream readStream, FileCheckpointArrayReader checkpointReader) {
 			_checkpoint = checkpoint;
 			_readStream = readStream;
+			_checkpointReader = checkpointReader;
 
 			_reader = new BinaryReader(readStream, new UTF8Encoding(false));
 		}
 
-		public long GetLocalCachePosition()
-		{
-			return _checkpoint.ReadPositionVolatile()[0];
+		public ReadBulkResult ReadAll(long startingFrom, int maxCount) {
+
+			var result = new ReadBulkResult();
+			ReadAll(startingFrom, maxCount, (id, position, maxPosition) => {
+				if (result.Messages == null) {
+					result.Messages = new List<MessageHandlerClosure>();
+				}
+				result.Messages.Add(new MessageHandlerClosure {
+					CurrentCachePosition = position,
+					MaxCachePosition = maxPosition,
+					Message = id
+				});
+			});
+			return result;
 		}
 
 		public ReadResult ReadAll(long startingFrom, int maxCount, MessageHandler handler) {
-			var maxPos = GetLocalCachePosition();
+			var maxPos = _checkpoint.ReadPositionVolatile()[0];
 
 			var result = new ReadResult() {
 				StartingCachePosition = startingFrom,
@@ -90,25 +103,40 @@ namespace MessageVault.Api {
 			if (startingFrom >= maxPos) {
 				return result;
 			}
+
+
+			// double check on the file
+			maxPos = _checkpointReader.Read()[0];
+			if (startingFrom >= maxPos) {
+				return result;
+			}
 			
 			_readStream.Seek(startingFrom, SeekOrigin.Begin);
-
+			long currentPosition = startingFrom;
 			try {
 				for (int i = 0; i < maxCount; i++) {
-					var currentPosition = _readStream.Position;
+
+					currentPosition = _readStream.Position;
 					if (currentPosition >= maxPos) {
 						break;
 					}
-					var frame = StorageFormat.Read(_reader);
+					var frame = CacheStorage.Read(_reader);
+
+
 					handler(frame, currentPosition, maxPos);
 					// fix the position
 					result.ReadRecords += 1;
 					result.CurrentCachePosition = _readStream.Position;
-					
 				}
+			}
+			catch (InvalidStorageFormatException ex) {
+				throw new InvalidOperationException("Unexpected header at " + currentPosition, ex);
 			}
 			catch (NoDataException) {
 				// not a problem, we just read end of cache before it was flushed to disk
+				result.ReadEndOfCacheBeforeItWasFlushed = true;
+			}
+			catch (EndOfStreamException) {
 				result.ReadEndOfCacheBeforeItWasFlushed = true;
 			}
 
@@ -120,14 +148,32 @@ namespace MessageVault.Api {
 
 	}
 
+	public sealed class MessageHandlerClosure {
+		public  MessageWithId Message;
+		public long CurrentCachePosition;
+		public long MaxCachePosition;
+	}
+
 	public sealed class ReadResult {
 		public int ReadRecords;
 		public long CurrentCachePosition;
 		public long StartingCachePosition;
 		public long AvailableCachePosition;
 		public bool ReadEndOfCacheBeforeItWasFlushed;
+	}
+
+	public sealed class ReadBulkResult {
+		public int ReadRecords;
+		public long CurrentCachePosition;
+		public long StartingCachePosition;
+		public long AvailableCachePosition;
+		public bool ReadEndOfCacheBeforeItWasFlushed;
+		public IList<MessageHandlerClosure> Messages;
 
 	}
+
+
+	
 
 	public sealed class FetchResult {
 		public long CachedRemotePosition;
@@ -142,6 +188,10 @@ namespace MessageVault.Api {
 	public sealed class CacheFetcher {
 		readonly CloudPageReader _remote;
 		readonly CloudCheckpointReader _remotePos;
+
+		public const string CachePositionName = "cache-v2.pos";
+		public const string CacheStreamName = "cache-v2.dat";
+
 
 		readonly FileStream _cacheWriter;
 		
@@ -160,10 +210,9 @@ namespace MessageVault.Api {
 		}
 
 		public CacheReader CreateReaderInstance() {
-
 			var cacheReader = _outputFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-			return new CacheReader(_cacheChk, cacheReader);
+			var checkpointReader = new FileCheckpointArrayReader(_outputCheckpoint, 2);
+			return new CacheReader(_cacheChk, cacheReader,checkpointReader);
 		}
 
 		public CacheFetcher(string sas, string stream, DirectoryInfo folder, IMemoryStreamManager streamManager) {
@@ -180,14 +229,14 @@ namespace MessageVault.Api {
 			{
 				di.Create();
 			}
-			_outputFile = new FileInfo(Path.Combine(di.FullName, Constants.CacheStreamName));
-			var checkpointFile = new FileInfo(Path.Combine(di.FullName, Constants.CachePositionName));
+			_outputFile = new FileInfo(Path.Combine(di.FullName, CacheStreamName));
+			_outputCheckpoint = new FileInfo(Path.Combine(di.FullName, CachePositionName));
 
 			_outputFile.Refresh();
 			_cacheWriter = _outputFile.Open(_outputFile.Exists ? FileMode.Open : FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 			
 			_writer = new BinaryWriter(_cacheWriter,CacheFormat);
-			_cacheChk = new FileCheckpointArrayWriter(checkpointFile, 2);
+			_cacheChk = new FileCheckpointArrayWriter(_outputCheckpoint, 2);
 		}
 
 		static bool TryRead(BinaryReader reader, out MessageWithId msg) {
@@ -201,8 +250,9 @@ namespace MessageVault.Api {
 			}
 		}
 
-		public int AmountToLoadMax = 1*1024*1024;
+		public int AmountToLoadMax = 10*1024*1024;
 		FileInfo _outputFile;
+		FileInfo _outputCheckpoint;
 
 		public void Init() {
 			_cacheChk.GetOrInitPosition();
@@ -268,7 +318,6 @@ namespace MessageVault.Api {
 						if (hasMorePagesToRead){
 							continue;
 						}
-
 						
 						var total = pages.Sum(m => m.Value.Length);
 						using (var sub = _streamManager.GetStream("chase-1", total))
@@ -306,9 +355,11 @@ namespace MessageVault.Api {
 			}
 		}
 
+		
+
 		void WriteMessage(MessageWithId msg) {
 			EnsureSizeToAvoidFragmentation();
-			StorageFormat.Write(_writer, msg);
+			CacheStorage.Write(_writer, msg);
 		}
 
 		void EnsureSizeToAvoidFragmentation()
@@ -322,8 +373,6 @@ namespace MessageVault.Api {
 			if (available < shouldHaveMb) {
 				_cacheWriter.SetLength(_cacheWriter.Length + increaseByMb);
 			}
-
-
 		}
 
 		static bool HasMore(MessageWithId msg) {

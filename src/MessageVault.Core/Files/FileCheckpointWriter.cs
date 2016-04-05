@@ -72,6 +72,8 @@ namespace MessageVault.Files {
 			_position = new long[_count];
 		}
 
+	
+
 
 		public long[] GetOrInitPosition()
 		{

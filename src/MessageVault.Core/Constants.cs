@@ -17,8 +17,6 @@ namespace MessageVault {
 
 		public const string PositionFileName = "position.c7";
 
-		public const string CachePositionName = "cache-v1.pos";
-		public const string CacheStreamName = "cache-v1.dat";
 		/// <summary>
 		/// This file name is compatible with future stream splitting
 		/// </summary>

@@ -16,10 +16,14 @@ namespace MessageVault {
 		public const int MaxBatchSize = ushort.MaxValue;
 
 		public const string PositionFileName = "position.c7";
+
 		/// <summary>
 		/// This file name is compatible with future stream splitting
 		/// </summary>
 		public const string StreamFileName = "000000000000.b7";
+
+
+
 
 		public const string SysContainer = "mv-sys";
 		public const string DataContainerPrefix = "mv-";

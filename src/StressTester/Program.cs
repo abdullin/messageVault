@@ -21,7 +21,7 @@ namespace StressTester {
 
 			Console.WriteLine(new {threads, url, pass, login, steps, batchSize});
 
-			var client = new Client(url, login, pass);
+			var client = new CloudClient(url, login, pass);
 			var list = new List<Task>();
 			var cts = new CancellationTokenSource();
 
@@ -69,10 +69,10 @@ namespace StressTester {
 		static long BatchesPosted;
 		static long MillisecondsPosting;
 
-		static async Task RunNonCompetingPush(int i, int steps, int batchSize, Client client, CancellationToken token) {
+		static async Task RunNonCompetingPush(int i, int steps, int batchSize, CloudClient cloudClient, CancellationToken token) {
 
 			var streamName = "test" + i;
-			var reader = await client.GetMessageReaderAsync(streamName);
+			var reader = await cloudClient.GetMessageReaderAsync(streamName);
 
 			var starting = reader.GetPosition();
 
@@ -89,7 +89,7 @@ namespace StressTester {
 					messages.Add(Message.Create(contract, GenerateMessage(seq)));
 				}
 				var started = Stopwatch.StartNew();
-				await client.PostMessagesAsync(streamName, messages);
+				await cloudClient.PostMessagesAsync(streamName, messages);
 				// time
 				Interlocked.Increment(ref BatchesPosted);
 				Interlocked.Add(ref MessagesPosted, batchSize);

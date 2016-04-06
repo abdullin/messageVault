@@ -54,7 +54,7 @@ namespace CqrsReplicator {
 
 					_log.Information("Starting ES replication to {stream}", _streamName);
 
-					using (var conn = new Client(_config.Host, _config.Login, _config.Password)) {
+					using (var conn = new CloudClient(_config.Host, _config.Login, _config.Password)) {
 						connectFailure = 0;
 
 						var lastReplicatedEvent = _checkpoint.GetOrInitPosition();

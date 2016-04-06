@@ -11,16 +11,16 @@ namespace PublisherSample {
 			const string login = Constants.DefaultLogin;
 			const string password = Constants.DefaultPassword;
 
-			using (var client = new Client(url, login, password)) {
+			using (var client = new CloudClient(url, login, password)) {
 				KeepPostingForever(client).Wait();
 			}
 		}
 
-		public static async Task KeepPostingForever(Client client) {
+		public static async Task KeepPostingForever(CloudClient cloudClient) {
 			while (true) {
 				var message = Message.Create("test", new byte[20]);
 
-				var response = await client.PostMessagesAsync("test", new[] {message});
+				var response = await cloudClient.PostMessagesAsync("test", new[] {message});
 				Console.WriteLine("Wrote at position {0}", response.Position);
 
 				await Task.Delay(1000);

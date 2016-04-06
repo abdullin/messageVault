@@ -17,22 +17,25 @@ namespace MessageVault {
 		public long DebugEnqueuedOffset { get; internal set; }
 	}
 
+
+	
+
 	public sealed class MessageReader : IDisposable {
-		readonly ICheckpointReader _position;
-		readonly IPageReader _messages;
+		public readonly ICheckpointReader Position;
+		public readonly IPageReader Messages;
 
 		readonly byte[] _buffer;
 		const int Limit = 1024 * 1024 * 4;
 
 		public MessageReader(ICheckpointReader position, IPageReader messages) {
-			_position = position;
-			_messages = messages;
+			Position = position;
+			Messages = messages;
 			_buffer = new byte[Limit];
 		}
 
 
 		public long GetPosition() {
-			return _position.Read();
+			return Position.Read();
 		}
 
 		public void ReadMessages(long from, long till, int maxCount, Action<MessageWithId> action)
@@ -42,7 +45,7 @@ namespace MessageVault {
 			Require.Positive("maxCount", maxCount);
 			
 			var count = 0;
-			using (var prs = new PageReadStream(_messages, from, till, _buffer))
+			using (var prs = new PageReadStream(Messages, from, till, _buffer))
 			{
 				using (var bin = new BinaryReader(prs))
 				{
@@ -69,7 +72,7 @@ namespace MessageVault {
 			var list = new List<MessageWithId>(maxCount);
 			var position = from;
 
-			using (var prs = new PageReadStream(_messages, from, till, _buffer)) {
+			using (var prs = new PageReadStream(Messages, from, till, _buffer)) {
 				using (var bin = new BinaryReader(prs)) {
 					while (prs.Position < prs.Length) {
 						var message = StorageFormat.Read(bin);
@@ -112,9 +115,9 @@ namespace MessageVault {
 			while (!ct.IsCancellationRequested) {
 				try {
 					// read current max length
-					var length = _position.Read();
+					var length = Position.Read();
 					sub.DebugKnownMaxOffset = length;
-					using (var prs = new PageReadStream(_messages, position, length, buffer)) {
+					using (var prs = new PageReadStream(Messages, position, length, buffer)) {
 						using (var bin = new BinaryReader(prs)) {
 							while (prs.Position < prs.Length) {
 								var message = StorageFormat.Read(bin);
@@ -129,7 +132,7 @@ namespace MessageVault {
 						}
 					}
 					// wait till we get chance to advance
-					while (_position.Read() == position) {
+					while (Position.Read() == position) {
 						if (ct.WaitHandle.WaitOne(1000)) {
 							return;
 						}
@@ -150,7 +153,7 @@ namespace MessageVault {
 		public async Task<MessageResult> GetMessagesAsync(CancellationToken ct, long start,
 			int limit) {
 			while (!ct.IsCancellationRequested) {
-				var actual = _position.Read();
+				var actual = Position.Read();
 				if (actual < start) {
 					var msg = string.Format("Actual stream length is {0}, but requested {1}", actual,
 						start);
@@ -173,8 +176,8 @@ namespace MessageVault {
 			if (_disposed) {
 				return;
 			}
-			using (_messages) {
-				using (_position) {
+			using (Messages) {
+				using (Position) {
 					_disposed = true;
 				}
 			}

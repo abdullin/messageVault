@@ -4,7 +4,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
-using LZ4n;
+using LZ4;
+using MessageVault.MemoryPool;
+using NUnit.Framework;
+
 
 namespace MessageVault.Api {
 
@@ -15,6 +18,15 @@ namespace MessageVault.Api {
 		public PublishResult(long position, IList<long> offsets) {
 			Position = position;
 			Offsets = offsets;
+		}
+	}
+
+	public class NonDisposingLZ4Stream : LZ4Stream {
+		public NonDisposingLZ4Stream(Stream innerStream, CompressionMode compressionMode, bool highCompression = false, int blockSize = 1048576) : base(innerStream, compressionMode, highCompression, blockSize) {}
+
+
+		protected override void Dispose(bool disposing) {
+			Flush();
 		}
 	}
 
@@ -31,7 +43,7 @@ namespace MessageVault.Api {
 		public PagedClient(IClient client, string stream, IMemoryStreamManager manager = null) {
 			_client = client;
 			_stream = stream;
-			_manager = manager ?? new MemoryStreamFactory();
+			_manager = manager ?? new MemoryStreamFactoryManager();
 		}
 
 		public PublishResult Publish(ICollection<UnpackedMessage> unpacked, CancellationToken token) {
@@ -40,7 +52,7 @@ namespace MessageVault.Api {
 
 			foreach (var message in unpacked) {
 				using (var mem = new MemoryStream()) {
-					using (var zip = new LZ4Stream(mem, CompressionMode.Compress, false, 0, true)) {
+					using (var zip = new NonDisposingLZ4Stream(mem, CompressionMode.Compress)) {
 						zip.Write(message.Value, 0, message.Value.Length);
 					}
 
@@ -50,7 +62,7 @@ namespace MessageVault.Api {
 
 
 					while (remains > 0) {
-						Console.WriteLine("Page...");
+						
 						var pick = Math.Min(remains, Constants.MaxValueSize);
 						var hasMoreToWrite = remains > pick;
 
@@ -113,7 +125,7 @@ namespace MessageVault.Api {
 							}
 							mem.Seek(0, SeekOrigin.Begin);
 
-							using (var lz = new LZ4Stream(mem, CompressionMode.Decompress, keepOpen : true)) {
+							using (var lz = new NonDisposingLZ4Stream(mem, CompressionMode.Decompress)) {
 								using (var output = _manager.GetStream("chase-2")) {
 									lz.CopyTo(output);
 

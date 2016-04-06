@@ -12,7 +12,7 @@ namespace MessageVault.Server.Election {
 		}
 
 		readonly ICloudFactory _storage;
-		Client _client;
+		CloudClient _cloudClient;
 		string _endpoint;
 
 		public async Task KeepPollingForLeaderInfo(CancellationToken token) {
@@ -20,7 +20,7 @@ namespace MessageVault.Server.Election {
 				try {
 					var info = await LeaderInfo.Get(_storage);
 					if (info == null) {
-						_client = null;
+						_cloudClient = null;
 						await Task.Delay(500, token);
 						continue;
 					}
@@ -29,7 +29,7 @@ namespace MessageVault.Server.Election {
 						Log.Information("Detected new leader {endpoint}", newEndpoint);
 						_endpoint = newEndpoint;
 						var password = _storage.GetSysPassword();
-						_client = new Client(_endpoint, Constants.ClusterNodeUser, password);
+						_cloudClient = new CloudClient(_endpoint, Constants.ClusterNodeUser, password);
 					}
 
 					await Task.Delay(3500, token);
@@ -41,11 +41,11 @@ namespace MessageVault.Server.Election {
 			}
 		}
 
-		public async Task<Client> GetLeaderClientAsync() {
-			while (_client == null) {
+		public async Task<CloudClient> GetLeaderClientAsync() {
+			while (_cloudClient == null) {
 				await Task.Delay(100);
 			}
-			return _client;
+			return _cloudClient;
 		}
 	}
 

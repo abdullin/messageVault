@@ -33,7 +33,7 @@ namespace MessageVault.Cloud {
 			return container.Uri + signature;
 		}
 
-		public static MessageReader GetReader(string sas) {
+		public static Tuple<CloudCheckpointReader, CloudPageReader> GetReaderRaw(string sas) {
 			var uri = new Uri(sas);
 			var container = new CloudBlobContainer(uri);
 
@@ -41,7 +41,12 @@ namespace MessageVault.Cloud {
 			var dataBlob = container.GetPageBlobReference(Constants.StreamFileName);
 			var position = new CloudCheckpointReader(posBlob);
 			var messages = new CloudPageReader(dataBlob);
-			return new MessageReader(position, messages);
+			return Tuple.Create(position, messages);
+		}
+
+		public static MessageReader GetReader(string sas) {
+			var raw = GetReaderRaw(sas);
+			return new MessageReader(raw.Item1, raw.Item2);
 		}
 	}
 

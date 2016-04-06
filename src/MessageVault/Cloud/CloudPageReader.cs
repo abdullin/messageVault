@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -23,6 +24,28 @@ namespace MessageVault.Cloud {
 			catch (StorageException ex) {
 				// if forbidden, then we might have an expired SAS token
 				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403) {
+					throw new ForbiddenException("Can't read blob", ex);
+				}
+				throw;
+			}
+		}
+
+
+		public async Task DownloadRangeToStreamAsync(Stream stream, long offset, int length)
+		{
+			Require.NotNull("stream", stream);
+			Require.ZeroOrGreater("offset", offset);
+			Require.Positive("length", length);
+
+			try
+			{
+				await _blob.DownloadRangeToStreamAsync(stream, offset, length).ConfigureAwait(false);
+			}
+			catch (StorageException ex)
+			{
+				// if forbidden, then we might have an expired SAS token
+				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403)
+				{
 					throw new ForbiddenException("Can't read blob", ex);
 				}
 				throw;

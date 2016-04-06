@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Runtime.Serialization;
+using MessageVault.MemoryPool;
 
 namespace MessageVault {
 
@@ -9,6 +11,20 @@ namespace MessageVault {
 			writer.Write(ReservedFormatVersion);
 			writer.Write(item.Attributes);
 			writer.Write(id.GetBytes());
+			// we know for 100% that key length will be byte 
+			writer.Write((byte)item.Key.Length);
+			writer.Write(item.Key);
+			// we know for 100% that value length will be ushort
+			writer.Write((ushort)item.Value.Length);
+			writer.Write(item.Value);
+			writer.Write(item.Crc32);
+		}
+
+		public static void Write(BinaryWriter writer, MessageWithId item)
+		{
+			writer.Write(ReservedFormatVersion);
+			writer.Write(item.Attributes);
+			writer.Write(item.Id.GetBytes());
 			// we know for 100% that key length will be byte 
 			writer.Write((byte)item.Key.Length);
 			writer.Write(item.Key);
@@ -31,9 +47,12 @@ namespace MessageVault {
 
 		public static MessageWithId Read(BinaryReader binary) {
 			var version = binary.ReadByte();
-			if (version != ReservedFormatVersion)
-			{
-				throw new InvalidOperationException("Unknown storage format");
+
+			if (version == 0) {
+				throw new NoDataException();
+			}
+			if (version != ReservedFormatVersion){
+				throw new InvalidStorageFormatException("Unknown storage format :" + version);
 			}
 			var flags = binary.ReadByte();
 			var id = binary.ReadBytes(16);
@@ -48,6 +67,29 @@ namespace MessageVault {
 		}
 
 		public const byte ReservedFormatVersion = 0x01;
+	}
+	[Serializable]
+	public class InvalidStorageFormatException : Exception {
+		
+		public InvalidStorageFormatException(string message) : base(message) {}
+		public InvalidStorageFormatException(string message, Exception inner) : base(message, inner) {}
+
+		protected InvalidStorageFormatException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context) {}
+	}
+
+	[Serializable]
+	public class NoDataException : Exception {
+		
+
+		public NoDataException() {}
+		public NoDataException(string message) : base(message) {}
+		public NoDataException(string message, Exception inner) : base(message, inner) {}
+
+		protected NoDataException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context) {}
 	}
 
 }

@@ -32,8 +32,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,16 +55,13 @@
     <Compile Include="ICheckpointWriter.cs" />
     <Compile Include="IPageReader.cs" />
     <Compile Include="IPageWriter.cs" />
-    <Compile Include="LZ4\LZ4Codec.cs" />
-    <Compile Include="LZ4\LZ4Codec.Unsafe.cs" />
-    <Compile Include="LZ4\LZ4Codec.Unsafe32.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Codec.Unsafe32HC.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Codec.Unsafe64.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Codec.Unsafe64HC.Dirty.cs" />
-    <Compile Include="LZ4\LZ4Stream.cs" />
+    <Compile Include="MemoryPool\Events.cs" />
+    <Compile Include="MemoryPool\IMemoryStreamManager.cs" />
+    <Compile Include="MemoryPool\MemoryStreamFactoryManager.cs" />
+    <Compile Include="MemoryPool\RecyclableMemoryStream.cs" />
+    <Compile Include="MemoryPool\RecyclableMemoryStreamManager.cs" />
     <Compile Include="Memory\MemoryCheckpointReaderWriter.cs" />
     <Compile Include="Memory\MemoryPageReaderWriter.cs" />
-    <Compile Include="MessageDownloader.cs" />
     <Compile Include="MessageWithId.cs" />
     <Compile Include="StorageFormat.cs" />
     <Compile Include="MessageId.cs" />

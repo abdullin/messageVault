@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -25,6 +27,33 @@ namespace MessageVault.Cloud {
 			catch (StorageException ex) {
 				// if forbidden, then we might have an expired SAS token
 				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403) {
+					throw new ForbiddenException("Can't read blob", ex);
+				}
+				throw;
+
+			}
+		}
+
+		public async Task<long> ReadAsync(CancellationToken token)
+		{
+			try
+			{
+				// blob exists will actually fetch attributes but suppress error on 404
+				var exists = await _blob.ExistsAsync(token);
+				if (!exists)
+				{
+					return 0;
+				}
+				var s = _blob.Metadata[CloudSetup.CheckpointMetadataName];
+				var result = long.Parse(s);
+				Ensure.ZeroOrGreater("result", result);
+				return result;
+			}
+			catch (StorageException ex)
+			{
+				// if forbidden, then we might have an expired SAS token
+				if (ex.RequestInformation != null && ex.RequestInformation.HttpStatusCode == 403)
+				{
 					throw new ForbiddenException("Can't read blob", ex);
 				}
 				throw;

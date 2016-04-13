@@ -70,7 +70,7 @@ namespace Cache
 
 				while (true) {
 					var started = Stopwatch.StartNew();
-					var downloadTask = fetcher.DownloadNext();
+					var downloadTask = fetcher.DownloadNextAsync(token);
 					downloadTask.Wait(token);
 					var result = downloadTask.Result;
 

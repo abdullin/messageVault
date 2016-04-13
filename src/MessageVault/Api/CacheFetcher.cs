@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
 using MessageVault.Files;
 using MessageVault.MemoryPool;
+using Serilog;
 
 namespace MessageVault.Api {
 
@@ -18,7 +21,10 @@ namespace MessageVault.Api {
 		readonly DirectoryInfo _cacheFolder;
 		readonly IMemoryStreamManager _manager;
 		readonly CacheFetcher[] _fetchers;
+		readonly ILogger _log = Log.ForContext<CacheManager>();
 
+		public TimeSpan WaitBetweenFetches = TimeSpan.FromSeconds(1);
+		public int DownloadTimeoutMs = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
 		public CacheManager(IDictionary<string, string> nameAndSas, DirectoryInfo cacheFolder,
 			IMemoryStreamManager manager) {
 			_cacheFolder = cacheFolder;
@@ -42,19 +48,39 @@ namespace MessageVault.Api {
 
 			var array = new Task<FetchResult>[_fetchers.Length];
 
-			
+			var uptime = Stopwatch.StartNew();
+			long totalDownloaded = 0;
 			
 			while (!token.IsCancellationRequested) {
 				
 				for (int i = 0; i < _fetchers.Length; i++) {
-					array[i] = _fetchers[i].DownloadNext();
+					array[i] = _fetchers[i].DownloadNextAsync(token);
 				}
-				
-				Task.WaitAll(array, token);
+				// wait for all downloads to complete
+				if (!Task.WaitAll(array, DownloadTimeoutMs, token)) {
+					if (token.IsCancellationRequested) {
+						// we stopped earlier because process is shutting down
+						return;
+					}
+					throw new TimeoutException("Failed to download next batch in " + DownloadTimeoutMs + " ms");
+				}
 				var downloaded = array.Sum(t => t.Result.DownloadedBytes);
+				totalDownloaded += downloaded;
+
+				if (uptime.Elapsed > TimeSpan.FromHours(2)) {
+					// regular healthcheck on a running process to ensure that we
+					// A. is alive and not stuck
+					// B. have working logging channel
+					_log.Warning(new HealthCheckException(), "Ran for {hours} hours. Downloaded {bytes} bytes.",
+						totalDownloaded,uptime.Elapsed.TotalHours);
+					// reset counters
+					totalDownloaded = 0;
+					uptime.Restart();
+				}
+
 				if (downloaded == 0) {
-					// no activity
-					token.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+					// no activity, we wait
+					token.WaitHandle.WaitOne(WaitBetweenFetches);
 				}
 			}
 		}
@@ -179,14 +205,15 @@ namespace MessageVault.Api {
 		
 	
 
-		public async Task<FetchResult> DownloadNext() {
+		public async Task<FetchResult> DownloadNextAsync(CancellationToken token) {
 			var pos = _cacheChk.ReadPositionVolatile();
 
 			var convertedLocalPos = pos[0];
 			var currentRemotePosition = pos[1];
 			
 
-			var maxRemotePos = _remotePos.Read();
+			var maxRemotePos = await _remotePos.ReadAsync(token)
+				.ConfigureAwait(false);
 			var result = new FetchResult() {
 				MaxRemotePosition = maxRemotePos,
 				CurrentRemotePosition = currentRemotePosition,
@@ -298,6 +325,23 @@ namespace MessageVault.Api {
 			              MessageFlags.ToBeContinued;
 			return hasMore;
 		}
+	}
+
+	[Serializable]
+	public class HealthCheckException : Exception {
+		//
+		// For guidelines regarding the creation of new exception types, see
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpconerrorraisinghandlingguidelines.asp
+		// and
+		//    http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dncscol/html/csharp07192001.asp
+		//
+
+		public HealthCheckException() {}
+		public HealthCheckException(string message) : base(message) {}
+
+		protected HealthCheckException(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context) {}
 	}
 
 }

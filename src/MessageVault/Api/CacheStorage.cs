@@ -10,13 +10,14 @@ namespace MessageVault.Api {
 		public static MessageWithId Read(BinaryReader binary)
 		{
 			var header = binary.ReadUInt16();
-			if (header == 0)
-			{
-				throw new NoDataException();
-			}
+			
 			if (header != HeaderSignature)
 			{
-				throw new InvalidStorageFormatException("Unknown storage format :" + header);
+				if (header == 0)
+				{
+					throw new NoDataException("Header is empty.");
+				}
+				throw new InvalidStorageFormatException("Unknown storage format: " + header + ".");
 			}
 			var id = binary.ReadBytes(16);
 			var keyLength = binary.ReadByte();
@@ -25,8 +26,16 @@ namespace MessageVault.Api {
 			var data = binary.ReadBytes(dataLength);
 			var footer = binary.ReadUInt16();
 
+			if (footer == 0) {
+				
+				throw new NoDataException();
+			}
+
 			if (footer != FooterSignature) {
-				throw new InvalidStorageFormatException("Unknown footer format: " + footer);
+				if (footer == 0) {
+					throw new NoDataException("Footer is empty.");
+				}
+				throw new InvalidStorageFormatException("Unknown footer format: " + footer + ".");
 			}
 			
 			var uuid = new MessageId(id);

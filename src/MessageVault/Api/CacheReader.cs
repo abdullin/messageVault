@@ -6,11 +6,25 @@ using MessageVault.Files;
 
 namespace MessageVault.Api {
 
-	public sealed class CacheReader {
+	public sealed class CacheReader : IDisposable{
 		readonly IVolatileCheckpointVectorAccess _fastCheckpoint;
 		public readonly FileCheckpointArrayReader SourceCheckpoint;
 		readonly FileStream _sourceStream;
 		readonly BinaryReader _reader;
+
+		public static CacheReader CreateStandalone(string folder, string stream) {
+
+			var streamFile = Path.Combine(folder, stream, CacheFetcher.CacheStreamName);
+			var checkFile = Path.Combine(folder, stream, CacheFetcher.CachePositionName);
+
+
+			var readOnce = new FileCheckpointArrayReader(new FileInfo(checkFile), 2);
+			var vector = readOnce.Read();
+
+			var fix = new FixedCheckpointArrayReader(vector);
+			var cacheReader = new FileInfo(streamFile).Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			return new CacheReader(fix, cacheReader, readOnce);
+		}
 
 		public CacheReader(IVolatileCheckpointVectorAccess fastCheckpoint, FileStream sourceStream, FileCheckpointArrayReader sourceCheckpoint) {
 			_fastCheckpoint = fastCheckpoint;
@@ -96,6 +110,9 @@ namespace MessageVault.Api {
 		}
 
 
+		public void Dispose() {
+			_sourceStream.Dispose();
+		}
 	}
 
 }

@@ -25,6 +25,7 @@ namespace MessageVault.Api {
 
 		public TimeSpan WaitBetweenFetches = TimeSpan.FromSeconds(1);
 		public int DownloadTimeoutMs = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
+		public TimeSpan HealthCheckFrequency = TimeSpan.FromHours(2);
 		public CacheManager(IDictionary<string, string> nameAndSas, DirectoryInfo cacheFolder,
 			IMemoryStreamManager manager) {
 			_cacheFolder = cacheFolder;
@@ -67,12 +68,17 @@ namespace MessageVault.Api {
 				var downloaded = array.Sum(t => t.Result.DownloadedBytes);
 				totalDownloaded += downloaded;
 
-				if (uptime.Elapsed > TimeSpan.FromHours(2)) {
+				if (uptime.Elapsed > HealthCheckFrequency) {
 					// regular healthcheck on a running process to ensure that we
 					// A. is alive and not stuck
 					// B. have working logging channel
-					_log.Warning(new HealthCheckException(), "Ran for {hours} hours. Downloaded {bytes} bytes.",
-						totalDownloaded,uptime.Elapsed.TotalHours);
+					var totalHours = uptime.Elapsed.TotalHours;
+					var msg = string.Format("Ran for {0:F1} hours. Downloaded {1} bytes.", totalHours, totalDownloaded);
+
+					
+					_log.Information(new HealthCheckException(msg),
+						"Ran for {hours} hours. Downloaded {bytes} bytes.",
+						totalHours,totalDownloaded);
 					// reset counters
 					totalDownloaded = 0;
 					uptime.Restart();

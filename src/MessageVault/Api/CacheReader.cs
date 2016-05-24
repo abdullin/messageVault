@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using MessageVault.Files;
+using Serilog;
 
 namespace MessageVault.Api {
 
@@ -11,6 +12,7 @@ namespace MessageVault.Api {
 		public readonly FileCheckpointArrayReader SourceCheckpoint;
 		readonly FileStream _sourceStream;
 		readonly BinaryReader _reader;
+		readonly ILogger _log = Log.ForContext<CacheReader>();
 
 		public static CacheReader CreateStandalone(string folder, string stream) {
 
@@ -105,8 +107,6 @@ namespace MessageVault.Api {
 			}
 
 			return result;
-
-
 		}
 
 

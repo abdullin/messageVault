@@ -20,7 +20,7 @@ namespace MessageVault.Api {
 			var checkFile = Path.Combine(folder, stream, CacheFetcher.CachePositionName);
 
 
-			var readOnce = new FileCheckpointArrayReader(new FileInfo(checkFile), 2);
+			var readOnce = new FileCheckpointArrayReader(new FileInfo(checkFile), CacheFetcher.CacheCheckpointSize);
 			var vector = readOnce.Read();
 
 			var fix = new FixedCheckpointArrayReader(vector);
@@ -55,16 +55,21 @@ namespace MessageVault.Api {
 			result.ReadEndOfCacheBeforeItWasFlushed = stats.ReadEndOfCacheBeforeItWasFlushed;
 			result.ReadRecords = stats.ReadRecords;
 			result.StartingCachePosition = stats.StartingCachePosition;
+			result.MaxOriginPosition = stats.MaxOriginPosition;
+			result.CachedOriginPosition = stats.CachedOriginPosition;
 			return result;
 		}
 
 		public ReadResult ReadAll(long startingFrom, int maxCount, MessageHandler handler) {
-			var maxPos = _fastCheckpoint.ReadPositionVolatile()[0];
+			var longs = _fastCheckpoint.ReadPositionVolatile();
+			var maxPos = longs[0];
 
 			var result = new ReadResult() {
 				StartingCachePosition = startingFrom,
 				AvailableCachePosition = maxPos,
-				CurrentCachePosition = startingFrom
+				CurrentCachePosition = startingFrom,
+				CachedOriginPosition = longs[1],
+				MaxOriginPosition = longs[2]
 			};
 			if (startingFrom >= maxPos) {
 				return result;

@@ -105,6 +105,8 @@ namespace MessageVault.Api {
 		public long CurrentCachePosition;
 		public long StartingCachePosition;
 		public long AvailableCachePosition;
+		public long MaxOriginPosition;
+		public long CachedOriginPosition;
 		public bool ReadEndOfCacheBeforeItWasFlushed;
 	}
 
@@ -113,6 +115,9 @@ namespace MessageVault.Api {
 		public long CurrentCachePosition;
 		public long StartingCachePosition;
 		public long AvailableCachePosition;
+		public long MaxOriginPosition;
+		public long CachedOriginPosition;
+
 		public bool ReadEndOfCacheBeforeItWasFlushed;
 		public IList<MessageHandlerClosure> Messages;
 
@@ -161,9 +166,11 @@ namespace MessageVault.Api {
 
 		public static CacheReader ReaderInstance(FileInfo dataFile, FileInfo checkpointFile, FileCheckpointArrayWriter fileCheckpointArrayWriter) {
 			var cacheReader = dataFile.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-			var checkpointReader = new FileCheckpointArrayReader(checkpointFile, 2);
+			var checkpointReader = new FileCheckpointArrayReader(checkpointFile, CacheCheckpointSize);
 			return new CacheReader(fileCheckpointArrayWriter, cacheReader, checkpointReader);
 		}
+
+		public const int CacheCheckpointSize = 3; // cached in remote offset, cached in local, remote max
 
 		public CacheFetcher(string sas, string stream, DirectoryInfo folder, IMemoryStreamManager streamManager) {
 			StreamName = stream;
@@ -186,7 +193,7 @@ namespace MessageVault.Api {
 			_cacheWriter = _outputFile.Open(_outputFile.Exists ? FileMode.Open : FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 			
 			_writer = new BinaryWriter(_cacheWriter,CacheFormat);
-			_cacheChk = new FileCheckpointArrayWriter(_outputCheckpoint, 2);
+			_cacheChk = new FileCheckpointArrayWriter(_outputCheckpoint, CacheCheckpointSize);
 		}
 
 		static bool TryRead(BinaryReader reader, out MessageWithId msg) {
@@ -297,6 +304,7 @@ namespace MessageVault.Api {
 				_cacheChk.Update(new[] {
 					_cacheWriter.Position,
 					currentRemotePosition + usedBytes,
+					maxRemotePos
 				});
 
 				result.UsedBytes = usedBytes;

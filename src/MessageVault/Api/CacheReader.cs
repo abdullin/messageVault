@@ -3,14 +3,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using MessageVault.Files;
+using Serilog;
 
 namespace MessageVault.Api {
 
-	public sealed class CacheReader {
+	public sealed class CacheReader : IDisposable{
 		readonly IVolatileCheckpointVectorAccess _fastCheckpoint;
 		public readonly FileCheckpointArrayReader SourceCheckpoint;
 		readonly FileStream _sourceStream;
 		readonly BinaryReader _reader;
+		readonly ILogger _log = Log.ForContext<CacheReader>();
+
+		public static CacheReader CreateStandalone(string folder, string stream) {
+
+			var streamFile = Path.Combine(folder, stream, CacheFetcher.CacheStreamName);
+			var checkFile = Path.Combine(folder, stream, CacheFetcher.CachePositionName);
+
+
+			var readOnce = new FileCheckpointArrayReader(new FileInfo(checkFile), CacheFetcher.CacheCheckpointSize);
+			var vector = readOnce.Read();
+
+			var fix = new FixedCheckpointArrayReader(vector);
+			var cacheReader = new FileInfo(streamFile).Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			return new CacheReader(fix, cacheReader, readOnce);
+		}
 
 		public CacheReader(IVolatileCheckpointVectorAccess fastCheckpoint, FileStream sourceStream, FileCheckpointArrayReader sourceCheckpoint) {
 			_fastCheckpoint = fastCheckpoint;
@@ -39,16 +55,21 @@ namespace MessageVault.Api {
 			result.ReadEndOfCacheBeforeItWasFlushed = stats.ReadEndOfCacheBeforeItWasFlushed;
 			result.ReadRecords = stats.ReadRecords;
 			result.StartingCachePosition = stats.StartingCachePosition;
+			result.MaxOriginPosition = stats.MaxOriginPosition;
+			result.CachedOriginPosition = stats.CachedOriginPosition;
 			return result;
 		}
 
 		public ReadResult ReadAll(long startingFrom, int maxCount, MessageHandler handler) {
-			var maxPos = _fastCheckpoint.ReadPositionVolatile()[0];
+			var longs = _fastCheckpoint.ReadPositionVolatile();
+			var maxPos = longs[0];
 
 			var result = new ReadResult() {
 				StartingCachePosition = startingFrom,
 				AvailableCachePosition = maxPos,
-				CurrentCachePosition = startingFrom
+				CurrentCachePosition = startingFrom,
+				CachedOriginPosition = longs[1],
+				MaxOriginPosition = longs[2]
 			};
 			if (startingFrom >= maxPos) {
 				return result;
@@ -91,11 +112,12 @@ namespace MessageVault.Api {
 			}
 
 			return result;
-
-
 		}
 
 
+		public void Dispose() {
+			_sourceStream.Dispose();
+		}
 	}
 
 }

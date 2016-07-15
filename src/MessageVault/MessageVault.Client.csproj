@@ -49,9 +49,6 @@
     <Reference Include="Serilog">
       <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.dll</HintPath>
     </Reference>
-    <Reference Include="Serilog.FullNetFx">
-      <HintPath>..\..\packages\Serilog.1.5.14\lib\net45\Serilog.FullNetFx.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
@@ -64,22 +61,13 @@
     <Compile Include="Api\IClient.cs" />
     <Compile Include="Api\PagedClient.cs" />
     <Compile Include="Api\PostMessagesResponse.cs" />
-    <Compile Include="Cloud\Throw.cs" />
-    <Compile Include="Files\FileClient.cs" />
-    <Compile Include="Memory\MemoryClient.cs" />
-    <Compile Include="Cloud\CloudPageReader.cs" />
-    <Compile Include="Cloud\CloudSetup.cs" />
+    <Compile Include="FileClient.cs" />
+    <Compile Include="MemoryClient.cs" />
     <Compile Include="Api\CloudClient.cs" />
     <Compile Include="Api\GetStreamResponse.cs" />
-    <Compile Include="Cloud\CloudPageWriter.cs" />
-    <Compile Include="Cloud\CloudCheckpointWriter.cs" />
-    <Compile Include="Cloud\CloudCheckpointReader.cs" />
-    <Compile Include="Tests\TransferFormatTests.cs" />
-    <Compile Include="Tests\MessageWriterTests.cs" />
-    <Compile Include="Tests\TestEnvironment.cs" />
+    <Compile Include="Tests\PageClientTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

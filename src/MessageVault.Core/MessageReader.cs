@@ -138,7 +138,7 @@ namespace MessageVault {
 						}
 					}
 				}
-				catch (ForbiddenException ex) {
+				catch (ForbiddenException) {
 					throw;
 				}
 				catch (Exception ex) {

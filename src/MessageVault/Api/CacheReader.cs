@@ -93,7 +93,6 @@ namespace MessageVault.Api {
 					}
 					var frame = CacheStorage.Read(_reader);
 
-
 					handler(frame, currentPosition, maxPos);
 					// fix the position
 					result.ReadRecords += 1;

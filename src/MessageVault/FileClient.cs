@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MessageVault.Api;
+using MessageVault.Files;
 
-namespace MessageVault.Files {
+namespace MessageVault {
 
 	public sealed class FileClient : IClient 
 	{

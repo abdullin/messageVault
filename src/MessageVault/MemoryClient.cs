@@ -3,9 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Api;
+using MessageVault.Memory;
 using NUnit.Framework;
 
-namespace MessageVault.Memory {
+namespace MessageVault {
 
 	public sealed class MemoryClient : IClient {
 		sealed class InMemStream {

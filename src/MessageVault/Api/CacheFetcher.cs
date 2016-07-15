@@ -117,7 +117,6 @@ namespace MessageVault.Api {
 		public long AvailableCachePosition;
 		public long MaxOriginPosition;
 		public long CachedOriginPosition;
-
 		public bool ReadEndOfCacheBeforeItWasFlushed;
 		public IList<MessageHandlerClosure> Messages;
 

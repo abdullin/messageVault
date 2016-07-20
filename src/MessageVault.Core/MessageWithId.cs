@@ -25,6 +25,11 @@ namespace MessageVault {
 			Value = value;
 			Crc32 = crc32;
 		}
+
+		public static MessageWithId Create(MessageId id, byte attributes, byte[] key, byte[] value) {
+			var crc = attributes ^ Crc32Algorithm.Compute(key) ^ Crc32Algorithm.Compute(value) ^ (uint)id.GetHashCode();
+			return new MessageWithId(id, attributes, key, value, crc);
+		}
 	}
 
 }

@@ -3,9 +3,8 @@ using System.IO;
 namespace MessageVault.Api {
 
 	public static class CacheStorage {
-		const ushort FooterSignature = 0xC0DE;
 		const ushort HeaderSignature = 0xBAD1;
-
+		const ushort FooterSignature = 0xC0DE;
 
 		public static MessageWithId Read(BinaryReader binary)
 		{
@@ -50,7 +49,7 @@ namespace MessageVault.Api {
 
 			writer.Write((byte)item.Key.Length);
 			writer.Write(item.Key);
-			// we know for 100% that value length will be ushort
+			// we know for 100% that value length will be int
 			writer.Write(item.Value.Length);
 			writer.Write(item.Value);
 			writer.Write(FooterSignature);

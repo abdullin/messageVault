@@ -22,6 +22,13 @@ namespace MessageVault {
 
 		public static void Write(BinaryWriter writer, MessageWithId item)
 		{
+			if (item.Key.Length > 256) {
+				throw new InvalidOperationException("Key length must be under 256 bytes");
+			}
+			if (item.Value.Length > ushort.MaxValue) {
+				throw new InvalidOperationException("Value length must be under " + ushort.MaxValue);
+			}
+
 			writer.Write(ReservedFormatVersion);
 			writer.Write(item.Attributes);
 			writer.Write(item.Id.GetBytes());
@@ -38,6 +45,19 @@ namespace MessageVault {
 			int sizeEstimate
 				= 1 // magic byte 
 				    + 1 // attributes byte
+					+ 4 // CRC
+					+ 16 // ID
+					+ 1 + item.Key.Length // key
+					+ 2 + item.Value.Length; // value
+			return sizeEstimate;
+		}
+
+
+		public static int EstimateSize(MessageWithId item)
+		{
+			int sizeEstimate
+				= 1 // magic byte 
+					+ 1 // attributes byte
 					+ 4 // CRC
 					+ 16 // ID
 					+ 1 + item.Key.Length // key

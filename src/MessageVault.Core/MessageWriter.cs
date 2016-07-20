@@ -6,8 +6,6 @@ using System.Text;
 
 namespace MessageVault {
 
-	
-
 	/// <summary>
 	/// Writes messages as a stream to an underlying <see cref="IPageWriter"/>, 
 	/// using provided <see cref="ICheckpointWriter"/> to mark commits.

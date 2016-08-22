@@ -63,6 +63,7 @@ namespace MessageVault.Api {
 						// we stopped earlier because process is shutting down
 						return;
 					}
+					// I think, in that case the download threads will be left dangling
 					throw new TimeoutException("Failed to download next batch in " + DownloadTimeoutMs + " ms");
 				}
 				var downloaded = array.Sum(t => t.Result.DownloadedBytes);

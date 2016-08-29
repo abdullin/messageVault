@@ -45,7 +45,7 @@ namespace MessageVault.Api {
 			return _fetchers;
 		} 
 
-		public void Run(CancellationToken token) {
+		public async Task Run(CancellationToken token) {
 
 			var array = new Task<FetchResult>[_fetchers.Length];
 
@@ -63,6 +63,7 @@ namespace MessageVault.Api {
 						// we stopped earlier because process is shutting down
 						return;
 					}
+					// I think, in that case the download threads will be left dangling
 					throw new TimeoutException("Failed to download next batch in " + DownloadTimeoutMs + " ms");
 				}
 				var downloaded = array.Sum(t => t.Result.DownloadedBytes);
@@ -86,7 +87,7 @@ namespace MessageVault.Api {
 
 				if (downloaded == 0) {
 					// no activity, we wait
-					token.WaitHandle.WaitOne(WaitBetweenFetches);
+					await Task.Delay(WaitBetweenFetches, token).ConfigureAwait(false);
 				}
 			}
 		}
@@ -117,7 +118,6 @@ namespace MessageVault.Api {
 		public long AvailableCachePosition;
 		public long MaxOriginPosition;
 		public long CachedOriginPosition;
-
 		public bool ReadEndOfCacheBeforeItWasFlushed;
 		public IList<MessageHandlerClosure> Messages;
 

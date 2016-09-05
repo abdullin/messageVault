@@ -15,10 +15,10 @@ namespace MessageVault.Api {
 		public readonly Uri Server;
 
 		public static Func<Stream> StreamFactory = () => new MemoryStream();
-		private string _streamPrefix;
+		public string StreamPrefix { get; set; }
 
 		public CloudClient(string url, string username, string password, string streamPrefix = null) {
-			_streamPrefix = streamPrefix;
+			StreamPrefix = streamPrefix;
 			Server = new Uri(url);
 			_client = new HttpClient {
 				BaseAddress = Server
@@ -76,7 +76,7 @@ namespace MessageVault.Api {
 		}
 
 		private string GetRealStreamName(string streamName) {
-			return (_streamPrefix ?? "") + streamName;
+			return (StreamPrefix ?? "") + streamName;
 		}
 
 		public void Dispose() {

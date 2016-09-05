@@ -45,7 +45,7 @@ namespace MessageVault.Api {
 			return _fetchers;
 		} 
 
-		public async Task Run(CancellationToken token) {
+		public void Run(CancellationToken token) {
 
 			var array = new Task<FetchResult>[_fetchers.Length];
 
@@ -87,7 +87,7 @@ namespace MessageVault.Api {
 
 				if (downloaded == 0) {
 					// no activity, we wait
-					await Task.Delay(WaitBetweenFetches, token).ConfigureAwait(false);
+					token.WaitHandle.WaitOne(WaitBetweenFetches);
 				}
 			}
 		}

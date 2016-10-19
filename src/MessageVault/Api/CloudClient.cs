@@ -14,9 +14,11 @@ namespace MessageVault.Api {
 		readonly HttpClient _client;
 		public readonly Uri Server;
 
-		public static Func<Stream> StreamFactory = () => new MemoryStream(); 
+		public static Func<Stream> StreamFactory = () => new MemoryStream();
+		public string StreamPrefix { get; set; }
 
-		public CloudClient(string url, string username, string password) {
+		public CloudClient(string url, string username, string password, string streamPrefix = null) {
+			StreamPrefix = streamPrefix;
 			Server = new Uri(url);
 			_client = new HttpClient {
 				BaseAddress = Server
@@ -37,9 +39,9 @@ namespace MessageVault.Api {
 				TransferFormat.WriteMessages(messages, mem);
 
 				mem.Seek(0, SeekOrigin.Begin);
-				
+
 				using (var sc = new StreamContent(mem)) {
-					var result = await _client.PostAsync("/streams/" + stream, sc);
+					var result = await _client.PostAsync("/streams/" + GetRealStreamName(stream), sc);
 					result.EnsureSuccessStatusCode();
 					var content = await result.Content.ReadAsStringAsync();
 					return JsonConvert.DeserializeObject<PostMessagesResponse>(content);
@@ -54,7 +56,7 @@ namespace MessageVault.Api {
 		}
 
 		public async Task<string> GetReaderSignatureAsync(string stream) {
-			var result = await _client.GetAsync("/streams/" + stream).ConfigureAwait(false);
+			var result = await _client.GetAsync("/streams/" + GetRealStreamName(stream)).ConfigureAwait(false);
 			result.EnsureSuccessStatusCode();
 			var content = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
 			var response = JsonConvert.DeserializeObject<GetStreamResponse>(content);
@@ -71,6 +73,10 @@ namespace MessageVault.Api {
 		public async Task<MessageReader> GetMessageReaderAsync(string stream) {
 			var signature = await GetReaderSignatureAsync(stream).ConfigureAwait(false);
 			return CloudSetup.GetReader(signature);
+		}
+
+		private string GetRealStreamName(string streamName) {
+			return (StreamPrefix ?? "") + streamName;
 		}
 
 		public void Dispose() {

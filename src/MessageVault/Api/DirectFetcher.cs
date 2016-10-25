@@ -47,7 +47,7 @@ namespace MessageVault.Api {
 			}
 		}
 
-		public int AmountToLoadMax = 10 * 1024 * 1024;
+		public int AmountToLoadMax = 4 * 1024 * 1024;
 
 
 		public async Task<DirectReadBulkResult> ReadAll(CancellationToken token, long startingFrom, int maxCount)

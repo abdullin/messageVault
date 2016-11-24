@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using MessageVault.Files;
 using MessageVault.MemoryPool;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
@@ -52,14 +54,25 @@ namespace MessageVault.Cloud {
 
 		public static MessageFetcher MessageFetcher(string sas, string stream, IMemoryStreamManager streamManager = null)
 		{
-			
 			var manager = streamManager ?? new MemoryStreamFactoryManager();
 			var raw = GetReaderRaw(sas);
 			var remote = raw.Item2;
 			var remotePos = raw.Item1;
 
 			return new MessageFetcher(remote, remotePos, manager, stream);
+		}
 
+		public static MessageCopier CopyToFiles(string sas, string stream, DirectoryInfo target,
+			IMemoryStreamManager streamManager = null) {
+
+			var manager = streamManager ?? new MemoryStreamFactoryManager();
+			var raw = GetReaderRaw(sas);
+			var remote = raw.Item2;
+			var remotePos = raw.Item1;
+
+			var writer = FileSetup.CreateAndInitWriterRaw(target, stream);
+
+			return new MessageCopier(remote, remotePos, manager, writer.Item2, writer.Item1);
 		}
 	}
 

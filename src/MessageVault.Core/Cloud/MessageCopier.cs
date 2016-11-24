@@ -12,8 +12,8 @@ namespace MessageVault.Cloud {
 		readonly ICheckpointReader _sourcePos;
 		readonly IMemoryStreamManager _streamManager;
 
-		public readonly IPageWriter _targetWriter;
-		public readonly ICheckpointWriter _targetPos;
+		readonly IPageWriter _targetWriter;
+		readonly ICheckpointWriter _targetPos;
 		
 
 
@@ -34,22 +34,23 @@ namespace MessageVault.Cloud {
 		public int AmountToLoadMax = 4 * 1024 * 1024;
 
 
-	
+		public async Task Run(CancellationToken token) {
+			while (!token.IsCancellationRequested) {
+				var result = await CopyNextBatch(token).ConfigureAwait(false);
+				if (result == 0) {
+					await Task.Delay(1000, token);
+				}
+			}
+		}
+
 
 		public async Task<long> CopyNextBatch(CancellationToken token)
 		{
-			//var convertedLocalPos = pos[0];
-			//var currentRemotePosition = pos[1];
-
-
 			var maxPos = await _sourcePos
 				.ReadAsync(token)
 				.ConfigureAwait(false);
 
 			var localPos = _targetPos.GetOrInitPosition();
-
-
-
 			
 
 			var availableAmount = maxPos - localPos;

@@ -58,12 +58,10 @@
     <Compile Include="Api\CacheFetcher.cs" />
     <Compile Include="Api\CacheReader.cs" />
     <Compile Include="Api\CacheStorage.cs" />
-    <Compile Include="Api\DirectFetcher.cs" />
     <Compile Include="Api\ErrorResponse.cs" />
     <Compile Include="Api\IClient.cs" />
     <Compile Include="Api\PagedClient.cs" />
     <Compile Include="Api\PostMessagesResponse.cs" />
-    <Compile Include="Api\ReadResult.cs" />
     <Compile Include="FileClient.cs" />
     <Compile Include="MemoryClient.cs" />
     <Compile Include="Api\CloudClient.cs" />

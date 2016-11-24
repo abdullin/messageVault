@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MessageVault.Files {
 
@@ -27,7 +28,22 @@ namespace MessageVault.Files {
             
         }
 
-        void OpenStreamIfNeeded() {
+	    public async Task DownloadRangeToStreamAsync(Stream stream, long offset, int length) {
+			OpenStreamIfNeeded();
+			_stream.Seek(offset, SeekOrigin.Begin);
+
+			var bytesToCopy = length;
+			while (bytesToCopy > 0)
+			{
+				var read = await _stream
+					.ReadAsync(_buffer, 0, Math.Min(_buffer.Length, bytesToCopy))
+					.ConfigureAwait(false);
+				await stream.WriteAsync(_buffer, 0, read).ConfigureAwait(false);
+				bytesToCopy -= read;
+			}
+		}
+
+	    void OpenStreamIfNeeded() {
             if (_stream == null) {
                 _info.Refresh();
                 if (!_info.Exists) {

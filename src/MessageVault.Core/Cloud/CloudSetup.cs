@@ -1,4 +1,5 @@
 using System;
+using MessageVault.MemoryPool;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
@@ -47,6 +48,18 @@ namespace MessageVault.Cloud {
 		public static MessageReader GetReader(string sas) {
 			var raw = GetReaderRaw(sas);
 			return new MessageReader(raw.Item1, raw.Item2);
+		}
+
+		public static MessageFetcher MessageFetcher(string sas, string stream, IMemoryStreamManager streamManager = null)
+		{
+			
+			var manager = streamManager ?? new MemoryStreamFactoryManager();
+			var raw = GetReaderRaw(sas);
+			var remote = raw.Item2;
+			var remotePos = raw.Item1;
+
+			return new MessageFetcher(remote, remotePos, manager, stream);
+
 		}
 	}
 

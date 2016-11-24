@@ -1,6 +1,15 @@
+using System;
 using System.Collections.Generic;
 
-namespace MessageVault.Api {
+namespace MessageVault {
+
+	[Flags]
+	public enum MessageFlags : byte
+	{
+		None = 0,
+		LZ4 = 0x01,
+		ToBeContinued = 0x02,
+	}
 
 	public sealed class ReadResult {
 		public int ReadRecords;

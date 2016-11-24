@@ -44,7 +44,7 @@ namespace WorkerRole {
 		static void InitLogging() {
 			Log.Logger = new LoggerConfiguration()
 				.MinimumLevel.Verbose()
-				.WriteTo.ColoredConsole()
+				//.WriteTo.Sink<()
 				.CreateLogger();
 		}
 	}

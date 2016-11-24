@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -72,6 +75,34 @@ namespace MessageVault.Cloud {
 					accessCondition : AccessCondition.GenerateIfMatchCondition(_etag));
 				_etag = _blob.Properties.ETag;
 			});
+		}
+
+
+		public async Task SaveAsync(Stream stream, long offset, CancellationToken token)
+		{
+			Require.OffsetMultiple("offset", offset, PageSize);
+
+			if (stream.Length > CommitSizeBytes)
+			{
+				var message = "Stream can't be longer than " + CommitSizeBytes;
+				throw new ArgumentException(message);
+			}
+
+			try
+			{
+				await _blob.WritePagesAsync(stream, offset,null, 
+					AccessCondition.GenerateIfMatchCondition(_etag),null,null,token)
+					.ConfigureAwait(false);
+				_etag = _blob.Properties.ETag;
+			}
+			catch (StorageException ex)
+			{
+				if (ex.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+				{
+					throw new NonTransientAppendFailure("ETAG failed, must reboot", ex);
+				}
+				throw;
+			}
 		}
 
 		public int GetMaxCommitSize() {

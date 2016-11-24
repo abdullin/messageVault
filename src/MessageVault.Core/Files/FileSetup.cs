@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using MessageVault.Cloud;
+using MessageVault.MemoryPool;
 
 namespace MessageVault.Files {
 
@@ -28,6 +30,12 @@ namespace MessageVault.Files {
 		}
 
 		public static MessageReader GetReader(DirectoryInfo folder, string stream) {
+			var tuple = GetReaderRaw(folder, stream);
+
+			return new MessageReader(tuple.Item1, tuple.Item2);
+		}
+
+		public static Tuple<FileCheckpointReader, FilePageReader> GetReaderRaw(DirectoryInfo folder, string stream) {
 			var streamDir = Path.Combine(folder.FullName, stream);
 			var di = new DirectoryInfo(streamDir);
 			if (!di.Exists) {
@@ -39,8 +47,20 @@ namespace MessageVault.Files {
 			var pages = new FilePageReader(pagesFile);
 			var checkpoint = new FileCheckpointReader(checkpointFile);
 
-			var reader = new MessageReader(checkpoint, pages);
-			return reader;
+			return Tuple.Create(checkpoint, pages);
+
+			
+		}
+
+
+		public static MessageFetcher MessageFetcher(DirectoryInfo folder, string stream, IMemoryStreamManager streamManager = null)
+		{
+			var manager = streamManager ?? new MemoryStreamFactoryManager();
+			var raw = GetReaderRaw(folder, stream);
+			var remote = raw.Item2;
+			var remotePos = raw.Item1;
+
+			return new MessageFetcher(remote, remotePos, manager, stream);
 		}
 	}
 

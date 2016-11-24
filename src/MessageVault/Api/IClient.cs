@@ -21,11 +21,5 @@ namespace MessageVault.Api {
 		}
 	}
 
-	[Flags]
-	public enum MessageFlags : byte {
-		None = 0,
-		LZ4 = 0x01,
-		ToBeContinued = 0x02,
-	}
 
 }

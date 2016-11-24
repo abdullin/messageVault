@@ -2,35 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MessageVault.Cloud;
-using MessageVault.Files;
 using MessageVault.MemoryPool;
 
-namespace MessageVault.Api {
+namespace MessageVault.Cloud {
 
-	public sealed class DirectFetcher
+	public sealed class MessageFetcher 
 	{
-		readonly CloudPageReader _remote;
-		readonly CloudCheckpointReader _remotePos;
-
-
+		readonly IPageReader _remote;
+		readonly ICheckpointReader _remotePos;
 		readonly IMemoryStreamManager _streamManager;
 		public readonly string StreamName;
-
-
 		
-		public DirectFetcher(string sas, string stream, IMemoryStreamManager streamManager = null)
-		{
-			StreamName = stream;
-			_streamManager = streamManager ?? new MemoryStreamFactoryManager();
-			var raw = CloudSetup.GetReaderRaw(sas);
 
-			_remote = raw.Item2;
-			_remotePos = raw.Item1;
-
+		public MessageFetcher(IPageReader remote, ICheckpointReader remotePos, IMemoryStreamManager streamManager, string streamName) {
+			_remote = remote;
+			_remotePos = remotePos;
+			_streamManager = streamManager;
+			StreamName = streamName;
 		}
 
 		static bool TryRead(BinaryReader reader, out MessageWithId msg)
@@ -163,9 +153,6 @@ namespace MessageVault.Api {
 				return result;
 			}
 		}
-
-
-
 
 
 		static bool HasMore(MessageWithId msg)

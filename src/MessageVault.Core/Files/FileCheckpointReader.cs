@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace MessageVault.Files {
             if (!_info.Exists) {
                 return false;
             }
+			//Console.WriteLine("OPEN R {0}", _info.FullName);
             _stream = _info.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _reader = new BinaryReader(_stream);
             return true;
@@ -52,7 +54,8 @@ namespace MessageVault.Files {
             using (_stream)
             using (_reader) {
                 _disposed = true;
-            }
+				//Console.WriteLine("CLOSE R {0}", _info.FullName);
+			}
         }
     }
 

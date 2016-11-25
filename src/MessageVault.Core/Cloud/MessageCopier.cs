@@ -58,7 +58,7 @@ namespace MessageVault.Cloud {
 				.ReadAsync(token)
 				.ConfigureAwait(false);
 
-			var localPos = _targetPos.GetOrInitPosition();
+			var localPos = _targetPos.ReadPositionVolatile();
 
 
 			var availableAmount = maxPos - localPos;

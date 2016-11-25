@@ -8,13 +8,13 @@ namespace MessageVault.Files {
 	public static class FileSetup {
 		public static MessageWriter CreateAndInitWriter(DirectoryInfo folder, string stream) {
 
-			var raw = CreateAndInitWriterRaw(folder, stream);
+			var raw = CreateWriterRaw(folder, stream);
 			var writer = new MessageWriter(raw.Item2, raw.Item1);
 			writer.Init();
 			return writer;
 		}
 
-		public static Tuple<FileCheckpointWriter,FilePageWriter> CreateAndInitWriterRaw(DirectoryInfo folder, string stream) {
+		public static Tuple<FileCheckpointWriter,FilePageWriter> CreateWriterRaw(DirectoryInfo folder, string stream) {
 			var streamDir = Path.Combine(folder.FullName, stream);
 			var di = new DirectoryInfo(streamDir);
 			if (!di.Exists)

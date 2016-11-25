@@ -58,11 +58,13 @@
     <Compile Include="Cloud\Throw.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Crc32Algorithm.cs" />
+    <Compile Include="Files\FileCheckpointArrayReader.cs" />
     <Compile Include="Files\FileCheckpointReader.cs" />
     <Compile Include="Files\FileCheckpointWriter.cs" />
     <Compile Include="Files\FilePageReader.cs" />
     <Compile Include="Files\FilePageWriter.cs" />
     <Compile Include="Files\FileSetup.cs" />
+    <Compile Include="Files\FixedCheckpointArrayReader.cs" />
     <Compile Include="ICheckpointReader.cs" />
     <Compile Include="ICheckpointWriter.cs" />
     <Compile Include="IPageReader.cs" />

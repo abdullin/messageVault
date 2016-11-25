@@ -70,9 +70,11 @@ namespace MessageVault.Cloud {
 			var remote = raw.Item2;
 			var remotePos = raw.Item1;
 
-			var writer = FileSetup.CreateAndInitWriterRaw(target, stream);
+			var writer = FileSetup.CreateWriterRaw(target, stream);
 
-			return new MessageCopier(remote, remotePos, manager, writer.Item2, writer.Item1);
+			var copier = new MessageCopier(remote, remotePos, manager, writer.Item2, writer.Item1);
+			copier.Init();
+			return copier;
 		}
 	}
 

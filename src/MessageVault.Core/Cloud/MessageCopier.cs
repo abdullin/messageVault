@@ -9,10 +9,10 @@ namespace MessageVault.Cloud {
 	public sealed class MessageCopier : IDisposable
 	{
 		readonly IPageReader _sourceReader;
-		readonly ICheckpointReader _sourcePos;
+		public readonly ICheckpointReader SourcePos;
 		readonly IMemoryStreamManager _streamManager;
 		readonly IPageWriter _targetWriter;
-		readonly ICheckpointWriter _targetPos;
+		public readonly ICheckpointWriter TargetPos;
 
 		public MessageCopier(
 			IPageReader sourceReader,
@@ -22,10 +22,10 @@ namespace MessageVault.Cloud {
 			ICheckpointWriter targetPos)
 		{
 			_sourceReader = sourceReader;
-			_sourcePos = sourcePos;
+			SourcePos = sourcePos;
 			_streamManager = streamManager;
 			_targetWriter = targetWriter;
-			_targetPos = targetPos;
+			TargetPos = targetPos;
 		}
 
 		public int AmountToLoadMax = 4 * 1024 * 1024;
@@ -33,7 +33,7 @@ namespace MessageVault.Cloud {
 		public void Init()
 		{
 			_targetWriter.Init();
-			_targetPos.GetOrInitPosition();
+			TargetPos.GetOrInitPosition();
 		}
 
 
@@ -42,7 +42,7 @@ namespace MessageVault.Cloud {
 			while (!token.IsCancellationRequested)
 			{
 				var result = await CopyNextBatch(token).ConfigureAwait(false);
-				if (result == 0)
+				if (result.CopiedBytes == 0)
 				{
 					await Task
 						.Delay(1000, token)
@@ -51,21 +51,36 @@ namespace MessageVault.Cloud {
 			}
 		}
 
+		public struct CopyResult {
+			public readonly long CopiedBytes;
+			public readonly long MaxPos;
+			public readonly long CopyStartPos;
+			public readonly long CopyEndPos;
 
-		public async Task<long> CopyNextBatch(CancellationToken token)
+
+			public CopyResult(long copiedBytes, long maxPos, long copyStartPos, long copyEndPos) {
+				CopiedBytes = copiedBytes;
+				MaxPos = maxPos;
+				CopyStartPos = copyStartPos;
+				CopyEndPos = copyEndPos;
+			}
+		}
+
+
+		public async Task<CopyResult> CopyNextBatch(CancellationToken token)
 		{
-			var maxPos = await _sourcePos
+			var maxPos = await SourcePos
 				.ReadAsync(token)
 				.ConfigureAwait(false);
 
-			var localPos = _targetPos.ReadPositionVolatile();
+			var localPos = TargetPos.ReadPositionVolatile();
 
 
 			var availableAmount = maxPos - localPos;
 			if (availableAmount <= 0)
 			{
 				// we don't have anything to write
-				return 0;
+				return new CopyResult(0, maxPos, localPos,localPos);
 			}
 
 			var amountToLoad = Math.Min(availableAmount, AmountToLoadMax);
@@ -78,8 +93,9 @@ namespace MessageVault.Cloud {
 				mem.Seek(0, SeekOrigin.Begin);
 				_targetWriter.Save(mem, localPos);
 				var position = localPos + mem.Length;
-				_targetPos.Update(position);
-				return mem.Length;
+				TargetPos.Update(position);
+				
+				return new CopyResult(mem.Length, maxPos, localPos, position);
 			}
 		}
 
@@ -96,9 +112,9 @@ namespace MessageVault.Cloud {
 					return;
 				}
 
-				using (_targetPos)
+				using (TargetPos)
 				using (_targetWriter)
-				using (_sourcePos)
+				using (SourcePos)
 				using (_sourceReader)
 				{
 					_disposed = true;

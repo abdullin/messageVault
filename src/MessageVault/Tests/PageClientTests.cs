@@ -8,9 +8,6 @@ namespace MessageVault.Tests {
 	[TestFixture]
 	public sealed class PageClientTests {
 
-
-
-
 		static byte[] GetBytes(int count) {
 
 			var b = new byte[count];

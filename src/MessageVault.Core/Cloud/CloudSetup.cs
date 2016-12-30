@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Security;
 using MessageVault.Files;
 using MessageVault.MemoryPool;
 using Microsoft.WindowsAzure.Storage.Blob;

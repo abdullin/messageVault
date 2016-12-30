@@ -47,7 +47,10 @@ namespace MessageVault.Api {
 		}
 
 		/// <summary>
-		/// Creates a new cloud client using credentials that were previously created with a call to <see cref="EncryptCredentuals"/>.
+		/// <para>Creates a new cloud client using credentials that were previously created with a call to <see cref="EncryptCredentuals"/>. </para>
+		/// <para>This isn't enough to protect credentials against determined hacker 
+		/// (since HttpClient doesn't use SecureString), but good enough to prevent accidental 
+		/// leaking and misuse of credentials. </para> 
 		/// </summary>
 		/// <param name="url"></param>
 		/// <param name="encrypted"></param>

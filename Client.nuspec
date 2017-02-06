@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>MessageVault.Client</id>
-        <version>4.3.2</version>
+        <version>4.3.3</version>
         <authors>AgileHarbor</authors>
         <owners>AgileHarbor</owners>
         <licenseUrl>https://github.com/agileharbor/messageVault/blob/master/LICENSE</licenseUrl>
@@ -12,10 +12,10 @@
         <copyright>AgileHarbor</copyright>
         <dependencies>
             <group targetFramework=".NETFramework4.5">
-                <dependency id="Newtonsoft.Json" version="8.0.3" />
+                <dependency id="Newtonsoft.Json" version="9.0.1" />
                 <dependency id="WindowsAzure.Storage" version="4.3.0" />
                 <dependency id="lz4net" version="1.0.10.93" />
-                <dependency id="Serilog" version="2.3.0" />
+                <dependency id="Serilog" version="2.4.0" />
 							<dependency id="NUnit" version="2.6.4" />
             </group>
         </dependencies>

@@ -1698,6 +1698,19 @@
             }
             </example>
         </member>
+        <member name="M:Serilog.Log.BindProperty(System.String,System.Object,System.Boolean,Serilog.Events.LogEventProperty@)">
+            <summary>
+            Uses configured scalar conversion and destructuring rules to bind a property value to its captured
+            representation.
+            </summary>
+            <returns>True if the property could be bound, otherwise false (<summary>ILogger</summary>
+            <param name="propertyName">The name of the property. Must be non-empty.</param>
+            <param name="value">The property value.</param>
+            <param name="destructureObjects">If true, the value will be serialized as a structured
+            object if possible; if false, the object will be recorded as a scalar or simple array.</param>
+            <param name="property">The resulting property.</param>
+            methods never throw exceptions).</returns>
+        </member>
         <member name="T:Serilog.LoggerConfiguration">
             <summary>
             Configuration object for creating <see cref="T:Serilog.ILogger"/> instances.
@@ -1893,6 +1906,26 @@
             <param name="maximumDestructuringDepth">The maximum depth to use.</param>
             <returns>Configuration object allowing method chaining.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
+        <member name="M:Serilog.Configuration.LoggerDestructuringConfiguration.ToMaximumStringLength(System.Int32)">
+            <summary>
+            When destructuring objects, string values can be restricted to specified length
+            thus avoiding bloating payload. Limit is applied to each value separately, 
+            sum of length of strings can exceed limit.
+            </summary>
+            <param name="maximumStringLength">The maximum string length.</param>
+            <returns>Configuration object allowing method chaining.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">When passed length is less than 2</exception>
+        </member>
+        <member name="M:Serilog.Configuration.LoggerDestructuringConfiguration.ToMaximumCollectionCount(System.Int32)">
+            <summary>
+            When destructuring objects, collections be restricted to specified count
+            thus avoiding bloating payload. Limit is applied to each collection separately, 
+            sum of length of collection can exceed limit.
+            Applies limit to all <see cref="T:System.Collections.IEnumerable"/> including dictionaries.
+            </summary>
+            <returns>Configuration object allowing method chaining.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">When passed length is less than 1</exception>
         </member>
         <member name="T:Serilog.Configuration.LoggerEnrichmentConfiguration">
             <summary>

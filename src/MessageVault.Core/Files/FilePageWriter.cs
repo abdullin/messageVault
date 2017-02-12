@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MessageVault.Files {
 
@@ -54,7 +56,13 @@ namespace MessageVault.Files {
             _stream.Flush();
         }
 
-        public int GetMaxCommitSize() {
+	    public async Task SaveAsync(Stream stream, long offset, CancellationToken token) {
+			_stream.Seek(offset, SeekOrigin.Begin);
+		    await stream.CopyToAsync(_stream, 81920, token).ConfigureAwait(false);
+		    await _stream.FlushAsync(token).ConfigureAwait(false);
+	    }
+
+	    public int GetMaxCommitSize() {
             return 4*1024*1024;
         }
 

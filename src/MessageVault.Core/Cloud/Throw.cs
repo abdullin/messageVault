@@ -1,6 +1,8 @@
 using System;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 
 namespace MessageVault.Cloud {
@@ -22,6 +24,7 @@ namespace MessageVault.Cloud {
 				throw;
 			}
 		}
+
 	}
 
 	/// <summary>

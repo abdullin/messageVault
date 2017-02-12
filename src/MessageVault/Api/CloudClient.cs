@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,10 +28,51 @@ namespace MessageVault.Api {
 			SetupBasicAuth(username, password);
 		}
 
+
+		static readonly byte[] Entropy = new Guid("c9d047c8-f7d0-4b5d-a207-6b551b8d05a6").ToByteArray();
+
+		/// <summary>
+		/// Encrypt credentials using data protection API (with user scope)
+		/// </summary>
+		/// <param name="user"></param>
+		/// <param name="password"></param>
+		/// <returns></returns>
+		public static string EncryptCredentuals(string user, string password) {
+			var binary = CredentialsToHeader(user, password);
+			var data= ProtectedData.Protect(
+				binary,
+				Entropy,
+				DataProtectionScope.CurrentUser);
+			return Convert.ToBase64String(data);
+		}
+
+		/// <summary>
+		/// <para>Creates a new cloud client using credentials that were previously created with a call to <see cref="EncryptCredentuals"/>. </para>
+		/// <para>This isn't enough to protect credentials against determined hacker 
+		/// (since HttpClient doesn't use SecureString), but good enough to prevent accidental 
+		/// leaking and misuse of credentials. </para> 
+		/// </summary>
+		/// <param name="url"></param>
+		/// <param name="encrypted"></param>
+		/// <param name="streamPrefix"></param>
+		public CloudClient(string url, string encrypted, string streamPrefix = null) {
+			StreamPrefix = streamPrefix;
+			Server = new Uri(url);
+			_client = new HttpClient { BaseAddress = Server };
+			var sourceBytes = Convert.FromBase64String(encrypted);
+			var decrypted = ProtectedData.Unprotect(sourceBytes,Entropy,DataProtectionScope.CurrentUser);
+			var head = Convert.ToBase64String(decrypted);
+			_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", head);
+		}
+
 		void SetupBasicAuth(string username, string password) {
-			var byteArray = Encoding.ASCII.GetBytes(username + ":" + password);
-			_client.DefaultRequestHeaders.Authorization =
-				new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+			var s = Convert.ToBase64String(CredentialsToHeader(username, password));
+			var header = new AuthenticationHeaderValue("Basic", s);
+			_client.DefaultRequestHeaders.Authorization = header;
+		}
+
+		static byte[] CredentialsToHeader(string username, string password) {
+			return Encoding.ASCII.GetBytes(username + ":" + password);
 		}
 
 		public async Task<PostMessagesResponse> PostMessagesAsync(string stream, ICollection<Message> messages) {
@@ -83,4 +126,5 @@ namespace MessageVault.Api {
 			_client.Dispose();
 		}
 	}
+
 }

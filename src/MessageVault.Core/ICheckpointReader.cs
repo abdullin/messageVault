@@ -1,11 +1,14 @@
 using System;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MessageVault {
 
 
 	public interface ICheckpointReader : IDisposable {
 		long Read();
+		Task<long> ReadAsync(CancellationToken token);
 	}
 
 	[Serializable]

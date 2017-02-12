@@ -9,6 +9,8 @@ namespace MessageVault.Cloud {
 		readonly CloudPageBlob _blob;
 
 		public CloudPageReader(CloudPageBlob blob) {
+
+			
 			Require.NotNull("blob", blob);
 			_blob = blob;
 		}
@@ -19,7 +21,11 @@ namespace MessageVault.Cloud {
 			Require.Positive("length", length);
 
 			try {
-				_blob.DownloadRangeToStream(stream, offset, length);
+				var context = new OperationContext();
+				context.SendingRequest += (sender, e) => {
+					e.Request.Headers["if-match"] = "*";
+				};
+				_blob.DownloadRangeToStream(stream, offset, length, null, null, context);
 			}
 			catch (StorageException ex) {
 				// if forbidden, then we might have an expired SAS token
@@ -39,7 +45,11 @@ namespace MessageVault.Cloud {
 
 			try
 			{
-				await _blob.DownloadRangeToStreamAsync(stream, offset, length).ConfigureAwait(false);
+				var context = new OperationContext();
+				context.SendingRequest += (sender, e) => {
+					e.Request.Headers["if-match"] = "*";
+				};
+				await _blob.DownloadRangeToStreamAsync(stream, offset, length, null, null, context).ConfigureAwait(false);
 			}
 			catch (StorageException ex)
 			{

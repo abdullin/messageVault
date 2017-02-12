@@ -29,6 +29,10 @@ namespace MessageVault.Cloud {
 			return result;
 		}
 
+		public long ReadPositionVolatile() {
+			throw new NotImplementedException();
+		}
+
 		public void Update(long position) {
 			Require.ZeroOrGreater("position", position);
 

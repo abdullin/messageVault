@@ -93,35 +93,7 @@ namespace MessageVault.Api {
 		}
 	}
 
-	public delegate void MessageHandler(MessageWithId id, long currentPosition, long maxPosition);
-
-	public sealed class MessageHandlerClosure {
-		public  MessageWithId Message;
-		public long CurrentCachePosition;
-		public long MaxCachePosition;
-	}
-
-	public sealed class ReadResult {
-		public int ReadRecords;
-		public long CurrentCachePosition;
-		public long StartingCachePosition;
-		public long AvailableCachePosition;
-		public long MaxOriginPosition;
-		public long CachedOriginPosition;
-		public bool ReadEndOfCacheBeforeItWasFlushed;
-	}
-
-	public sealed class ReadBulkResult {
-		public int ReadRecords;
-		public long CurrentCachePosition;
-		public long StartingCachePosition;
-		public long AvailableCachePosition;
-		public long MaxOriginPosition;
-		public long CachedOriginPosition;
-		public bool ReadEndOfCacheBeforeItWasFlushed;
-		public IList<MessageHandlerClosure> Messages;
-
-	}
+	
 
 
 	

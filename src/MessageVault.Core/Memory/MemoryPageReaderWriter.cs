@@ -1,4 +1,6 @@
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MessageVault.Memory {
 
@@ -40,6 +42,12 @@ namespace MessageVault.Memory {
 			stream.CopyTo(_stream);
 		}
 
+		public async Task SaveAsync(Stream stream, long offset, CancellationToken token)
+		{
+			_stream.Seek(offset, SeekOrigin.Begin);
+			await stream.CopyToAsync(_stream, 81920, token).ConfigureAwait(false);
+		}
+
 		public int GetMaxCommitSize() {
 			return 4 * 1024 * 1024;
 		}
@@ -53,7 +61,12 @@ namespace MessageVault.Memory {
 			stream.Write(buf, (int)offset, length);
 		}
 
-	    bool _disposed;
+		public async Task DownloadRangeToStreamAsync(Stream stream, long offset, int length) {
+			var buf = _stream.GetBuffer();
+			await stream.WriteAsync(buf, (int)offset, length).ConfigureAwait(false);
+		}
+
+		bool _disposed;
 	    public void Dispose() {
 	        if (_disposed) {
 	            return;

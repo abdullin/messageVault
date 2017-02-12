@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace MessageVault.Tests {
@@ -21,7 +22,13 @@ namespace MessageVault.Tests {
 				stream.Write(buf, (int)offset, (int)length);
 			}
 
-		    public void Dispose() {
+			public async Task DownloadRangeToStreamAsync(Stream stream, long offset, int length) {
+				_mem.Seek(offset, SeekOrigin.Begin);
+				var buf = _mem.GetBuffer();
+				await stream.WriteAsync(buf, (int)offset, (int)length).ConfigureAwait(false);
+			}
+
+			public void Dispose() {
 		        _mem.Dispose();
 		    }
 		}

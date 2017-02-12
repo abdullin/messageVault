@@ -1,4 +1,5 @@
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MessageVault.Memory {
 
@@ -7,6 +8,10 @@ namespace MessageVault.Memory {
 		long _value;
 		public long GetOrInitPosition() {
 			return Thread.VolatileRead(ref _value);
+		}
+
+		public long ReadPositionVolatile() {
+			return Read();
 		}
 
 		public void Update(long position) {
@@ -18,7 +23,11 @@ namespace MessageVault.Memory {
 			return Thread.VolatileRead(ref _value);
 		}
 
-	    public void Dispose() {
+		public Task<long> ReadAsync(CancellationToken token) {
+			return Task.FromResult(Read());
+		}
+
+		public void Dispose() {
 	        
 	    }
 	}

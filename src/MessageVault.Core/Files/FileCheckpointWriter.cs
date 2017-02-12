@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace MessageVault.Files {
 
@@ -17,32 +19,34 @@ namespace MessageVault.Files {
         public long GetOrInitPosition() {
             
             if (!_info.Exists) {
-                _stream = _info.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+				//Console.WriteLine("OPEN WR {0}", _info.FullName);
+				_stream = _info.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
                 _writer = new BinaryWriter(_stream);
                 _writer.Write((long)(0));
                 _stream.Flush();
-	            _position = 0;
+				Thread.VolatileWrite(ref _position, 0);
                 return 0;
             }
-            _stream = _info.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+			//Console.WriteLine("OPEN WR {0}", _info.FullName);
+			_stream = _info.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
             _writer = new BinaryWriter(_stream);
 
             using (var read = new BinaryReader(_stream,Encoding.UTF8, true)) {
 	            var position = read.ReadInt64();
-	            _position = position;
+				Thread.VolatileWrite(ref _position, position);
 	            return position;
             }
         }
 
         public void Update(long position) {
-	        _position = position;
+			Thread.VolatileWrite(ref _position, position);
             _stream.Seek(0, SeekOrigin.Begin);
             _writer.Write(position);
             _stream.Flush();
         }
 
 	    public long ReadPositionVolatile() {
-		    return _position;
+		    return Thread.VolatileRead(ref _position);
 	    }
 
         bool _disposed;
@@ -52,7 +56,8 @@ namespace MessageVault.Files {
             }
             using (_stream)
             using (_writer) {
-                _disposed = true;
+				Console.WriteLine("CLOSE WR {0}", _info.FullName);
+				_disposed = true;
             }
         }
     }

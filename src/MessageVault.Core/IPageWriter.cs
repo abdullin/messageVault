@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MessageVault {
 
@@ -13,6 +15,8 @@ namespace MessageVault {
 		void EnsureSize(long size);
 		byte[] ReadPage(long offset);
 		void Save(Stream stream, long offset);
+
+		Task SaveAsync(Stream stream, long offset, CancellationToken token);
 
 		int GetMaxCommitSize();
 		int GetPageSize();

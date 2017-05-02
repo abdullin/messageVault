@@ -84,9 +84,9 @@ namespace MessageVault.Api {
 				mem.Seek(0, SeekOrigin.Begin);
 
 				using (var sc = new StreamContent(mem)) {
-					var result = await _client.PostAsync("/streams/" + GetRealStreamName(stream), sc);
+					var result = await _client.PostAsync("/streams/" + GetRealStreamName(stream), sc).ConfigureAwait(false);
 					result.EnsureSuccessStatusCode();
-					var content = await result.Content.ReadAsStringAsync();
+					var content = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
 					return JsonConvert.DeserializeObject<PostMessagesResponse>(content);
 				}
 			}

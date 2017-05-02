@@ -30,7 +30,7 @@ namespace MessageVault.Tests {
 				var unpackedMessage = new UnpackedMessage(GetBytes(Constants.MaxKeySize),
 					GetBytes(Constants.MaxValueSize * 5 + 1));
 				Console.WriteLine("Pub...");
-				pager.Publish(new[] {unpackedMessage}, s.Token);
+				pager.Publish(new[] {unpackedMessage}).Wait(s.Token);
 				Console.WriteLine("Waiting...");
 
 				pager.ChaseEventsForever(s.Token, (id, subscription) => {

@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using LZ4;
 using MessageVault.MemoryPool;
 using NUnit.Framework;
@@ -46,9 +47,10 @@ namespace MessageVault.Api {
 			_manager = manager ?? new MemoryStreamFactoryManager();
 		}
 
-		public PublishResult Publish(ICollection<UnpackedMessage> unpacked, CancellationToken token) {
+		public async Task<PublishResult> Publish(ICollection<UnpackedMessage> unpacked) {
 			var outgoing = new List<Message>();
 
+			
 
 			foreach (var message in unpacked) {
 				using (var mem = new MemoryStream()) {
@@ -76,9 +78,9 @@ namespace MessageVault.Api {
 					}
 				}
 			}
-			var result = _client.PostMessagesAsync(_stream, outgoing);
-			result.Wait(token);
-			return new PublishResult(result.Result.Position, result.Result.Offsets);
+			var result = await _client.PostMessagesAsync(_stream, outgoing).ConfigureAwait(false);
+			
+			return new PublishResult(result.Position, result.Offsets);
 		}
 
 

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using MessageVault.Cloud;
 using MessageVault.Files;
 using MessageVault.MemoryPool;
-using Serilog;
 
 namespace MessageVault.Api {
 
@@ -21,11 +20,9 @@ namespace MessageVault.Api {
 		readonly DirectoryInfo _cacheFolder;
 		readonly IMemoryStreamManager _manager;
 		readonly CacheFetcher[] _fetchers;
-		readonly ILogger _log = Log.ForContext<CacheManager>();
 
 		public TimeSpan WaitBetweenFetches = TimeSpan.FromSeconds(1);
 		public int DownloadTimeoutMs = (int)TimeSpan.FromMinutes(10).TotalMilliseconds;
-		public TimeSpan HealthCheckFrequency = TimeSpan.FromHours(2);
 		public CacheManager(IDictionary<string, string> nameAndSas, DirectoryInfo cacheFolder,
 			IMemoryStreamManager manager) {
 			_cacheFolder = cacheFolder;
@@ -49,8 +46,6 @@ namespace MessageVault.Api {
 
 			var array = new Task<FetchResult>[_fetchers.Length];
 
-			var uptime = Stopwatch.StartNew();
-			long totalDownloaded = 0;
 			
 			while (!token.IsCancellationRequested) {
 				
@@ -67,23 +62,7 @@ namespace MessageVault.Api {
 					throw new TimeoutException("Failed to download next batch in " + DownloadTimeoutMs + " ms");
 				}
 				var downloaded = array.Sum(t => t.Result.DownloadedBytes);
-				totalDownloaded += downloaded;
-
-				if (uptime.Elapsed > HealthCheckFrequency) {
-					// regular healthcheck on a running process to ensure that we
-					// A. is alive and not stuck
-					// B. have working logging channel
-					var totalHours = uptime.Elapsed.TotalHours;
-					var msg = string.Format("Ran for {0:F1} hours. Downloaded {1} bytes.", totalHours, totalDownloaded);
-
-					
-					_log.Information(new HealthCheckException(msg),
-						"Ran for {hours} hours. Downloaded {bytes} bytes.",
-						totalHours,totalDownloaded);
-					// reset counters
-					totalDownloaded = 0;
-					uptime.Restart();
-				}
+				
 
 				if (downloaded == 0) {
 					// no activity, we wait

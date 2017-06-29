@@ -17,6 +17,13 @@ namespace MessageVault.Files {
 
 
         public long GetOrInitPosition() {
+	        if (_disposed) {
+		        throw new ObjectDisposedException(nameof(FileCheckpointWriter));
+	        }
+
+	        if (_stream != null) {
+		        return ReadPositionVolatile();
+	        }
             
             if (!_info.Exists) {
 				//Console.WriteLine("OPEN WR {0}", _info.FullName);

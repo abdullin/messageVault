@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using MessageVault.Cloud;
+using MessageVault.MemoryPool;
 using Newtonsoft.Json;
 
 namespace MessageVault.Api {
@@ -96,6 +97,11 @@ namespace MessageVault.Api {
 			var task = GetMessageReaderAsync(stream);
 			task.Wait();
 			return task.Result;
+		}
+
+		public MessageFetcher GetFetcher(string streamName, IMemoryStreamManager manager = null) {
+			var sas = GetReaderSignature(streamName);
+			return CloudSetup.MessageFetcher(sas, streamName, manager ?? MemoryStreamFactoryManager.Instance);
 		}
 
 		public async Task<string> GetReaderSignatureAsync(string stream) {

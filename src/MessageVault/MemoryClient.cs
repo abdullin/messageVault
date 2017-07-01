@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MessageVault.Api;
+using MessageVault.Cloud;
 using MessageVault.Memory;
+using MessageVault.MemoryPool;
 using NUnit.Framework;
 
 namespace MessageVault {
@@ -51,6 +53,11 @@ namespace MessageVault {
 		public MessageReader GetMessageReader(string stream) {
 			var mem = Get(stream);
 			return new MessageReader(mem.Checkpoint, mem.Pages);
+		}
+
+		public MessageFetcher GetFetcher(string stream, IMemoryStreamManager manager) {
+			var mem = Get(stream);
+			return new MessageFetcher(mem.Pages, mem.Checkpoint, manager ?? MemoryStreamFactoryManager.Instance, stream);
 		}
 
 		public void Dispose() {

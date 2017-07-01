@@ -10,6 +10,9 @@ namespace MessageVault.MemoryPool {
 		public MemoryStream GetStream(string tag, int length) {
 			return new MemoryStream();
 		}
+
+
+		public static IMemoryStreamManager Instance = new MemoryStreamFactoryManager();
 	}
 
 }

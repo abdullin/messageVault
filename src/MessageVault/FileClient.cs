@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MessageVault.Api;
+using MessageVault.Cloud;
 using MessageVault.Files;
+using MessageVault.MemoryPool;
 
 namespace MessageVault {
 
@@ -54,6 +57,13 @@ namespace MessageVault {
 
 		public MessageReader GetMessageReader(string stream) {
 			return FileSetup.GetReader(_dir, stream);
+		}
+
+		public MessageFetcher GetFetcher(string stream, IMemoryStreamManager manager = null) {
+			if (stream == null) throw new ArgumentNullException(nameof(stream));
+			var raw = FileSetup.GetReaderRaw(_dir, stream);
+
+			return new MessageFetcher(raw.Item2, raw.Item1, manager ?? MemoryStreamFactoryManager.Instance, stream);
 		}
 	}
 

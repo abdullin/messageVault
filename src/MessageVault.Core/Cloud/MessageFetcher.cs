@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -40,8 +41,8 @@ namespace MessageVault.Cloud {
 		public int AmountToLoadMax = 4 * 1024 * 1024;
 
 
-		public async Task<DirectReadBulkResult> ReadAll(CancellationToken token, long startingFrom, int maxCount)
-		{
+		public async Task<DirectReadBulkResult> ReadAll(CancellationToken token, long startingFrom, int maxCount) {
+			
 			var result = new DirectReadBulkResult();
 			var stats = await ReadAll(token, startingFrom, maxCount, (id, position, maxPosition) => {
 				if (result.Messages == null)
@@ -60,6 +61,7 @@ namespace MessageVault.Cloud {
 			result.MaxPosition = stats.MaxPosition;
 			result.ReadRecords = stats.ReadRecords;
 			result.StartingPosition = stats.StartingPosition;
+			result.Elapsed = stats.Elapsed;
 			return result;
 		}
 
@@ -68,7 +70,7 @@ namespace MessageVault.Cloud {
 			//var convertedLocalPos = pos[0];
 			//var currentRemotePosition = pos[1];
 
-
+			var watch = Stopwatch.StartNew();
 			var maxPos = await _remotePos.ReadAsync(token)
 				.ConfigureAwait(false);
 			var result = new DirectReadResult
@@ -150,6 +152,7 @@ namespace MessageVault.Cloud {
 
 				}
 				result.CurrentPosition = result.StartingPosition + usedBytes;
+				result.Elapsed = watch.Elapsed;
 				return result;
 			}
 		}

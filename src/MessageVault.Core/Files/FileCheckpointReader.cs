@@ -43,7 +43,8 @@ namespace MessageVault.Files {
 				return Task.FromResult(0L);
 			}
 			_stream.Seek(0, SeekOrigin.Begin);
-			return Task.FromResult(_reader.ReadInt64());
+		    var position = _reader.ReadInt64();
+		    return Task.FromResult(position);
 		}
 
 	    bool _disposed;

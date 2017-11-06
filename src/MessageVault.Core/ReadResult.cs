@@ -27,6 +27,7 @@ namespace MessageVault {
 		public long CurrentPosition;
 		public long StartingPosition;
 		public long MaxPosition;
+		public TimeSpan Elapsed;
 	}
 	public sealed class DirectReadBulkResult
 	{
@@ -34,7 +35,9 @@ namespace MessageVault {
 		public long CurrentPosition;
 		public long StartingPosition;
 		public long MaxPosition;
+		public TimeSpan Elapsed;
 		public IList<MessageHandlerClosure> Messages;
+
 	}
 	public delegate void MessageHandler(MessageWithId id, long currentPosition, long maxPosition);
 

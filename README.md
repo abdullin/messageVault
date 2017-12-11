@@ -26,3 +26,9 @@ Message Vault makes several design trade-offs:
 * **each stream is a sepate page blob** (they can grow to 1TB out-of-the-box, having thousands of streams isn't a good idea).
 
 > Message Vault is not an "event store", it is not designed for "event sourcing with aggregates" (you need [NEventStore](http://neventstore.org/) or [EventStore](http://geteventstore.com/))
+
+### Current State
+
+This project is currently deployed to production at SkuVault, holding 1.5B of events with the total size of 400GB of data.
+
+There is a follow-up implementation of this project, designed for ingesting message vault data (or any event data) into a storage on the local machine, compressing and processing it iteratively for various analytical tasks. See [Geyser-net](https://github.com/abdullin/geyser-net)
